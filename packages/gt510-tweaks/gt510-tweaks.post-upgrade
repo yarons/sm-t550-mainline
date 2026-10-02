@@ -41,4 +41,8 @@ fi
 # Back touch key -> Escape (61-gt510-back-escape.hwdb): rebuild hwdb, re-apply the keymap now.
 systemd-hwdb update >/dev/null 2>&1 || udevadm hwdb --update >/dev/null 2>&1
 udevadm trigger --action=change --subsystem-match=input >/dev/null 2>&1
+# Unofficial build branding; a new boot splash needs a new initramfs (skipped in image builds before the kernel).
+if [ "$(/usr/libexec/gt510-rebrand)" = splash-changed ] && ls /boot/vmlinuz* >/dev/null 2>&1; then
+	mkinitfs >/dev/null 2>&1 || true
+fi
 exit 0

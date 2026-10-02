@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=SM-T550 Mainline
+Description=Text-only boot splash for the unofficial SM-T550 build
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/sm-t550
+ScriptFile=/usr/share/plymouth/themes/sm-t550/sm-t550.script

@@ -1,0 +1,41 @@
+# Text-only splash (no image assets): name, subtitle, three pulsing dots, boot messages at the bottom.
+Window.SetBackgroundTopColor(0, 0, 0);
+Window.SetBackgroundBottomColor(0, 0, 0);
+w = Window.GetWidth();
+h = Window.GetHeight();
+scale = Math.Min(w, h) / 768;
+if (scale <= 0) scale = 1;
+
+title = Image.Text("SM-T550 Mainline", 1, 1, 1, 1, "Sans Bold " + Math.Int(40 * scale));
+title_sprite = Sprite(title);
+title_sprite.SetX(w / 2 - title.GetWidth() / 2);
+title_sprite.SetY(h / 2 - title.GetHeight() - 12 * scale);
+
+sub = Image.Text("unofficial build, based on Nura", 0.65, 0.65, 0.65, 1, "Sans " + Math.Int(20 * scale));
+sub_sprite = Sprite(sub);
+sub_sprite.SetX(w / 2 - sub.GetWidth() / 2);
+sub_sprite.SetY(h / 2 + 12 * scale);
+
+dot = Image.Text("o", 1, 1, 1, 1, "Sans Bold " + Math.Int(26 * scale));
+for (i = 0; i < 3; i++) {
+	dots[i] = Sprite(dot);
+	dots[i].SetX(w / 2 + (i - 1) * 40 * scale - dot.GetWidth() / 2);
+	dots[i].SetY(h / 2 + 90 * scale);
+}
+
+tick = 0;
+fun refresh_callback() {
+	tick++;
+	for (i = 0; i < 3; i++)
+		dots[i].SetOpacity(0.2 + 0.8 * (Math.Sin(tick / 8 - i) + 1) / 2);
+}
+Plymouth.SetRefreshFunction(refresh_callback);
+
+message_sprite = Sprite();
+fun message_callback(text) {
+	img = Image.Text(text, 0.8, 0.8, 0.8, 1, "Sans " + Math.Int(16 * scale));
+	message_sprite.SetImage(img);
+	message_sprite.SetX(w / 2 - img.GetWidth() / 2);
+	message_sprite.SetY(h - img.GetHeight() - 40 * scale);
+}
+Plymouth.SetMessageFunction(message_callback);

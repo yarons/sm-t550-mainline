@@ -1,7 +1,7 @@
 # Local tweaks for the Samsung Galaxy Tab A 9.7 2015 (SM-T550, gt510wifi) on device-qcom-msm8916.
 pkgname=gt510-tweaks
 pkgver=1
-pkgrel=34
+pkgrel=35
 pkgdesc="SM-T550 (gt510wifi) integration: audio, charger, GPS, rotation, camera, trimmed services; Phosh"
 url="https://postmarketos.org"
 arch="noarch"
@@ -37,7 +37,7 @@ depends="
 # unpatched Alpine mesa would hang the a306 GPU within seconds of a GTK app starting. When Alpine moves past
 # 26.2.3, rebuild packages/mesa on the new version first, then move both pins.
 install="$pkgname.post-install $pkgname.post-upgrade"
-triggers="$pkgname.trigger=/usr/share/applications"
+triggers="$pkgname.trigger=/usr/share/applications:/usr/lib"
 source="
 	gt510-modules.conf
 	61-gt510-accel.rules
@@ -70,6 +70,11 @@ source="
 	80-gt510.preset
 	80-gt510-system.preset
 	gt510-retroarch-defaults
+	gt510-rebrand
+	sm-t550.plymouth
+	sm-t550.script
+	sm-t550-mainline.svg
+	20_gt510-branding.gschema.override
 	"
 
 package() {
@@ -78,7 +83,6 @@ package() {
 	install -Dm644 "$srcdir"/61-gt510-accel.rules -t "$pkgdir"/usr/lib/udev/rules.d/
 	install -Dm644 "$srcdir"/61-gt510-back-escape.hwdb -t "$pkgdir"/usr/lib/udev/hwdb.d/
 	install -Dm644 "$srcdir"/zz-gt510-gtk-gl.sh -t "$pkgdir"/etc/profile.d/
-	# GPU runtime PM spins forever on a306 (see rule) - keep it on
 	# Phosh: fix a stale "display off" state so the power key blanks on the first press
 	install -Dm755 "$srcdir"/gt510-phosh-unblank -t "$pkgdir"/usr/bin/
 	install -Dm644 "$srcdir"/gt510-phosh-unblank.desktop -t "$pkgdir"/etc/xdg/autostart/
@@ -123,4 +127,10 @@ package() {
 		"$pkgdir"/usr/lib/systemd/system-preset/80-gt510.preset
 	# RetroArch: touch in menus, fullscreen, no GTK Mesa workarounds, no launch splash wait
 	install -Dm755 "$srcdir"/gt510-retroarch-defaults -t "$pkgdir"/usr/libexec/
+	# Unofficial build branding: OS name/URLs (os-release, issue via gt510-rebrand), neutral boot splash,
+	# GNOME wallpaper + default accent instead of postmarketOS/Nura's.
+	install -Dm755 "$srcdir"/gt510-rebrand -t "$pkgdir"/usr/libexec/
+	install -Dm644 "$srcdir"/sm-t550.plymouth "$srcdir"/sm-t550.script -t "$pkgdir"/usr/share/plymouth/themes/sm-t550/
+	install -Dm644 "$srcdir"/sm-t550-mainline.svg -t "$pkgdir"/usr/share/icons/hicolor/scalable/apps/
+	install -Dm644 "$srcdir"/20_gt510-branding.gschema.override -t "$pkgdir"/usr/share/glib-2.0/schemas/
 }

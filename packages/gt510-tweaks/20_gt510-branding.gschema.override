@@ -1,0 +1,18 @@
+# gt510-tweaks: neutral look for the unofficial build -- GNOME's own wallpaper and the default accent instead of
+# postmarketOS/Nura's (their 10_* overrides). Phosh sections too: pmOS sets the :Phosh variants explicitly.
+[org.gnome.desktop.background]
+picture-uri='file:///usr/share/backgrounds/gnome/adwaita-l.jxl'
+picture-uri-dark='file:///usr/share/backgrounds/gnome/adwaita-d.jxl'
+
+[org.gnome.desktop.background:Phosh]
+picture-uri='file:///usr/share/backgrounds/gnome/adwaita-l.jxl'
+picture-uri-dark='file:///usr/share/backgrounds/gnome/adwaita-d.jxl'
+
+[org.gnome.desktop.screensaver:Phosh]
+picture-uri='file:///usr/share/backgrounds/gnome/adwaita-l.jxl'
+
+[org.gnome.desktop.interface]
+accent-color='blue'
+
+[org.gnome.desktop.interface:Phosh]
+accent-color='blue'

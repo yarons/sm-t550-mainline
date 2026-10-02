@@ -1,0 +1,28 @@
+#!/bin/sh
+# Present the OS as this unofficial SM-T550 build instead of an official postmarketOS/Nura one:
+# rewrite postmarketos-release's os-release and issue in place (the gt510-tweaks trigger on /usr/lib runs this
+# again after every postmarketos-release upgrade) and select the neutral sm-t550 boot splash.
+# ID stays "nura" so software that checks the distribution ID keeps working.
+# Prints "splash-changed" when the plymouth theme was switched (the initramfs then needs a rebuild).
+f=/usr/lib/os-release
+if [ -f "$f" ] && ! grep -q '^VARIANT_ID="sm-t550-mainline"' "$f"; then
+	ver=$(sed -n 's/^VERSION="\(.*\)"/\1/p' "$f")
+	sed -i \
+		-e "s|^PRETTY_NAME=.*|PRETTY_NAME=\"SM-T550 Mainline (unofficial, based on Nura ${ver:-edge})\"|" \
+		-e 's|^NAME=.*|NAME="SM-T550 Mainline"|' \
+		-e 's|^HOME_URL=.*|HOME_URL="https://github.com/yarons/sm-t550-mainline"|' \
+		-e 's|^SUPPORT_URL=.*|SUPPORT_URL="https://github.com/yarons/sm-t550-mainline"|' \
+		-e 's|^BUG_REPORT_URL=.*|BUG_REPORT_URL="https://github.com/yarons/sm-t550-mainline/issues"|' \
+		-e 's|^LOGO=.*|LOGO="sm-t550-mainline"|' "$f" &&
+		printf 'VARIANT="Unofficial SM-T550 build"\nVARIANT_ID="sm-t550-mainline"\n' >> "$f"
+fi
+if [ -f /etc/issue ] && grep -q '^Welcome to Nura' /etc/issue; then
+	sed -i 's|^Welcome to Nura!*|Welcome to SM-T550 Mainline (unofficial, based on Nura)!|' /etc/issue
+fi
+c=/etc/plymouth/plymouthd.conf
+if [ -d /usr/share/plymouth/themes/sm-t550 ] && ! grep -q '^Theme=' "$c" 2>/dev/null; then
+	mkdir -p /etc/plymouth
+	printf '# Administrator customizations go in this file\n# gt510-tweaks: neutral splash for the unofficial build (change Theme= to override)\n[Daemon]\nTheme=sm-t550\n' > "$c"
+	echo splash-changed
+fi
+exit 0

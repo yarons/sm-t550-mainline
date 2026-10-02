@@ -6,8 +6,10 @@ kernel, Mesa, GTK, libcamera and app patches that make the tablet usable day to 
 cameras with autofocus, charging, USB OTG, GPU power management and a stable display.
 
 **Not affiliated with or endorsed by postmarketOS/Nura.** It is built with their tooling (pmbootstrap, pmaports)
-and their binary packages, but it is a separate, modified build. Please do not report problems with it to the
-postmarketOS/Nura project; open an issue here instead.
+and their binary packages, but it is a separate, modified build, and it says so on the device: it identifies
+itself as "SM-T550 Mainline (unofficial, based on Nura)" (os-release, boot splash, default wallpaper; set up by
+`gt510-tweaks`' `gt510-rebrand`, while `ID=nura` stays for compatibility). Please do not report problems with it
+to the postmarketOS/Nura project; open an issue here instead.
 
 **Made with AI assistance.** The investigation, patches, scripts and documentation in this repository were
 produced together with an AI coding assistant (Anthropic's Claude), directed, reviewed and tested on the real
