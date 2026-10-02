@@ -1,0 +1,1 @@
+shadow { shadows: rgba(0,0,0,0.6) 2 2 3; child: text { font: "Cantarell 20"; glyphs: "Hi"; offset: 5 40; color: rgb(0,0,0); } }

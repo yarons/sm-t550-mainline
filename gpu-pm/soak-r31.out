@@ -1,0 +1,13 @@
+on #1:  8/8 gtk OK, Score: 82, TOTAL resumes=0
+auto #1:  8/8 gtk OK, Score: 82, TOTAL resumes=123
+on #2:  8/8 gtk OK, Score: 81, TOTAL resumes=0
+auto #2:  8/8 gtk OK, Score: 81, TOTAL resumes=124
+on #3:  8/8 gtk OK, Score: 82, TOTAL resumes=0
+auto #3:  8/8 gtk OK, Score: 81, TOTAL resumes=125
+done
+20
+[  154.008016] gt510 kernel: *** fault: iova=         321e000, flags=0
+[  154.012393] gt510 kernel: *** fault: iova=         321ec00, flags=0
+[  154.016222] gt510 kernel: *** fault: iova=         321f800, flags=0
+[  154.021349] gt510 kernel: *** fault: iova=         3220400, flags=0
+[  154.024290] gt510 kernel: *** fault: iova=         3221000, flags=0

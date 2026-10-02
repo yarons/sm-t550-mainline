@@ -1,0 +1,1 @@
+cross-fade { progress: 0.5; start: color { bounds: 0 0 100 100; color: rgb(40,120,200); } end: color { bounds: 0 0 100 100; color: rgb(200,40,40); } }

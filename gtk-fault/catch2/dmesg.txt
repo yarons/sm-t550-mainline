@@ -1,0 +1,22 @@
+[ 2770.499234] msm_gpu_fault_handler: 47684 callbacks suppressed
+[ 2770.499252] *** fault: iova=         2f1e900, flags=0
+[ 2770.499270] *** fault: iova=         2f1f500, flags=0
+[ 2770.499280] *** fault: iova=         2f20100, flags=0
+[ 2770.499289] *** fault: iova=         2f20d00, flags=0
+[ 2770.499298] *** fault: iova=         2f21900, flags=0
+[ 2770.499320] *** fault: iova=         2f22500, flags=0
+[ 2770.499329] *** fault: iova=         2f23100, flags=0
+[ 2770.499338] *** fault: iova=         2f23d00, flags=0
+[ 2770.499350] *** fault: iova=         2f24900, flags=0
+[ 2770.499359] *** fault: iova=         2f25500, flags=0
+[ 4746.646284] msm_gpu_fault_handler: 36297 callbacks suppressed
+[ 4746.646299] *** fault: iova=         1645340, flags=0
+[ 4746.646323] *** fault: iova=         1644740, flags=0
+[ 4746.646334] *** fault: iova=         1646b40, flags=0
+[ 4746.646344] *** fault: iova=         1652b00, flags=0
+[ 4746.646353] *** fault: iova=         1653700, flags=0
+[ 4746.646362] *** fault: iova=         164e340, flags=0
+[ 4746.646371] *** fault: iova=         164ef40, flags=0
+[ 4746.646381] *** fault: iova=         1655b00, flags=0
+[ 4746.646390] *** fault: iova=         1654f00, flags=0
+[ 4746.646399] *** fault: iova=         1651340, flags=0

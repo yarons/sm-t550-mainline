@@ -1,0 +1,31 @@
+# Reply-all to Sam Day's patch (plain text, inline, no top-posting). Review the wording first; it is your statement.
+#   Message-Id: <20260926-a306-vbif-mask-v1-1-2bae5e81c05a@samcday.com>
+#   https://patchwork.freedesktop.org/patch/756513/
+# Headers for git send-email (save from "From:" down as an mbox file) or for your mail client:
+From: Yaron Shahrabani <EMAIL>
+To: Sam Day <me@samcday.com>
+Cc: Rob Clark <robin.clark@oss.qualcomm.com>, Sean Paul <sean@poorly.run>, Konrad Dybcio <konradybcio@kernel.org>, Akhil P Oommen <akhilpo@oss.qualcomm.com>, Dmitry Baryshkov <lumag@kernel.org>, Abhinav Kumar <abhinav.kumar@linux.dev>, Jessica Zhang <jesszhan0024@gmail.com>, Marijn Suijten <marijn.suijten@somainline.org>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Alexandre MINETTE <contact@alex-min.fr>, linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drm/msm/a3xx: fix VBIF halt mask for A306/A306A
+In-Reply-To: <20260926-a306-vbif-mask-v1-1-2bae5e81c05a@samcday.com>
+References: <20260926-a306-vbif-mask-v1-1-2bae5e81c05a@samcday.com>
+
+On Sat, Sep 26, 2026 at 04:17:13PM +1000, Sam Day wrote:
+> A306 and A306A implement only three VBIF XIN halt request bits.
+> Consequently, waiting for the full 6-bit A3xx mask times out and
+> prevents runtime suspend.
+
+Same on a Samsung Galaxy Tab A 9.7 (SM-T550, MSM8916, A306 chip id
+0x03000600): writing 0x3f to VBIF_XIN_HALT_CTRL0 reads back 0x7, and
+VBIF_XIN_HALT_CTRL1 reads 0x00070007 right away. Without the patch the
+GPU never runtime-suspends (runtime_suspended_time stays at 0) and
+a3xx_pm_suspend() is retried from a kworker every 66 ms, which kept
+CPU usage noticeably up on this board.
+
+With this patch applied to 7.3-rc2 (the msm8916-mainline tree) the GPU
+suspends whenever it is idle. About 370 runtime suspend/resume cycles
+under GTK4 GL apps, camera preview, glmark2 and DPMS off/on showed no
+GPU hangs, and no more GPU faults than with runtime PM disabled.
+
+The testing was done with the help of an AI assistant.
+
+Tested-by: Yaron Shahrabani <EMAIL> # SM-T550 (MSM8916, A306)

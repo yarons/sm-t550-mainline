@@ -1,0 +1,109 @@
+From: gt510 <gt510@localhost>
+Subject: gt510: rear camera autofocus actuator (DW9804)
+
+- media: i2c: dw9807-vcm: optional vdd/vio supplies, switched with runtime PM
+- arm64: dts: qcom: msm8916-samsung-gt510: DW9804 lens, lens-focus link
+---
+--- a/drivers/media/i2c/dw9807-vcm.c
++++ b/drivers/media/i2c/dw9807-vcm.c
+@@ -7,6 +7,7 @@
+ #include <linux/iopoll.h>
+ #include <linux/module.h>
+ #include <linux/pm_runtime.h>
++#include <linux/regulator/consumer.h>
+ #include <media/v4l2-ctrls.h>
+ #include <media/v4l2-device.h>
+ 
+@@ -42,6 +43,7 @@
+ 	struct v4l2_ctrl_handler ctrls_vcm;
+ 	struct v4l2_subdev sd;
+ 	u16 current_val;
++	struct regulator_bulk_data supplies[2];
+ };
+ 
+ static inline struct dw9807_device *sd_to_dw9807_vcm(
+@@ -199,10 +201,32 @@
+ 
+ 	dw9807_dev->sd.entity.function = MEDIA_ENT_F_LENS;
+ 
+-	rval = v4l2_async_register_subdev(&dw9807_dev->sd);
+-	if (rval < 0)
++	/*
++	 * Optional supplies (dummies if absent): the actuator supply and the
++	 * I/O rail of the camera module. The device starts out powered.
++	 */
++	dw9807_dev->supplies[0].supply = "vdd";
++	dw9807_dev->supplies[1].supply = "vio";
++	rval = devm_regulator_bulk_get(&client->dev,
++				       ARRAY_SIZE(dw9807_dev->supplies),
++				       dw9807_dev->supplies);
++	if (rval) {
++		dev_err_probe(&client->dev, rval, "failed to get supplies\n");
+ 		goto err_cleanup;
++	}
++	rval = regulator_bulk_enable(ARRAY_SIZE(dw9807_dev->supplies),
++				     dw9807_dev->supplies);
++	if (rval)
++		goto err_cleanup;
++	usleep_range(1000, 2000);
+ 
++	rval = v4l2_async_register_subdev(&dw9807_dev->sd);
++	if (rval < 0) {
++		regulator_bulk_disable(ARRAY_SIZE(dw9807_dev->supplies),
++				       dw9807_dev->supplies);
++		goto err_cleanup;
++	}
++
+ 	pm_runtime_set_active(&client->dev);
+ 	pm_runtime_enable(&client->dev);
+ 	pm_runtime_idle(&client->dev);
+@@ -254,7 +278,8 @@
+ 		return ret;
+ 	}
+ 
+-	return 0;
++	return regulator_bulk_disable(ARRAY_SIZE(dw9807_dev->supplies),
++				      dw9807_dev->supplies);
+ }
+ 
+ /*
+@@ -271,6 +296,12 @@
+ 	const char tx_data[2] = { DW9807_CTL_ADDR, 0x00 };
+ 	int ret, val;
+ 
++	ret = regulator_bulk_enable(ARRAY_SIZE(dw9807_dev->supplies),
++				    dw9807_dev->supplies);
++	if (ret)
++		return ret;
++	usleep_range(1000, 2000);
++
+ 	/* Power on */
+ 	ret = i2c_master_send(client, tx_data, sizeof(tx_data));
+ 	if (ret < 0) {
+--- a/arch/arm64/boot/dts/qcom/msm8916-samsung-gt510.dts
++++ b/arch/arm64/boot/dts/qcom/msm8916-samsung-gt510.dts
+@@ -188,6 +188,15 @@
+ };
+ 
+ &cci_i2c0 {
++	/* DW9804 autofocus actuator of the rear camera (DW9807 register layout) */
++	rear_lens: lens@c {
++		compatible = "dongwoon,dw9807-vcm";
++		reg = <0x0c>;
++		vdd-supply = <&pm8916_l10>;
++		/* I2C works only with the module's I/O rail up (shared with the sensors) */
++		vio-supply = <&reg_cam_vdig>;
++	};
++
+ 	camera@28 {
+ 		compatible = "siliconfile,sr544";
+ 		reg = <0x28>;
+@@ -206,6 +215,8 @@
+ 		pinctrl-0 = <&camera_rear_default>;
+ 		pinctrl-names = "default";
+ 
++		lens-focus = <&rear_lens>;
++
+ 		orientation = <1>;
+ 		rotation = <270>;
+ 

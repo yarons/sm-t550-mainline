@@ -1,0 +1,53 @@
+== start (off)
+  mdp vmas: 00001000,mapped 
+  plane0: fb=0 hwpipe=(null) 
+  fbs: allocated by = [fbcon] 
+== cycle 1 ON: new faults 0: 
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 
+  plane0: fb=65 hwpipe=DMA0 
+  fbs: allocated by = phoc allocated by = phoc allocated by = [fbcon] 
+== cycle 1 OFF
+  mdp vmas: 00001000,mapped 00002000,mapped 
+  plane0: fb=0 hwpipe=(null) 
+  fbs: allocated by = [fbcon] 
+== cycle 2 ON: new faults 0: 
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 
+  plane0: fb=63 hwpipe=DMA0 
+  fbs: allocated by = phoc allocated by = phoc allocated by = [fbcon] 
+== cycle 2 OFF
+  mdp vmas: 00001000,mapped 00002000,mapped 
+  plane0: fb=0 hwpipe=(null) 
+  fbs: allocated by = [fbcon] 
+== cycle 3 ON: new faults 0: 
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 
+  plane0: fb=63 hwpipe=DMA0 
+  fbs: allocated by = phoc allocated by = phoc allocated by = [fbcon] 
+== cycle 3 OFF
+  mdp vmas: 00001000,mapped 00302000,mapped 
+  plane0: fb=0 hwpipe=(null) 
+  fbs: allocated by = [fbcon] 
+== cycle 4 ON: new faults 0: 
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 
+  plane0: fb=65 hwpipe=DMA0 
+  fbs: allocated by = phoc allocated by = phoc allocated by = [fbcon] 
+== cycle 4 OFF
+  mdp vmas: 00001000,mapped 00002000,mapped 
+  plane0: fb=0 hwpipe=(null) 
+  fbs: allocated by = [fbcon] 
+== cycle 5 ON: new faults 0: 
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 
+  plane0: fb=65 hwpipe=DMA0 
+  fbs: allocated by = phoc allocated by = phoc allocated by = [fbcon] 
+== cycle 5 OFF
+  mdp vmas: 00001000,mapped 00302000,mapped 
+  plane0: fb=0 hwpipe=(null) 
+  fbs: allocated by = [fbcon] 
+== cycle 6 ON: new faults 0: 
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 
+  plane0: fb=63 hwpipe=DMA0 
+  fbs: allocated by = phoc allocated by = phoc allocated by = [fbcon] 
+== cycle 6 OFF
+  mdp vmas: 00001000,mapped 00002000,mapped 
+  plane0: fb=0 hwpipe=(null) 
+  fbs: allocated by = [fbcon] 
+done

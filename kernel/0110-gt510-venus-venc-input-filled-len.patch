@@ -1,0 +1,32 @@
+From: gt510 <gt510@localhost>
+Subject: media: venus: helpers: report the full frame size for encoder input buffers
+
+GStreamer (and other clients) set bytesused of a raw NV12 input frame to the
+visible image size (460800 for 640x480), while the HFI 1.x firmware
+(msm8916, VIDEO.VE.1.8) expects at least its own frame size including the
+stride/scanline padding (460928) and aborts the session ("Err_Fatal -
+venus/utils/src/vbuffer.c:1322") when the filled length is shorter. v4l2-ctl,
+which fills the whole buffer, encodes fine. Pass the full frame size when the
+payload is shorter and the buffer is large enough.
+---
+--- a/drivers/media/platform/qcom/venus/helpers.c
++++ b/drivers/media/platform/qcom/venus/helpers.c
+@@ -515,6 +515,18 @@
+ 		fdata.buffer_type = HFI_BUFFER_INPUT;
+ 		fdata.filled_len = vb2_get_plane_payload(vb, 0);
+ 		fdata.offset = vb->planes[0].data_offset;
++
++		/*
++		 * Userspace counts only the visible pixels of a raw frame
++		 * (e.g. 460800 bytes for 640x480 NV12), but the HFI 1.x firmware
++		 * checks the filled length against its own frame size including
++		 * the stride/scanline padding (460928 here) and aborts the
++		 * session when it is shorter. Report the full frame.
++		 */
++		if (inst->session_type == VIDC_SESSION_TYPE_ENC &&
++		    fdata.filled_len && fdata.filled_len < inst->input_buf_size &&
++		    inst->input_buf_size <= fdata.alloc_len)
++			fdata.filled_len = inst->input_buf_size;
+ 
+ 		if (vbuf->flags & V4L2_BUF_FLAG_LAST || !fdata.filled_len)
+ 			fdata.flags |= HFI_BUFFERFLAG_EOS;

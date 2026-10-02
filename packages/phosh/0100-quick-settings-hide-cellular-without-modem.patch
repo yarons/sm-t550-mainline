@@ -1,0 +1,16 @@
+From: gt510 <gt510@localhost>
+Subject: quick-settings: hide the cellular tile when there is no modem
+
+Wi-Fi-only tablets (SM-T550) otherwise show a permanently greyed-out tile.
+---
+--- a/src/ui/quick-settings.ui	2026-09-25 17:52:56
++++ b/src/ui/quick-settings.ui	2026-09-25 17:53:07
+@@ -9,7 +9,7 @@
+         <property name="spacing">6</property>
+         <child>
+           <object class="PhoshQuickSetting">
+-            <property name="visible">1</property>
++            <property name="visible" bind-source="wwaninfo" bind-property="present" bind-flags="sync-create"/>
+             <property name="sensitive" bind-source="wwaninfo" bind-property="present" bind-flags="sync-create"/>
+             <property name="status-icon">wwaninfo</property>
+             <property name="long-press-action-name">panel.launch-panel</property>

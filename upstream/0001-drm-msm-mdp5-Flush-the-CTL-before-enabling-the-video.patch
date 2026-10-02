@@ -1,0 +1,71 @@
+From e69fd94a7d19e297277fd51c422dcd4d8243345c Mon Sep 17 00:00:00 2001
+From: Yaron Shahrabani <EMAIL>
+Date: Thu, 1 Oct 2026 20:10:10 +0300
+Subject: [PATCH] drm/msm/mdp5: Flush the CTL before enabling the video timing
+ engine
+
+Since commit f9cb8d8d836e ("drm/msm/mdp5: rework CTL START signal
+handling") a full modeset defers the CTL flush of the pipes and mixers
+from mdp5_crtc_atomic_flush() to encoder->enable(). For video mode,
+mdp5_vid_encoder_enable() enables the INTF timing engine first and
+writes CTL_FLUSH afterwards, so the double-buffered pipe and mixer
+registers only latch at the end of the first frame. That frame is
+fetched with whatever the pipes held before the CRTC was disabled.
+
+On MSM8916 (Samsung Galaxy Tab A 9.7, SM-T550, DSI video mode panel)
+this shows up at most DPMS on transitions: the compositor (phoc) has
+freed the buffer it scanned out before the blank, so the MDP reads an
+unmapped iova and the commit times out:
+
+  qcom-iommu-ctx 1e24000.iommu-ctx: Unhandled context fault: fsr=0x40000202, iova=0x0000000000602000, fsynr=0x23, cb=4
+  msm_mdp 1a01000.display-controller: vblank time out, crtc=0
+  [drm:mdp5_irq_error_handler [msm]] *ERROR* errors: 04000000
+
+The faulting iova is always the start of the framebuffer that was
+displayed before the blank. The same ordering also produces an INTF1
+underrun on every boot, when the first modeset takes over the
+bootloader's pipe setup.
+
+Write the flush before starting the timing engine, as DPU does.
+
+Testing, all on SM-T550 with the msm8916-mainline 7.3-rc2 tree: the
+same sequence of 22 DPMS off/on cycles after a fresh boot logged 37
+context faults (rate limited), 2 vblank timeouts and 9 underruns
+without this patch, and none with it; the boot-time underrun is gone
+as well. Not tested on mainline itself: msm8916-mainline additionally
+calls the MDP5 encoder's enable after the DSI bridge chain, which does
+not change the ordering inside mdp5_vid_encoder_enable(). Command mode
+and writeback are not affected by the change and were not tested.
+
+Fixes: f9cb8d8d836e ("drm/msm/mdp5: rework CTL START signal handling")
+Assisted-by: claude-opus-5-5
+---
+ drivers/gpu/drm/msm/disp/mdp5/mdp5_encoder.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/msm/disp/mdp5/mdp5_encoder.c b/drivers/gpu/drm/msm/disp/mdp5/mdp5_encoder.c
+index eaba3b2..1617aea 100644
+--- a/drivers/gpu/drm/msm/disp/mdp5/mdp5_encoder.c
++++ b/drivers/gpu/drm/msm/disp/mdp5/mdp5_encoder.c
+@@ -164,10 +164,17 @@ static void mdp5_vid_encoder_enable(struct drm_encoder *encoder)
+ 	if (WARN_ON(mdp5_encoder->enabled))
+ 		return;
+ 
++	/*
++	 * Flush before starting the timing engine: on a full modeset the
++	 * pipe and mixer flush was deferred to here, and a flush written
++	 * after the timing engine started only latches at the end of the
++	 * first frame, which is then fetched with the pre-disable state.
++	 */
++	mdp5_ctl_commit(ctl, pipeline, mdp_ctl_flush_mask_encoder(intf), true);
++
+ 	spin_lock_irqsave(&mdp5_encoder->intf_lock, flags);
+ 	mdp5_write(mdp5_kms, REG_MDP5_INTF_TIMING_ENGINE_EN(intfn), 1);
+ 	spin_unlock_irqrestore(&mdp5_encoder->intf_lock, flags);
+-	mdp5_ctl_commit(ctl, pipeline, mdp_ctl_flush_mask_encoder(intf), true);
+ 
+ 	mdp5_ctl_set_encoder_state(ctl, pipeline, true);
+ 
+-- 
+2.54.0 (Apple Git-157)
+

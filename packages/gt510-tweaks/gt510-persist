@@ -1,0 +1,72 @@
+#!/bin/sh
+# Keep user state on the SD card so it survives a reflash of the internal storage:
+#   dconf settings  -> <SD card>/.gt510-persist/dconf.ini (`dconf dump /`)
+#   $MIRRORS dirs   -> <SD card>/.gt510-persist/home/<dir> (plain files, rsync)
+# First session after a reflash (no markers in ~/.local/state/gt510-persist): the card's copy is
+# loaded back. After that the card follows the tablet: dconf after every change burst, the
+# mirrored dirs within a minute of a change and once more at logout (`gt510-persist --save`).
+STATE="${XDG_STATE_HOME:-$HOME/.local/state}/gt510-persist"
+USER="${USER:-$(id -un)}"
+MIRRORS=".config/retroarch"
+
+sd_dir() {
+	# udisks2 mounts the SD card (mmcblk1p1) at login under /run/media/$USER/.
+	mnt=$(findmnt -n -o TARGET /dev/mmcblk1p1 2>/dev/null) || return 1
+	case "$mnt" in "/run/media/$USER/"*) ;; *) return 1 ;; esac
+	[ -w "$mnt" ] || return 1
+	echo "$mnt/.gt510-persist"
+}
+
+save_dconf() {
+	dconf dump / > "$dir/dconf.ini.tmp" && mv -f "$dir/dconf.ini.tmp" "$dir/dconf.ini"
+}
+
+# Copy a mirrored dir to the card when anything in it changed since the last copy (a deletion
+# changes its directory's mtime too). The card has no owners/permissions (exFAT): -rt only.
+save_mirrors() {
+	for rel in $MIRRORS; do
+		src="$HOME/$rel"; stamp="$STATE/$(echo "$rel" | tr / _).saved"
+		[ -d "$src" ] || continue
+		[ -e "$stamp" ] && [ -z "$(find "$src" -newer "$stamp" 2>/dev/null | head -n 1)" ] && continue
+		touch "$stamp.new"
+		mkdir -p "$dir/home/$rel" &&
+			rsync -rt --delete --modify-window=1 "$src/" "$dir/home/$rel/" &&
+			mv -f "$stamp.new" "$stamp" && echo "saved ~/$rel"
+	done
+}
+
+n=0
+until dir=$(sd_dir); do
+	[ "$1" = --save ] && exit 0
+	n=$((n + 1))
+	[ "$n" -lt 30 ] || { echo "no SD card mounted, nothing is kept"; exit 0; }
+	sleep 2
+done
+mkdir -p "$dir" "$STATE" || exit 1
+
+if [ "$1" = --save ]; then
+	save_dconf; save_mirrors; exit 0
+fi
+
+if [ ! -e "$STATE/restored" ]; then
+	if [ -s "$dir/dconf.ini" ]; then
+		dconf load / < "$dir/dconf.ini" && echo "restored settings from $dir/dconf.ini"
+	fi
+	touch "$STATE/restored"
+fi
+if [ ! -e "$STATE/restored-mirrors" ]; then
+	for rel in $MIRRORS; do
+		[ -d "$dir/home/$rel" ] || continue
+		mkdir -p "$HOME/$rel" && rsync -rt "$dir/home/$rel/" "$HOME/$rel/" && echo "restored ~/$rel"
+	done
+	touch "$STATE/restored-mirrors"
+fi
+
+save_dconf
+save_mirrors
+( while sleep 60; do save_mirrors; done ) &
+# `dconf watch` prints a few lines per change: save once a burst has been quiet for 5 s.
+dconf watch / | while read -r _; do
+	while read -r -t 5 _; do :; done
+	save_dconf || echo "could not save to $dir"
+done

@@ -1,0 +1,55 @@
+From 34ff18d8b458d5ad5f327e726b43e5b27b80dc3e Mon Sep 17 00:00:00 2001
+From: Stephan Gerhold <stephan@gerhold.net>
+Date: Sat, 12 Aug 2023 17:09:18 +0200
+Subject: [PATCH] soc: qcom: cpr: Search all required-opps for CPR
+
+Signed-off-by: Stephan Gerhold <stephan@gerhold.net>
+---
+ drivers/pmdomain/qcom/cpr.c | 26 ++++++++++++++------------
+ 1 file changed, 14 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/pmdomain/qcom/cpr.c b/drivers/pmdomain/qcom/cpr.c
+index 94a3f09772125b..d6ea29fe12cf89 100644
+--- a/drivers/pmdomain/qcom/cpr.c
++++ b/drivers/pmdomain/qcom/cpr.c
+@@ -1043,8 +1043,9 @@ static unsigned long cpr_get_opp_hz_for_req(struct dev_pm_opp *ref,
+ 	u64 rate = 0;
+ 	struct device_node *ref_np;
+ 	struct device_node *desc_np;
+-	struct device_node *child_np = NULL;
+-	struct device_node *child_req_np = NULL;
++	struct device_node *child_np;
++	struct of_phandle_iterator it;
++	int err;
+ 
+ 	desc_np = dev_pm_opp_of_get_opp_desc_node(cpu_dev);
+ 	if (!desc_np)
+@@ -1054,17 +1055,18 @@ static unsigned long cpr_get_opp_hz_for_req(struct dev_pm_opp *ref,
+ 	if (!ref_np)
+ 		goto out_ref;
+ 
+-	do {
+-		of_node_put(child_req_np);
+-		child_np = of_get_next_available_child(desc_np, child_np);
+-		child_req_np = of_parse_phandle(child_np, "required-opps", 0);
+-	} while (child_np && child_req_np != ref_np);
+-
+-	if (child_np && child_req_np == ref_np)
+-		of_property_read_u64(child_np, "opp-hz", &rate);
++	for_each_available_child_of_node(desc_np, child_np) {
++		of_for_each_phandle(&it, err, child_np, "required-opps", NULL, 0) {
++			if (it.node == ref_np) {
++				of_property_read_u64(child_np, "opp-hz", &rate);
++				of_node_put(it.node);
++				of_node_put(child_np);
++				goto done;
++			}
++		}
++	}
+ 
+-	of_node_put(child_req_np);
+-	of_node_put(child_np);
++done:
+ 	of_node_put(ref_np);
+ out_ref:
+ 	of_node_put(desc_np);

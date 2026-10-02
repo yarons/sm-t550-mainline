@@ -1,0 +1,372 @@
+From: gt510 <gt510@localhost>
+Subject: [PATCH] software_isp: faster contrast autofocus
+
+Autofocus took ~6 s: the statistics (and so the focus measure) were only
+computed every 4th frame, every lens step waited two of them, and every
+scan swept all 12 coarse and ~8 fine positions.
+
+- Compute the statistics every frame; SwIspStats::focusValid marks them for
+  autofocus while SwIspStats::valid (AGC, AWB) keeps its every-4th-frame
+  cadence, so exposure and white balance behave as before.
+- Wait for lens settling by frame number (settle frames after the move).
+- Stop the coarse sweep once the measure has fallen below stopRatio of the
+  best twice, refine with a parabola through the best coarse position and
+  its neighbours, and check three fine positions around it.
+- Refocus on a scene change after changeFrames frames of lasting change.
+---
+diff --git a/include/libcamera/internal/software_isp/swisp_stats.h b/include/libcamera/internal/software_isp/swisp_stats.h
+index 1db691a..2758d14 100644
+--- a/include/libcamera/internal/software_isp/swisp_stats.h
++++ b/include/libcamera/internal/software_isp/swisp_stats.h
+@@ -27,6 +27,11 @@ struct SwIspStats {
+ 	 *        no statistics were generated for this frame
+ 	 */
+ 	bool valid;
++	/**
++	 * \brief True if sum_ and sharpness were computed for this frame (every
++	 *        frame for autofocus), even when valid is false
++	 */
++	bool focusValid;
+ 	/**
+ 	 * \brief Sums of colour channels of all the sampled pixels
+ 	 */
+diff --git a/include/libcamera/internal/software_isp/swstats_cpu.h b/include/libcamera/internal/software_isp/swstats_cpu.h
+index 6fe60e6..d4a6cdf 100644
+--- a/include/libcamera/internal/software_isp/swstats_cpu.h
++++ b/include/libcamera/internal/software_isp/swstats_cpu.h
+@@ -46,6 +46,13 @@ public:
+ 	 */
+ 	static constexpr uint32_t kStatPerNumFrames = 4;
+ 
++	/*
++	 * Autofocus needs a fresh focus measure soon after every lens move, so
++	 * the statistics are computed every kComputePerNumFrames frames; AGC and
++	 * AWB still only get them (SwIspStats::valid) every kStatPerNumFrames.
++	 */
++	static constexpr uint32_t kComputePerNumFrames = 1;
++
+ 	bool isValid() const { return sharedStats_.fd().isValid(); }
+ 
+ 	const SharedFD &getStatsFD() { return sharedStats_.fd(); }
+@@ -60,7 +67,7 @@ public:
+ 
+ 	void processLine0(uint32_t frame, unsigned int y, const uint8_t *src[], unsigned int statsBufferIndex = 0)
+ 	{
+-		if (frame % kStatPerNumFrames)
++		if (frame % kComputePerNumFrames)
+ 			return;
+ 
+ 		if ((y & ySkipMask_) || y < static_cast<unsigned int>(window_.y) ||
+@@ -72,7 +79,7 @@ public:
+ 
+ 	void processLine2(uint32_t frame, unsigned int y, const uint8_t *src[], unsigned int statsBufferIndex = 0)
+ 	{
+-		if (frame % kStatPerNumFrames)
++		if (frame % kComputePerNumFrames)
+ 			return;
+ 
+ 		if ((y & ySkipMask_) || y < static_cast<unsigned int>(window_.y) ||
+diff --git a/src/ipa/simple/algorithms/af.cpp b/src/ipa/simple/algorithms/af.cpp
+index e331789..93b7e52 100644
+--- a/src/ipa/simple/algorithms/af.cpp
++++ b/src/ipa/simple/algorithms/af.cpp
+@@ -3,15 +3,19 @@
+  * Contrast-detection autofocus for the software ISP
+  *
+  * The statistics provide a focus measure (sum of absolute differences of
+- * neighbouring green samples). Normalised by the green sum it is roughly
+- * independent of exposure. The lens is swept coarsely over its range, then
+- * finely around the best position, and parked there. A lasting drop of the
+- * focus measure or a large brightness change (scene change) restarts the scan.
++ * neighbouring green samples) for every frame. Normalised by the green sum it
++ * is roughly independent of exposure. The lens is swept coarsely from one end
++ * of its range until the measure has clearly fallen past a peak, the peak is
++ * refined by a parabola through the best coarse position and its neighbours
++ * and checked with three fine steps around it, and the lens is parked at the
++ * best position. A lasting drop of the focus measure or a large brightness
++ * change (scene change) restarts the scan.
+  */
+ 
+ #include "af.h"
+ 
+ #include <algorithm>
++#include <cmath>
+ #include <errno.h>
+ #include <stdint.h>
+ 
+@@ -30,7 +34,9 @@ int Af::init([[maybe_unused]] IPAContext &context, const ValueNode &tuningData)
+ 	coarseStep_ = tuningData["coarseStep"].get<int32_t>().value_or(coarseStep_);
+ 	fineStep_ = tuningData["fineStep"].get<int32_t>().value_or(fineStep_);
+ 	settle_ = tuningData["settle"].get<uint32_t>().value_or(settle_);
++	stopRatio_ = tuningData["stopRatio"].get<double>().value_or(stopRatio_);
+ 	dropRatio_ = tuningData["dropRatio"].get<double>().value_or(dropRatio_);
++	changeFrames_ = tuningData["changeFrames"].get<uint32_t>().value_or(changeFrames_);
+ 
+ 	if (max_ <= min_ || coarseStep_ <= 0 || fineStep_ <= 0) {
+ 		LOG(IPASoftAf, Error) << "Invalid autofocus tuning";
+@@ -43,60 +49,96 @@ int Af::init([[maybe_unused]] IPAContext &context, const ValueNode &tuningData)
+ int Af::configure(IPAContext &context,
+ 		  [[maybe_unused]] const IPAConfigInfo &configInfo)
+ {
+-	startScan(context);
++	startScan(context, 0);
+ 	return 0;
+ }
+ 
+-void Af::moveTo(IPAContext &context, int32_t position)
++void Af::moveTo(IPAContext &context, uint32_t frame, int32_t position)
+ {
+ 	position_ = std::clamp(position, min_, max_);
+ 	context.activeState.af.position = position_;
+ 	context.activeState.af.changed = true;
+-	wait_ = settle_;
++	/*
++	 * The frames already being exposed when the lens moves are blurred
++	 * by the move: use the first one exposed after it has settled.
++	 */
++	measureFrame_ = frame + settle_ + 1;
+ }
+ 
+-void Af::startScan(IPAContext &context)
++void Af::startScan(IPAContext &context, uint32_t frame)
+ {
+ 	state_ = State::Coarse;
++	coarse_.clear();
+ 	best_ = min_;
+ 	bestSharpness_ = -1.0;
++	fallCount_ = 0;
+ 	lockedMeasured_ = false;
+ 	changeCount_ = 0;
+-	moveTo(context, min_);
++	moveTo(context, frame, min_);
+ 	/* Travel from anywhere to one end of the range takes longer */
+-	wait_ = settle_ + 1;
++	measureFrame_++;
++}
++
++void Af::startFine(IPAContext &context, uint32_t frame)
++{
++	/* Coarse positions are min_ + k * coarseStep_, the last one clamped */
++	unsigned int i = 0;
++	while (i + 1 < coarse_.size() &&
++	       std::min(min_ + static_cast<int32_t>(i) * coarseStep_, max_) != best_)
++		i++;
++
++	double center = best_;
++	if (i > 0 && i + 1 < coarse_.size()) {
++		const double s0 = coarse_[i - 1], s1 = coarse_[i], s2 = coarse_[i + 1];
++		const double denom = s0 - 2.0 * s1 + s2;
++		if (denom < 0.0) {
++			double offset = 0.5 * (s0 - s2) / denom;
++			offset = std::clamp(offset, -0.5, 0.5);
++			center += offset * coarseStep_;
++		}
++	}
++
++	const int32_t c = static_cast<int32_t>(std::lround(center));
++	fine_.clear();
++	for (int32_t p : { c - fineStep_, c, c + fineStep_ }) {
++		p = std::clamp(p, min_, max_);
++		if (std::find(fine_.begin(), fine_.end(), p) == fine_.end())
++			fine_.push_back(p);
++	}
++
++	state_ = State::Fine;
++	fineIndex_ = 0;
++	moveTo(context, frame, fine_[0]);
+ }
+ 
+ void Af::process(IPAContext &context,
+-		 [[maybe_unused]] const uint32_t frame,
++		 const uint32_t frame,
+ 		 [[maybe_unused]] IPAFrameContext &frameContext,
+ 		 const SwIspStats *stats,
+ 		 [[maybe_unused]] ControlList &metadata)
+ {
+-	if (!stats->valid)
+-		return;
+-
+-	if (wait_) {
+-		wait_--;
++	if (!stats->focusValid || frame < measureFrame_)
+ 		return;
+-	}
+ 
+ 	const double green = static_cast<double>(std::max<uint64_t>(stats->sum_.g(), 1));
+ 	const double sharpness = static_cast<double>(stats->sharpness) / green;
+ 
+ 	switch (state_) {
+ 	case State::Coarse:
++		coarse_.push_back(sharpness);
+ 		if (sharpness > bestSharpness_) {
+ 			bestSharpness_ = sharpness;
+ 			best_ = position_;
++			fallCount_ = 0;
++		} else if (sharpness < bestSharpness_ * stopRatio_) {
++			fallCount_++;
+ 		}
+-		if (position_ >= max_) {
+-			state_ = State::Fine;
+-			fineEnd_ = std::min(max_, best_ + coarseStep_);
+-			moveTo(context, best_ - coarseStep_);
+-		} else {
+-			moveTo(context, position_ + coarseStep_);
+-		}
++
++		/* Stop once clearly past a peak, or at the end of the range */
++		if (position_ >= max_ || fallCount_ >= 2)
++			startFine(context, frame);
++		else
++			moveTo(context, frame, position_ + coarseStep_);
+ 		break;
+ 
+ 	case State::Fine:
+@@ -104,14 +146,16 @@ void Af::process(IPAContext &context,
+ 			bestSharpness_ = sharpness;
+ 			best_ = position_;
+ 		}
+-		if (position_ >= fineEnd_) {
++
++		if (++fineIndex_ < fine_.size()) {
++			moveTo(context, frame, fine_[fineIndex_]);
++		} else {
+ 			state_ = State::Locked;
+ 			lockedMeasured_ = false;
+-			moveTo(context, best_);
++			moveTo(context, frame, best_);
+ 			LOG(IPASoftAf, Debug) << "Focused at " << best_
+-					      << " (sharpness " << bestSharpness_ << ")";
+-		} else {
+-			moveTo(context, position_ + fineStep_);
++					      << " (sharpness " << bestSharpness_
++					      << ", " << coarse_.size() << " coarse steps)";
+ 		}
+ 		break;
+ 
+@@ -123,16 +167,16 @@ void Af::process(IPAContext &context,
+ 			break;
+ 		}
+ 
+-		/* Refocus only on a lasting change, not on one noisy frame */
++		/* Refocus only on a lasting change, not on a few noisy frames */
+ 		if (sharpness < lockedSharpness_ * dropRatio_ ||
+ 		    green < lockedBrightness_ * 0.6 || green > lockedBrightness_ / 0.6)
+ 			changeCount_++;
+ 		else
+ 			changeCount_ = 0;
+ 
+-		if (changeCount_ >= 3) {
++		if (changeCount_ >= changeFrames_) {
+ 			LOG(IPASoftAf, Debug) << "Scene changed, refocusing";
+-			startScan(context);
++			startScan(context, frame);
+ 		}
+ 		break;
+ 	}
+diff --git a/src/ipa/simple/algorithms/af.h b/src/ipa/simple/algorithms/af.h
+index 5aa828a..61d9194 100644
+--- a/src/ipa/simple/algorithms/af.h
++++ b/src/ipa/simple/algorithms/af.h
+@@ -5,6 +5,8 @@
+ 
+ #pragma once
+ 
++#include <vector>
++
+ #include "algorithm.h"
+ 
+ namespace libcamera {
+@@ -31,23 +33,33 @@ private:
+ 		Locked,
+ 	};
+ 
+-	void startScan(IPAContext &context);
+-	void moveTo(IPAContext &context, int32_t position);
++	void startScan(IPAContext &context, uint32_t frame);
++	void startFine(IPAContext &context, uint32_t frame);
++	void moveTo(IPAContext &context, uint32_t frame, int32_t position);
+ 
+ 	/* Tuning */
+ 	int32_t min_ = 0;
+ 	int32_t max_ = 1023;
+ 	int32_t coarseStep_ = 93;
+ 	int32_t fineStep_ = 24;
+-	unsigned int settle_ = 1;
++	/* Frames skipped after a lens move before the focus measure is used */
++	unsigned int settle_ = 2;
++	/* The coarse sweep stops after two steps below stopRatio of the best */
++	double stopRatio_ = 0.7;
+ 	double dropRatio_ = 0.6;
++	/* Frames of lasting change before a locked lens refocuses */
++	unsigned int changeFrames_ = 12;
+ 
+ 	State state_ = State::Coarse;
+ 	int32_t position_ = 0;
+-	int32_t fineEnd_ = 0;
++	uint32_t measureFrame_ = 0;
+ 	int32_t best_ = 0;
+ 	double bestSharpness_ = -1.0;
+-	unsigned int wait_ = 0;
++	unsigned int fallCount_ = 0;
++	/* Coarse sweep measurements, in lens position order */
++	std::vector<double> coarse_;
++	std::vector<int32_t> fine_;
++	unsigned int fineIndex_ = 0;
+ 	bool lockedMeasured_ = false;
+ 	double lockedSharpness_ = 0.0;
+ 	double lockedBrightness_ = 0.0;
+diff --git a/src/libcamera/software_isp/debayer_egl.cpp b/src/libcamera/software_isp/debayer_egl.cpp
+index b476b45..2de9116 100644
+--- a/src/libcamera/software_isp/debayer_egl.cpp
++++ b/src/libcamera/software_isp/debayer_egl.cpp
+@@ -753,7 +753,7 @@ void DebayerEGL::process(uint32_t frame, FrameBuffer *input, FrameBuffer *output
+ 	metadata.planes()[0].bytesused = output->planes()[0].length;
+ 
+ 	/* Calculate stats for the whole frame */
+-	if (frame % SwStatsCpu::kStatPerNumFrames) {
++	if (frame % SwStatsCpu::kComputePerNumFrames) {
+ 		stats_->finishFrame(frame, 0);
+ 	} else {
+ 		if (!inMapped) {
+diff --git a/src/libcamera/software_isp/swstats_cpu.cpp b/src/libcamera/software_isp/swstats_cpu.cpp
+index bac189e..7b6157e 100644
+--- a/src/libcamera/software_isp/swstats_cpu.cpp
++++ b/src/libcamera/software_isp/swstats_cpu.cpp
+@@ -419,7 +419,7 @@ void SwStatsCpu::statsGBRG12PLine0(const uint8_t *src[], SwIspStats &stats)
+  */
+ void SwStatsCpu::startFrame(uint32_t frame)
+ {
+-	if (frame % kStatPerNumFrames)
++	if (frame % kComputePerNumFrames)
+ 		return;
+ 
+ 	if (window_.width == 0)
+@@ -441,9 +441,10 @@ void SwStatsCpu::startFrame(uint32_t frame)
+  */
+ void SwStatsCpu::finishFrame(uint32_t frame, uint32_t bufferId)
+ {
++	bool computed = frame % kComputePerNumFrames == 0;
+ 	bool valid = frame % kStatPerNumFrames == 0;
+ 
+-	if (valid) {
++	if (computed) {
+ 		sharedStats_->sum_ = RGB<uint64_t>({ 0, 0, 0 });
+ 		sharedStats_->sharpness = 0;
+ 		sharedStats_->yHistogram.fill(0);
+@@ -458,6 +459,7 @@ void SwStatsCpu::finishFrame(uint32_t frame, uint32_t bufferId)
+ 	}
+ 
+ 	sharedStats_->valid = valid;
++	sharedStats_->focusValid = computed;
+ 	statsReady.emit(frame, bufferId);
+ }
+ 
+@@ -668,7 +670,7 @@ void SwStatsCpu::processQuadBayerFrame(MappedFrameBuffer &in)
+  */
+ void SwStatsCpu::processFrame(uint32_t frame, uint32_t bufferId, MappedFrameBuffer &input)
+ {
+-	if (frame % kStatPerNumFrames) {
++	if (frame % kComputePerNumFrames) {
+ 		finishFrame(frame, bufferId);
+ 		return;
+ 	}

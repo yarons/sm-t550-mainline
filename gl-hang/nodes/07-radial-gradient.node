@@ -1,0 +1,1 @@
+radial-gradient { bounds: 0 0 100 100; center: 50 50; hradius: 40; vradius: 40; stops: 0 rgb(255,0,0), 1 rgb(0,0,255); }

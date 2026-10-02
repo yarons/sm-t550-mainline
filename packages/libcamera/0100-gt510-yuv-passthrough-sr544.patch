@@ -1,0 +1,69 @@
+From: gt510 <gt510@localhost>
+Subject: SM-T550 cameras: YUV passthrough with the soft ISP, SR544 helper and properties
+
+- simple: with the soft ISP enabled only drop raw formats it cannot handle;
+  keep YUV sensors (on-chip ISP) usable next to raw ones on the same CAMSS.
+- libipa: SR544 sensor helper (black level 64@10 bit, gain = code / 16).
+- sensor properties: SR544 (1.4 um cells, 2-frame control delays).
+---
+--- a/src/libcamera/pipeline/simple/simple.cpp	2026-09-25 18:47:31
++++ b/src/libcamera/pipeline/simple/simple.cpp	2026-09-25 18:47:47
+@@ -745,7 +745,17 @@
+ 			config.outputFormats = swIsp_->formats(pixelFormat);
+ 			config.outputSizes = swIsp_->sizes(pixelFormat, format.size);
+ 			if (config.outputFormats.empty()) {
+-				continue;
++				/*
++				 * Skip what the soft ISP cannot process only for
++				 * raw formats: sensors with their own ISP (YUV
++				 * output) must still pass through, e.g. a YUV front
++				 * camera next to a raw rear camera on one CAMSS.
++				 */
++				if (PixelFormatInfo::info(pixelFormat).colourEncoding ==
++				    PixelFormatInfo::ColourEncodingRAW)
++					continue;
++				config.outputFormats = { pixelFormat };
++				config.outputSizes = config.captureSize;
+ 			}
+ 		} else {
+ 			config.outputFormats = { pixelFormat };
+--- a/src/ipa/libipa/camera_sensor_helper.cpp	2026-09-25 18:47:31
++++ b/src/ipa/libipa/camera_sensor_helper.cpp	2026-09-25 18:47:47
+@@ -541,6 +541,18 @@
+ 	}
+ };
+ REGISTER_CAMERA_SENSOR_HELPER("imx214", CameraSensorHelperImx214)
++
++class CameraSensorHelperSr544 : public CameraSensorHelper
++{
++public:
++	CameraSensorHelperSr544()
++	{
++		/* 64 at 10 bits; gain code 0x10 is 1x in 1/16 steps. */
++		blackLevel_ = 4096;
++		gain_ = AnalogueGainLinear{ 1, 0, 0, 16 };
++	}
++};
++REGISTER_CAMERA_SENSOR_HELPER("sr544", CameraSensorHelperSr544)
+ 
+ class CameraSensorHelperImx219 : public CameraSensorHelper
+ {
+--- a/src/libcamera/sensor/camera_sensor_properties.cpp	2026-09-25 18:47:31
++++ b/src/libcamera/sensor/camera_sensor_properties.cpp	2026-09-25 18:47:47
+@@ -193,6 +193,16 @@
+ 				{ controls::draft::TestPatternModePn9, 4 },
+ 			},
+ 			.sensorDelays = { },
++		} },
++		{ "sr544", {
++			.unitCellSize = { 1400, 1400 },
++			.testPatternModes = {},
++			.sensorDelays = {
++				.exposureDelay = 2,
++				.gainDelay = 2,
++				.vblankDelay = 2,
++				.hblankDelay = 2
++			},
+ 		} },
+ 		{ "imx219", {
+ 			.unitCellSize = { 1120, 1120 },

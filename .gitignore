@@ -1,0 +1,9 @@
+dist/
+logs/
+pubkeys/
+.password
+review/
+backup-*/
+*.simg
+*.img
+*.xz

@@ -1,0 +1,53 @@
+From: gt510 <gt510@localhost>
+Subject: drm/panel: s6d7aa0: 8-bit brightness write, no DSI readback
+
+The LTL101AT01 takes the PWM duty as a single DCS parameter (Samsung sends
+51 XX). The generic 16-bit set_display_brightness appends a second byte and
+get_brightness issues DSI reads during video scan-out; on SM-T550 both
+corrupt the bottom lines of the picture on every brightness change.
+---
+--- a/drivers/gpu/drm/panel/panel-samsung-s6d7aa0.c
++++ b/drivers/gpu/drm/panel/panel-samsung-s6d7aa0.c
+@@ -145,33 +145,26 @@
+ 
+ /* Backlight control code */
+ 
++/*
++ * The panel takes an 8-bit PWM duty in a single parameter (as Samsung's
++ * driver sends it). The generic 16-bit set_display_brightness adds a second
++ * byte, and reading the brightness back issues DSI reads during video
++ * scan-out; both corrupt the bottom lines of the picture on SM-T550.
++ * Without .get_brightness the backlight core reports the cached value.
++ */
+ static int s6d7aa0_bl_update_status(struct backlight_device *bl)
+ {
+ 	struct mipi_dsi_device *dsi = bl_get_data(bl);
+-	u16 brightness = backlight_get_brightness(bl);
++	u8 cmd[] = { MIPI_DCS_SET_DISPLAY_BRIGHTNESS, backlight_get_brightness(bl) };
+ 	struct mipi_dsi_multi_context dsi_ctx = { .dsi = dsi };
+ 
+-	mipi_dsi_dcs_set_display_brightness_multi(&dsi_ctx, brightness);
++	mipi_dsi_dcs_write_buffer_multi(&dsi_ctx, cmd, sizeof(cmd));
+ 
+ 	return dsi_ctx.accum_err;
+ }
+ 
+-static int s6d7aa0_bl_get_brightness(struct backlight_device *bl)
+-{
+-	struct mipi_dsi_device *dsi = bl_get_data(bl);
+-	u16 brightness;
+-	int ret;
+-
+-	ret = mipi_dsi_dcs_get_display_brightness(dsi, &brightness);
+-	if (ret < 0)
+-		return ret;
+-
+-	return brightness & 0xff;
+-}
+-
+ static const struct backlight_ops s6d7aa0_bl_ops = {
+ 	.update_status = s6d7aa0_bl_update_status,
+-	.get_brightness = s6d7aa0_bl_get_brightness,
+ };
+ 
+ static struct backlight_device *

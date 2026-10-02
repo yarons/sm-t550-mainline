@@ -1,0 +1,127 @@
+From: gt510 <gt510@localhost>
+Subject: simple: route YUV-only sensors through the CAMSS PIX line, as NV12
+
+On MSM8916 CAMSS the ISPIF source links to three RDI lines before the PIX
+line, so the breadth-first search always ended on an RDI video node. For a
+sensor that only outputs YUV (the SM-T550 front SR200PC20) visit *_pix
+entities first: the PIX line converts to semi-planar YUV, which the Adreno
+306 imports into GL, while packed UYVY from RDI fails EGLImage import and
+costs GTK a CPU download + upload per frame. Raw (Bayer) sensors are
+unaffected: the MSM8916 PIX line is YUV-only, so they keep RDI.
+
+The PIX source pad defaults to 4:2:2 (*_1X16 -> NV16), which freedreno does
+not import either; request the 4:2:0 variant (*_1_5X8 -> NV12) on it.
+
+configure() treated any media bus code change along the pipeline as a Bayer
+pattern change and rebuilt a Bayer format from the NV12 capture format
+(<INVALID>); only do that for raw capture formats.
+---
+--- a/src/libcamera/pipeline/simple/simple.cpp
++++ b/src/libcamera/pipeline/simple/simple.cpp
+@@ -492,6 +492,32 @@
+ 	MediaEntity *video = nullptr;
+ 	MediaPad *sinkPad;
+ 
++	/*
++	 * gt510: on Qualcomm CAMSS (MSM8916) the ISPIF feeds three raw dump
++	 * (RDI) lines and one PIX line, and RDI comes first in the link order,
++	 * so the search always ended on an RDI video node. A sensor that only
++	 * outputs YUV needs the PIX line to get semi-planar NV12/NV16, the only
++	 * YUV layouts the Adreno 306 imports into GL (packed UYVY dmabufs fail
++	 * EGLImage import and fall back to a CPU download per frame). Raw
++	 * sensors keep the RDI route: the MSM8916 PIX line is YUV-only.
++	 */
++	bool preferPix = false;
++	{
++		V4L2Subdevice subdev(sensor);
++		if (!subdev.open()) {
++			V4L2Subdevice::Formats formats = subdev.formats(0);
++			preferPix = !formats.empty();
++			for (const auto &[code, sizes] : formats) {
++				/* MEDIA_BUS_FMT_* YUV codes are 0x2000-0x2fff */
++				if (code < 0x2000 || code >= 0x3000) {
++					preferPix = false;
++					break;
++				}
++			}
++			subdev.close();
++		}
++	}
++
+ 	queue.push({ sensor, nullptr });
+ 
+ 	while (!queue.empty()) {
+@@ -533,7 +559,16 @@
+ 		}
+ 
+ 		for (const MediaPad *pad : pads) {
+-			for (MediaLink *link : pad->links()) {
++			std::vector<MediaLink *> links = pad->links();
++			if (preferPix)
++				std::stable_partition(links.begin(), links.end(),
++						      [](const MediaLink *link) {
++							      const std::string &name =
++								      link->sink()->entity()->name();
++							      return name.find("_pix") != std::string::npos;
++						      });
++
++			for (MediaLink *link : links) {
+ 				MediaEntity *next = link->sink()->entity();
+ 				if (visited.find(next) == visited.end()) {
+ 					queue.push({ next, link->sink() });
+@@ -874,6 +909,39 @@
+ 			ret = subdev->getFormat(source->index(), format, whence);
+ 			if (ret < 0)
+ 				return ret;
++
++			/*
++			 * gt510: the CAMSS PIX line defaults to semi-planar 4:2:2
++			 * (NV16), which the Adreno 306 cannot import into GL; ask
++			 * for the 4:2:0 variant (NV12) it can.
++			 */
++			if (source->entity()->name().find("_pix") != std::string::npos) {
++				uint32_t code420 = 0;
++
++				switch (format->code) {
++				case MEDIA_BUS_FMT_UYVY8_1X16:
++					code420 = MEDIA_BUS_FMT_UYVY8_1_5X8;
++					break;
++				case MEDIA_BUS_FMT_VYUY8_1X16:
++					code420 = MEDIA_BUS_FMT_VYUY8_1_5X8;
++					break;
++				case MEDIA_BUS_FMT_YUYV8_1X16:
++					code420 = MEDIA_BUS_FMT_YUYV8_1_5X8;
++					break;
++				case MEDIA_BUS_FMT_YVYU8_1X16:
++					code420 = MEDIA_BUS_FMT_YVYU8_1_5X8;
++					break;
++				}
++
++				if (code420) {
++					V4L2SubdeviceFormat request = *format;
++
++					request.code = code420;
++					if (!subdev->setFormat(source->index(), &request, whence) &&
++					    request.code == code420)
++						*format = request;
++				}
++			}
+ 		}
+ 
+ 		if (sink->entity()->function() != MEDIA_ENT_F_IO_V4L) {
+@@ -1563,7 +1631,14 @@
+ 
+ 	/* Configure the video node, taking into account any Bayer pattern change. */
+ 	V4L2PixelFormat videoFormat;
+-	if (format.code == pipeConfig->code) {
++	/*
++	 * gt510: the media bus code also changes along a CAMSS PIX route
++	 * (UYVY8_1X16 in, UYVY8_1_5X8 out for NV12); only a raw capture format
++	 * means the Bayer pattern changed.
++	 */
++	if (format.code == pipeConfig->code ||
++	    PixelFormatInfo::info(pipeConfig->captureFormat).colourEncoding !=
++		    PixelFormatInfo::ColourEncodingRAW) {
+ 		videoFormat = video->toV4L2PixelFormat(pipeConfig->captureFormat);
+ 	} else {
+ 		/*

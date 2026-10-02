@@ -1,0 +1,21 @@
+# SM-T550 cameras on one CAMSS: the rear SR544 is raw Bayer and needs libcamera's
+# soft ISP (GPU debayer); the front SR200PC20 outputs YUV from its own ISP and is
+# passed through by the patched libcamera (packages/libcamera 0100).
+# The soft ISP output is capped at the SR544's fast 1296x972 mode: anything larger
+# (Snapshot asks for 1920x1080) forces the 5 MP mode, which debayers at ~0.7 fps.
+---
+version: 1
+configuration:
+  pipelines:
+    simple:
+      max_output_width: 1296
+      max_output_height: 972
+      supported_devices:
+        - driver: qcom-camss
+          software_isp: true
+  # The SR544 binned modes (1296x972, 1280x720) take all four samples of each 2x2 Bayer
+  # cell at one spot (measured on raw frames); debayered as ordinary Bayer, red and blue
+  # landed ~1 px apart = purple/yellow fringes on every edge. libcamera 0105 reads such
+  # inputs as one filtered (R, G, B, G) texel per cell. The 5 MP mode is not co-sited.
+  software_isp:
+    cosited_max_width: 1296

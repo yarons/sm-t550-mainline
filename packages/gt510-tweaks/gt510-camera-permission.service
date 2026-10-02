@@ -1,0 +1,12 @@
+[Unit]
+Description=Grant Snapshot camera access once (no first-run prompt on a fresh image)
+After=graphical-session.target
+# Not in the greeter's session (user greetd)
+ConditionUser=!@system
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/gt510-camera-permission
+
+[Install]
+WantedBy=graphical-session.target

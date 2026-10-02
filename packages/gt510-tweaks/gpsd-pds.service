@@ -1,0 +1,12 @@
+[Unit]
+Description=GPS daemon on the modem location service (Qualcomm PDS, SM-T550)
+After=rmtfs.service
+Wants=rmtfs.service
+
+[Service]
+ExecStart=/usr/sbin/gpsd -N -b pds://any
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

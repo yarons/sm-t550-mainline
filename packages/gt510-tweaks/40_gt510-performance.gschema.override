@@ -1,0 +1,3 @@
+# SM-T550: GTK renders in software (GL is unstable on the Adreno 306), so skip animations.
+[org.gnome.desktop.interface]
+enable-animations=false

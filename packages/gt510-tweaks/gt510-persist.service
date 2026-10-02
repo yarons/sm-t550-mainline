@@ -1,0 +1,16 @@
+[Unit]
+Description=Keep user settings and RetroArch on the SD card (survive a reflash)
+PartOf=graphical-session.target
+After=graphical-session.target
+# Not in the greeter's session (user greetd)
+ConditionUser=!@system
+
+[Service]
+ExecStart=/usr/bin/gt510-persist
+# Last copy of the mirrored dirs at logout
+ExecStop=/usr/bin/gt510-persist --save
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=graphical-session.target

@@ -1,0 +1,156 @@
+From: gt510 <gt510@localhost>
+Subject: extcon: max77693: don't lose an interrupt that arrives with another
+
+The irq handler stored the latest irq number in info->irq and scheduled the
+work, which then handled that one irq. When two MUIC interrupts arrive before
+the work runs, the second overwrites the first and schedule_work() is a no-op,
+so the first is lost.
+
+Unplugging an OTG cable while the charger boosts VBUS raises INT1_ADC and
+INT2_VBVOLT together: only the charger handler ran, the ADC detach was never
+seen, and the port stayed in host mode with the boost on (and charger
+detection off) until reboot, even with a charger plugged in afterwards.
+
+Keep one pending bit per handler group (ADC, charger), claim them atomically
+in the work before reading the status, and run the ADC handler before the
+charger handler, like extcon-max77843 handles its irq_adc/irq_chg flags.
+
+---
+--- a/drivers/extcon/extcon-max77693.c
++++ b/drivers/extcon/extcon-max77693.c
+@@ -74,7 +74,7 @@
+ 	int prev_button_type;
+ 	u8 status[2];
+ 
+-	int irq;
++	unsigned long irq_pending;	/* MAX77693_MUIC_PENDING_* bits */
+ 	struct work_struct irq_work;
+ 	struct mutex mutex;
+ 
+@@ -961,30 +961,24 @@
+ 	return 0;
+ }
+ 
+-static void max77693_muic_irq_work(struct work_struct *work)
++/*
++ * Pending interrupt groups. Unplugging an OTG cable while the charger boosts
++ * VBUS raises INT1_ADC and INT2_VBVOLT together: with a single "last irq"
++ * field the second overwrote the first before the work ran, the ADC detach
++ * was lost and the port stayed in host mode with the boost on.
++ */
++#define MAX77693_MUIC_PENDING_ADC	0
++#define MAX77693_MUIC_PENDING_CHG	1
++
++static int max77693_muic_irq_group(int virq)
+ {
+-	struct max77693_muic_info *info = container_of(work,
+-			struct max77693_muic_info, irq_work);
+ 	int irq_type = -1;
+-	int i, ret = 0;
+-
+-	if (!info->edev)
+-		return;
+-
+-	mutex_lock(&info->mutex);
++	int i;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(muic_irqs); i++)
+-		if (info->irq == muic_irqs[i].virq)
++		if (virq == muic_irqs[i].virq)
+ 			irq_type = muic_irqs[i].irq;
+ 
+-	ret = regmap_bulk_read(info->max77693->regmap_muic,
+-			MAX77693_MUIC_REG_STATUS1, info->status, 2);
+-	if (ret) {
+-		dev_err(info->dev, "failed to read MUIC register\n");
+-		mutex_unlock(&info->mutex);
+-		return;
+-	}
+-
+ 	switch (irq_type) {
+ 	case MAX77693_MUIC_IRQ_INT1_ADC:
+ 	case MAX77693_MUIC_IRQ_INT1_ADC_LOW:
+@@ -994,8 +988,7 @@
+ 		 * Handle all of accessory except for
+ 		 * type of charger accessory.
+ 		 */
+-		ret = max77693_muic_adc_handler(info);
+-		break;
++		return MAX77693_MUIC_PENDING_ADC;
+ 	case MAX77693_MUIC_IRQ_INT2_CHGTYP:
+ 	case MAX77693_MUIC_IRQ_INT2_CHGDETREUN:
+ 	case MAX77693_MUIC_IRQ_INT2_DCDTMR:
+@@ -1003,24 +996,46 @@
+ 	case MAX77693_MUIC_IRQ_INT2_VBVOLT:
+ 	case MAX77693_MUIC_IRQ_INT2_VIDRM:
+ 		/* Handle charger accessory */
+-		ret = max77693_muic_chg_handler(info);
+-		break;
+-	case MAX77693_MUIC_IRQ_INT3_EOC:
+-	case MAX77693_MUIC_IRQ_INT3_CGMBC:
+-	case MAX77693_MUIC_IRQ_INT3_OVP:
+-	case MAX77693_MUIC_IRQ_INT3_MBCCHG_ERR:
+-	case MAX77693_MUIC_IRQ_INT3_CHG_ENABLED:
+-	case MAX77693_MUIC_IRQ_INT3_BAT_DET:
+-		break;
++		return MAX77693_MUIC_PENDING_CHG;
+ 	default:
+-		dev_err(info->dev, "muic interrupt: irq %d occurred\n",
+-				irq_type);
++		/* INT3 (charger status) needs no MUIC handling */
++		return -1;
++	}
++}
++
++static void max77693_muic_irq_work(struct work_struct *work)
++{
++	struct max77693_muic_info *info = container_of(work,
++			struct max77693_muic_info, irq_work);
++	bool adc, chg;
++	int ret;
++
++	if (!info->edev)
++		return;
++
++	mutex_lock(&info->mutex);
++
++	/* Claim the events before reading the status they belong to */
++	adc = test_and_clear_bit(MAX77693_MUIC_PENDING_ADC, &info->irq_pending);
++	chg = test_and_clear_bit(MAX77693_MUIC_PENDING_CHG, &info->irq_pending);
++	if (!adc && !chg) {
+ 		mutex_unlock(&info->mutex);
+ 		return;
+ 	}
+ 
+-	if (ret < 0)
+-		dev_err(info->dev, "failed to handle MUIC interrupt\n");
++	ret = regmap_bulk_read(info->max77693->regmap_muic,
++			MAX77693_MUIC_REG_STATUS1, info->status, 2);
++	if (ret) {
++		dev_err(info->dev, "failed to read MUIC register\n");
++		mutex_unlock(&info->mutex);
++		return;
++	}
++
++	/* ADC first: an accessory detach decides the charger path */
++	if (adc && max77693_muic_adc_handler(info) < 0)
++		dev_err(info->dev, "failed to handle MUIC ADC interrupt\n");
++	if (chg && max77693_muic_chg_handler(info) < 0)
++		dev_err(info->dev, "failed to handle MUIC charger interrupt\n");
+ 
+ 	mutex_unlock(&info->mutex);
+ }
+@@ -1028,8 +1043,12 @@
+ static irqreturn_t max77693_muic_irq_handler(int irq, void *data)
+ {
+ 	struct max77693_muic_info *info = data;
++	int group = max77693_muic_irq_group(irq);
++
++	if (group < 0)
++		return IRQ_HANDLED;
+ 
+-	info->irq = irq;
++	set_bit(group, &info->irq_pending);
+ 	schedule_work(&info->irq_work);
+ 
+ 	return IRQ_HANDLED;

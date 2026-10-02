@@ -1,0 +1,30 @@
+From: gt510 <gt510@localhost>
+Subject: extcon: max77693: treat a charging downstream port as USB data
+
+A CDP (e.g. a PC or hub port that also charges) only set
+EXTCON_CHG_USB_CDP. The data lines were left unswitched and EXTCON_USB
+never went high, so the USB controller, which takes VBUS from this MUIC
+(0112), never started a peripheral session: no USB networking/gadget on
+such ports, while an SDP worked. Handle a CDP like an SDP for the data
+path and VBUS, keeping the CDP charger type for the current limits.
+
+---
+--- a/drivers/extcon/extcon-max77693.c
++++ b/drivers/extcon/extcon-max77693.c
+@@ -910,6 +910,16 @@
+ 		}
+ 		break;
+ 	case MAX77693_CHARGER_TYPE_DOWNSTREAM_PORT:
++		/*
++		 * A charging downstream port is a USB host port as well (PCs,
++		 * hubs): connect the data lines and report VBUS as for an SDP,
++		 * else the USB controller never starts a peripheral session.
++		 */
++		ret = max77693_muic_set_path(info, info->path_usb, attached);
++		if (ret < 0)
++			return ret;
++
++		extcon_set_state_sync(info->edev, EXTCON_USB, attached);
+ 		extcon_set_state_sync(info->edev, EXTCON_CHG_USB_CDP,
+ 					attached);
+ 		break;

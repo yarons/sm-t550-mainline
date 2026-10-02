@@ -1,0 +1,41 @@
+From 4433a47474283384f332245d58c036d1a7008539 Mon Sep 17 00:00:00 2001
+From: Stephan Gerhold <stephan@gerhold.net>
+Date: Fri, 3 Jul 2020 11:14:50 +0200
+Subject: [PATCH] soc: qcom: cpr: Add support for MEM ACC override
+
+Signed-off-by: Stephan Gerhold <stephan@gerhold.net>
+---
+ drivers/pmdomain/qcom/cpr.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/drivers/pmdomain/qcom/cpr.c b/drivers/pmdomain/qcom/cpr.c
+index 3b6041570db269..b63900830a56a8 100644
+--- a/drivers/pmdomain/qcom/cpr.c
++++ b/drivers/pmdomain/qcom/cpr.c
+@@ -189,6 +189,7 @@ struct acc_desc {
+ 
+ 	const struct reg_sequence	*config;
+ 	const struct reg_sequence	*settings;
++	const struct reg_sequence	*override_settings;
+ 	int				num_regs_per_fuse;
+ };
+ 
+@@ -856,8 +857,18 @@ static int cpr_fuse_corner_init(struct cpr_drv *drv)
+ 	int uV;
+ 	const struct reg_sequence *accs;
+ 	int ret;
++	u32 val;
+ 
+ 	accs = acc_desc->settings;
++	if (acc_desc->override_settings) {
++		ret = nvmem_cell_read_variable_le_u32(drv->dev, "mem_acc_override", &val);
++		if (ret)
++			return ret;
++
++		dev_dbg(drv->dev, "mem acc override fuse value: %#x\n", val);
++		if (val)
++			accs = acc_desc->override_settings;
++	}
+ 
+ 	step_volt = regulator_get_linear_step(drv->vdd_apc);
+ 	if (!step_volt)

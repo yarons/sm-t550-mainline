@@ -1,0 +1,37 @@
+From 0174885f70283ac6090b44084c7bde2fed8e6127 Mon Sep 17 00:00:00 2001
+From: Stephan Gerhold <stephan@gerhold.net>
+Date: Thu, 3 Aug 2023 10:36:19 +0200
+Subject: [PATCH] soc: qcom: cpr: Drop cpr_fuse_revision
+
+This is not used anywhere and some SoCs like MSM8916 do not seem to
+have such a fuse (or at least it's not listed in Qualcomm's
+downstream/vendor device tree).
+
+Signed-off-by: Stephan Gerhold <stephan@gerhold.net>
+---
+ drivers/pmdomain/qcom/cpr.c | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/drivers/pmdomain/qcom/cpr.c b/drivers/pmdomain/qcom/cpr.c
+index 25e08a716c6057..3b6041570db269 100644
+--- a/drivers/pmdomain/qcom/cpr.c
++++ b/drivers/pmdomain/qcom/cpr.c
+@@ -1618,7 +1618,6 @@ static int cpr_probe(struct platform_device *pdev)
+ 	int irq, ret;
+ 	const struct cpr_acc_desc *data;
+ 	struct device_node *np;
+-	u32 cpr_rev = FUSE_REVISION_UNKNOWN;
+ 
+ 	data = of_device_get_match_data(dev);
+ 	if (!data || !data->cpr_desc || !data->acc_desc)
+@@ -1665,10 +1664,6 @@ static int cpr_probe(struct platform_device *pdev)
+ 	 * initialized after attaching to the power domain,
+ 	 * since it depends on the CPU's OPP table.
+ 	 */
+-	ret = nvmem_cell_read_variable_le_u32(dev, "cpr_fuse_revision", &cpr_rev);
+-	if (ret)
+-		return ret;
+-
+ 	drv->cpr_fuses = cpr_get_fuses(drv);
+ 	if (IS_ERR(drv->cpr_fuses))
+ 		return PTR_ERR(drv->cpr_fuses);

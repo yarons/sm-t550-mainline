@@ -1,0 +1,30 @@
+From: gt510 <gt510@localhost>
+Subject: media: qcom: camss: restore the MSM8916 VFE PIX line
+
+Since 7c1340e4c296 ("media: qcom: camss: Assign the correct number of RDIs
+per VFE") vfe_res_8x16 has line_num = 3, meant as "3 RDIs". But the VFE
+code creates lines 0..line_num-1 and VFE_LINE_PIX is 3, so the PIX line
+(msm_vfe0_pix, the only path that outputs NV12/NV16 from YUV sensors) was
+no longer registered on MSM8916; before that commit 8x16 used
+VFE_LINE_NUM_GEN1 = 4. Restore 4.
+
+On SM-T550 the front SR200PC20 (UYVY) then can deliver NV12, which the
+Adreno 306 imports into GL; UYVY dmabufs fail EGLImage import (0x3003) and
+GTK falls back to an mmap download + upload per frame.
+---
+--- a/drivers/media/platform/qcom/camss/camss.c
++++ b/drivers/media/platform/qcom/camss/camss.c
+@@ -150,7 +150,12 @@
+ 		.reg = { "vfe0" },
+ 		.interrupt = { "vfe0" },
+ 		.vfe = {
+-			.line_num = 3,
++			/*
++			 * 3 RDIs + the PIX line (VFE_LINE_PIX = 3): the VFE
++			 * code creates lines 0..line_num-1, so 3 dropped PIX
++			 * (and its NV12/NV16 output) on MSM8916.
++			 */
++			.line_num = 4,
+ 			.hw_ops = &vfe_ops_4_1,
+ 			.formats_rdi = &vfe_formats_rdi_8x16,
+ 			.formats_pix = &vfe_formats_pix_8x16

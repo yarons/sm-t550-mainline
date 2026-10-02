@@ -1,0 +1,24 @@
+From: gt510 <gt510@localhost>
+Subject: aperture: don't sync the viewfinder sink to the clock
+
+A live preview should show frames as they arrive. Synced to the clock,
+gtk4paintablesink drops every frame that misses the pipeline's small
+latency budget (15 ms here); with a software ISP and GL upload on an
+Adreno 306 that is almost every frame: ~2 fps shown of a 28 fps camera
+("buffer late, dropping"). A plain pipewiresrc ! glimagesink pipeline
+goes from 1.9 fps (sync=true) to ~19 fps (sync=false) on the same device.
+---
+--- a/aperture/src/viewfinder.rs
++++ b/aperture/src/viewfinder.rs
+@@ -254,6 +254,11 @@
+             let tee = crate::PipelineTee::new();
+
+             let paintablesink = gst::ElementFactory::make("gtk4paintablesink")
++                // A live preview shows frames as they arrive: synced to the clock the
++                // sink drops every frame that misses the pipeline's small latency
++                // budget, which on slow GPUs (Adreno 306 + software ISP) left ~2 fps
++                // of a 28 fps camera.
++                .property("sync", false)
+                 .build()
+                 .expect("Missing gst-plugin-gtk4");
+

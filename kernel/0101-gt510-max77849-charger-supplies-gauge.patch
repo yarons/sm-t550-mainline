@@ -1,0 +1,53 @@
+From: gt510 <gt510@localhost>
+Subject: power: supply: max77693: MAX77849 charger is the fuel gauge supply
+
+Register the MAX77849 charger as a USB supply of max170xx_battery instead of
+a second battery, so the gauge can report Charging/Discharging/Full and
+upower stops warning about conflicting battery states.
+---
+--- a/drivers/power/supply/max77693_charger.c
++++ b/drivers/power/supply/max77693_charger.c
+@@ -356,6 +356,23 @@
+ 	.get_property	= max77693_charger_get_property,
+ };
+ 
++/*
++ * On MAX77849 boards the battery is a separate fuel gauge (max170xx), so the
++ * charger is the battery's supply rather than a second battery. Registering it
++ * as a battery makes upower see two batteries with conflicting states.
++ */
++static const struct power_supply_desc max77849_charger_desc = {
++	.name		= MAX77693_CHARGER_NAME,
++	.type		= POWER_SUPPLY_TYPE_USB,
++	.properties	= max77693_charger_props,
++	.num_properties	= ARRAY_SIZE(max77693_charger_props),
++	.get_property	= max77693_charger_get_property,
++};
++
++static char *max77849_supplied_to[] = {
++	"max170xx_battery",
++};
++
+ static ssize_t device_attr_store(struct device *dev,
+ 		struct device_attribute *attr, const char *buf, size_t count,
+ 		int (*fn)(struct max77693_charger *, unsigned long))
+@@ -869,6 +886,10 @@
+ 		return ret;
+ 
+ 	psy_cfg.drv_data = chg;
++	if (chg->max77849) {
++		psy_cfg.supplied_to = max77849_supplied_to;
++		psy_cfg.num_supplicants = ARRAY_SIZE(max77849_supplied_to);
++	}
+ 
+ 	ret = device_create_file(&pdev->dev, &dev_attr_fast_charge_timer);
+ 	if (ret) {
+@@ -890,6 +911,8 @@
+ 	}
+ 
+ 	chg->charger = devm_power_supply_register(&pdev->dev,
++						  chg->max77849 ?
++						  &max77849_charger_desc :
+ 						  &max77693_charger_desc,
+ 						  &psy_cfg);
+ 	if (IS_ERR(chg->charger)) {

@@ -1,0 +1,22 @@
+launch 1 kgx at 4523.80s: faults so far 0
+launch 2 org.gnome.Snapshot at 4535.31s: faults so far 0
+launch 3 gnome-text-editor at 4546.82s: faults so far 0
+launch 4 org.gnome.Calculator at 4558.40s: faults so far 0
+launch 5 gnome-clocks at 4569.93s: faults so far 0
+launch 6 org.gnome.Nautilus at 4581.53s: faults so far 0
+launch 7 kgx at 4593.07s: faults so far 0
+launch 8 org.gnome.Snapshot at 4604.68s: faults so far 0
+launch 9 gnome-text-editor at 4616.28s: faults so far 0
+launch 10 org.gnome.Calculator at 4627.94s: faults so far 0
+launch 11 gnome-clocks at 4639.54s: faults so far 0
+launch 12 org.gnome.Nautilus at 4651.22s: faults so far 0
+launch 13 kgx at 4662.86s: faults so far 0
+launch 14 org.gnome.Snapshot at 4674.54s: faults so far 0
+launch 15 gnome-text-editor at 4686.21s: faults so far 0
+launch 16 org.gnome.Calculator at 4697.98s: faults so far 0
+launch 17 gnome-clocks at 4709.67s: faults so far 0
+launch 18 org.gnome.Nautilus at 4721.42s: faults so far 0
+launch 19 kgx at 4733.13s: faults so far 0
+launch 20 org.gnome.Snapshot at 4744.91s: faults so far 19580
+RESULT: org.gnome.Snapshot after 20 launches
+done

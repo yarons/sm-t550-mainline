@@ -1,0 +1,68 @@
+## stock 7.3.0-rc2-msm8916 msm=B5AF2FD8A5835F823CD5851 up=79.70
+start PowerSaveMode=0
+cycle 1 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+cycle 2 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+cycle 3 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+cycle 4 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+cycle 5 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+cycle 6 on: faults+10 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+cycle 7 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+cycle 8 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+cycle 9 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+cycle 10 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+done
+== start (off)
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 00602000,mapped 
+== cycle 1 ON: new faults 0: 
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 00602000,mapped 
+== cycle 1 OFF
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 
+== cycle 2 ON: new faults 0: 
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 00602000,mapped 
+== cycle 2 OFF
+  mdp vmas: 00001000,mapped 00002000,mapped 00602000,mapped 
+== cycle 3 ON: new faults 10: iova=0x602000 iova=0x602080 
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 00602000,mapped 
+== cycle 3 OFF
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 
+== cycle 4 ON: new faults 0: 
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 00602000,mapped 
+== cycle 4 OFF
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 
+== cycle 5 ON: new faults 0: 
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 00602000,mapped 
+== cycle 5 OFF
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 
+== cycle 6 ON: new faults 0: 
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 00602000,mapped 
+== cycle 6 OFF
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 
+# with Snapshot
+== start (off)
+  mdp vmas: 00001000,mapped 00002000,mapped 
+== cycle 1 ON: new faults 0: 
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 00602000,mapped 
+== cycle 1 OFF
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 
+== cycle 2 ON: new faults 0: 
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 00602000,mapped 
+== cycle 2 OFF
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 
+== cycle 3 ON: new faults 0: 
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 00602000,mapped 
+== cycle 3 OFF
+  mdp vmas: 00001000,mapped 00002000,mapped 00602000,mapped 
+== cycle 4 ON: new faults 8: iova=0x602000 iova=0x602080 
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 00602000,mapped 
+== cycle 4 OFF
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 
+== cycle 5 ON: new faults 0: 
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 00602000,mapped 
+== cycle 5 OFF
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 
+== cycle 6 ON: new faults 0: 
+  mdp vmas: 00001000,mapped 00002000,mapped 00302000,mapped 00602000,mapped 
+== cycle 6 OFF
+  mdp vmas: 00001000,mapped 00002000,mapped 00602000,mapped 
+TOTAL faults=37 vblank=2 underrun=9 dcs=0
+done

@@ -1,0 +1,4 @@
+# SM-T550 lis2hh12: the DT mount-matrix gets X/Y right, but Z has the wrong sign (face-up reads
+# z < 0), so iio-sensor-proxy thinks the tablet is face-down and reports no/erratic orientation.
+# Kernel matrix (0,1,0; -1,0,0; 0,0,1) with Z negated; verified on HW 2026-09-24 (Lomiri).
+SUBSYSTEM=="iio", KERNEL=="iio*", ATTR{name}=="lis2hh12", ENV{ACCEL_MOUNT_MATRIX}="0, 1, 0; -1, 0, 0; 0, 0, -1"

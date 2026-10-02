@@ -1,0 +1,36 @@
+From: gt510 <gt510@localhost>
+Subject: drm/msm/mdp5: flush the CTL before enabling the video timing engine
+
+mdp5_vid_encoder_enable() started the INTF timing engine and only then
+flushed the CTL with the configuration of the enabling commit. The first
+frame after a CRTC enable therefore scanned out the pipe state left over
+from before the disable. On SM-T550 (MSM8916) phoc frees that framebuffer
+while the output is off, so most DPMS-on transitions produced a burst of
+"Unhandled context fault" at the old iova, an INTF underrun and a "vblank
+time out". Flush first, then start the timing engine, as DPU does.
+---
+--- a/drivers/gpu/drm/msm/disp/mdp5/mdp5_encoder.c
++++ b/drivers/gpu/drm/msm/disp/mdp5/mdp5_encoder.c
+@@ -163,11 +163,21 @@
+ 
+ 	if (WARN_ON(mdp5_encoder->enabled))
+ 		return;
++
++	/*
++	 * Flush the CTL before the timing engine starts, so the pending pipe,
++	 * mixer and INTF configuration of this commit latches before the first
++	 * frame. Flushed afterwards, the first frame still scans out what the
++	 * pipes held before the CRTC was disabled, typically a framebuffer the
++	 * compositor has freed since: IOMMU faults, an underrun and a vblank
++	 * timeout on DPMS on. DPU does the same ("Video mode must flush CTL
++	 * before enabling timing engine").
++	 */
++	mdp5_ctl_commit(ctl, pipeline, mdp_ctl_flush_mask_encoder(intf), true);
+ 
+ 	spin_lock_irqsave(&mdp5_encoder->intf_lock, flags);
+ 	mdp5_write(mdp5_kms, REG_MDP5_INTF_TIMING_ENGINE_EN(intfn), 1);
+ 	spin_unlock_irqrestore(&mdp5_encoder->intf_lock, flags);
+-	mdp5_ctl_commit(ctl, pipeline, mdp_ctl_flush_mask_encoder(intf), true);
+ 
+ 	mdp5_ctl_set_encoder_state(ctl, pipeline, true);
+ 

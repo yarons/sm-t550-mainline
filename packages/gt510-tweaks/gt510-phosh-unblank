@@ -1,0 +1,9 @@
+#!/bin/sh
+# Phosh session start: phoc's DisplayConfig PowerSaveMode was seen stuck at 3 ("off") while
+# the panel was on, so the power key only ever "woke" the screen and never blanked it.
+# The display is on when the session starts, so say so.
+sleep 5
+gdbus call --session --dest org.gnome.Mutter.DisplayConfig \
+	--object-path /org/gnome/Mutter/DisplayConfig \
+	--method org.freedesktop.DBus.Properties.Set \
+	org.gnome.Mutter.DisplayConfig PowerSaveMode "<0>" >/dev/null 2>&1

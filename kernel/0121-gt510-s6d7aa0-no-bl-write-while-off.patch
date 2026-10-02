@@ -1,0 +1,29 @@
+From: gt510 <gt510@localhost>
+Subject: drm/panel: s6d7aa0: no backlight DCS write while the panel is disabled
+
+Brightness changes while the display is off (Phosh sets the brightness
+before it unblanks; systemd-logind writes it) reached the DSI host with
+the link down: "sending dcs data 51 00 failed: -22" and an EPROTO for the
+writer. Keep the value and let drm_panel_enable() apply it.
+---
+--- a/drivers/gpu/drm/panel/panel-samsung-s6d7aa0.c
++++ b/drivers/gpu/drm/panel/panel-samsung-s6d7aa0.c
+@@ -155,9 +155,18 @@
+ static int s6d7aa0_bl_update_status(struct backlight_device *bl)
+ {
+ 	struct mipi_dsi_device *dsi = bl_get_data(bl);
++	struct s6d7aa0 *ctx = mipi_dsi_get_drvdata(dsi);
+ 	u8 cmd[] = { MIPI_DCS_SET_DISPLAY_BRIGHTNESS, backlight_get_brightness(bl) };
+ 	struct mipi_dsi_multi_context dsi_ctx = { .dsi = dsi };
+ 
++	/*
++	 * The DSI link is down while the panel is disabled, so a write fails
++	 * with -EINVAL. The value stays in bl->props and drm_panel_enable()
++	 * applies it through backlight_enable().
++	 */
++	if (!ctx->panel.enabled)
++		return 0;
++
+ 	mipi_dsi_dcs_write_buffer_multi(&dsi_ctx, cmd, sizeof(cmd));
+ 
+ 	return dsi_ctx.accum_err;

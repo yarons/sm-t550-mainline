@@ -1,0 +1,126 @@
+# Local tweaks for the Samsung Galaxy Tab A 9.7 2015 (SM-T550, gt510wifi) on device-qcom-msm8916.
+pkgname=gt510-tweaks
+pkgver=1
+pkgrel=34
+pkgdesc="SM-T550 (gt510wifi) integration: audio, charger, GPS, rotation, camera, trimmed services; Phosh"
+url="https://postmarketos.org"
+arch="noarch"
+license="GPL-2.0-only"
+options="!check"
+depends="
+	linux-postmarketos-qcom-msm8916>=7.3_rc2-r30
+	libcamera>=99990.7.2-r100
+	mesa>=26.2.3-r101
+	mesa-dri-gallium<26.2.4
+	alsa-utils
+	iio-sensor-proxy
+	phosh-mobile-settings
+	postmarketos-ui-phosh
+	postmarketos-ui-phosh-openrc
+	gpsd
+	greetd-phrog
+	hkdm
+	wtype
+	wireplumber
+	soc-qcom-msm8916-rproc
+	gnome-settings-daemon<999
+	rsync
+	"
+# gnome-settings-daemon<999: the systemd extra repo's gnome-settings-daemon-mobile provides
+# gnome-settings-daemon=999948.0. pmbootstrap installs local APKs (our phosh) with "apk add -u",
+# which then picks that provider and postmarketos-ui-phosh (!gnome-settings-daemon-mobile)
+# breaks the install. The version cap keeps the real gnome-settings-daemon.
+# linux-postmarketos-qcom-msm8916>=7.3_rc2-r30: GPU runtime PM stays enabled (power/control=auto; the udev rule that forced "on" is gone since r34). Older kernels
+# wait for six VBIF XIN halt acks the a306 never gives, fail every suspend and retry it every 66 ms in kworkers.
+# mesa>=26.2.3-r101 + mesa-dri-gallium<26.2.4: GTK4's GL renderer runs WITHOUT the old freedreno workarounds
+# (IR3_SHADER_DEBUG=nouboopt, FD_MESA_DEBUG=inorder) only on the local mesa with packages/mesa 0100; an
+# unpatched Alpine mesa would hang the a306 GPU within seconds of a GTK app starting. When Alpine moves past
+# 26.2.3, rebuild packages/mesa on the new version first, then move both pins.
+install="$pkgname.post-install $pkgname.post-upgrade"
+triggers="$pkgname.trigger=/usr/share/applications"
+source="
+	gt510-modules.conf
+	61-gt510-accel.rules
+	61-gt510-back-escape.hwdb
+	zz-gt510-gtk-gl.sh
+	gt510-phosh-unblank
+	gt510-phosh-unblank.desktop
+	gt510-recents
+	gt510-keys.toml
+	30_gt510-phosh-keys.gschema.override
+	gpsd-pds.service
+	gt510-libcamera.yaml
+	gt510-camera.conf
+	90-gt510-split-video.conf
+	gt510-thp.conf
+	gt510-deviceinfo
+	40_gt510-performance.gschema.override
+	gt510-udiskie-hidden.desktop
+	50_gt510-brightness.gschema.override
+	45_gt510-phosh-tiles.gschema.override
+	sr544.yaml
+	gt510-greetd-autologin.toml
+	gt510-greetd-autologin.conf
+	55_gt510-no-lock.gschema.override
+	70_gt510-snapshot.gschema.override
+	gt510-persist
+	gt510-persist.service
+	gt510-camera-permission
+	gt510-camera-permission.service
+	80-gt510.preset
+	80-gt510-system.preset
+	gt510-retroarch-defaults
+	"
+
+package() {
+	install -Dm644 "$srcdir"/gt510-modules.conf "$pkgdir"/etc/modules-load.d/gt510.conf
+	# Accelerometer Z sign (auto-rotate via iio-sensor-proxy)
+	install -Dm644 "$srcdir"/61-gt510-accel.rules -t "$pkgdir"/usr/lib/udev/rules.d/
+	install -Dm644 "$srcdir"/61-gt510-back-escape.hwdb -t "$pkgdir"/usr/lib/udev/hwdb.d/
+	install -Dm644 "$srcdir"/zz-gt510-gtk-gl.sh -t "$pkgdir"/etc/profile.d/
+	# GPU runtime PM spins forever on a306 (see rule) - keep it on
+	# Phosh: fix a stale "display off" state so the power key blanks on the first press
+	install -Dm755 "$srcdir"/gt510-phosh-unblank -t "$pkgdir"/usr/bin/
+	install -Dm644 "$srcdir"/gt510-phosh-unblank.desktop -t "$pkgdir"/etc/xdg/autostart/
+	# Home -> overview (gsettings default); Recents -> overview via hkdm + wtype
+	install -Dm644 "$srcdir"/30_gt510-phosh-keys.gschema.override -t "$pkgdir"/usr/share/glib-2.0/schemas/
+	install -Dm755 "$srcdir"/gt510-recents -t "$pkgdir"/usr/bin/
+	install -Dm644 "$srcdir"/gt510-keys.toml -t "$pkgdir"/etc/hkdm/config.d/
+	# gpsd on the modem GNSS (Alpine gpsd ships no systemd unit)
+	install -Dm644 "$srcdir"/gpsd-pds.service -t "$pkgdir"/usr/lib/systemd/system/
+	# Front camera: YUV sensor, no soft ISP; camera monitor in its own WirePlumber
+	install -Dm644 "$srcdir"/gt510-libcamera.yaml "$pkgdir"/etc/libcamera/configuration.yaml
+	# Snapshot: prefer 4:3 modes (the 16:9 ones crop the 4:3 sensors on a 4:3 screen).
+	install -Dm644 "$srcdir"/gt510-camera.conf "$pkgdir"/etc/environment.d/60-gt510-camera.conf
+	# Rear camera tuning (black level, CCM fitted on a screen test chart)
+	install -Dm644 "$srcdir"/sr544.yaml -t "$pkgdir"/usr/share/libcamera/ipa/simple/
+	install -Dm644 "$srcdir"/90-gt510-split-video.conf -t "$pkgdir"/usr/share/wireplumber/wireplumber.conf.d/
+	# Memory: THP on request only, faster zram compressor
+	install -Dm644 "$srcdir"/gt510-thp.conf -t "$pkgdir"/usr/lib/tmpfiles.d/
+	install -Dm644 "$srcdir"/gt510-deviceinfo "$pkgdir"/etc/deviceinfo
+	# UI: no animations (GTK renders in software on this GPU)
+	install -Dm644 "$srcdir"/40_gt510-performance.gschema.override -t "$pkgdir"/usr/share/glib-2.0/schemas/
+	# Quick settings: no hotspot/mobile-data tiles on a Wi-Fi-only tablet
+	install -Dm644 "$srcdir"/45_gt510-phosh-tiles.gschema.override -t "$pkgdir"/usr/share/glib-2.0/schemas/
+	# Auto-brightness from the ambient light sensor
+	install -Dm644 "$srcdir"/50_gt510-brightness.gschema.override -t "$pkgdir"/usr/share/glib-2.0/schemas/
+	# gnome-session starts XDG autostarts itself (unit masks don't apply): hide udiskie for new users
+	install -Dm644 "$srcdir"/gt510-udiskie-hidden.desktop "$pkgdir"/etc/skel/.config/autostart/udiskie.desktop
+	# Auto-login into Phosh (phrog stays the greeter after a logout); no lock on blank/start
+	install -Dm644 "$srcdir"/gt510-greetd-autologin.toml "$pkgdir"/etc/gt510/greetd-autologin.toml
+	install -Dm644 "$srcdir"/gt510-greetd-autologin.conf \
+		"$pkgdir"/usr/lib/systemd/system/greetd.service.d/zz-gt510-autologin.conf
+	install -Dm644 "$srcdir"/55_gt510-no-lock.gschema.override -t "$pkgdir"/usr/share/glib-2.0/schemas/
+	# Snapshot records with the venus hardware encoder
+	install -Dm644 "$srcdir"/70_gt510-snapshot.gschema.override -t "$pkgdir"/usr/share/glib-2.0/schemas/
+	# User settings (dconf) + ~/.config/retroarch kept on the SD card: restored after a reflash
+	install -Dm755 "$srcdir"/gt510-persist -t "$pkgdir"/usr/bin/
+	install -Dm644 "$srcdir"/gt510-persist.service -t "$pkgdir"/usr/lib/systemd/user/
+	install -Dm755 "$srcdir"/gt510-camera-permission -t "$pkgdir"/usr/libexec/
+	install -Dm644 "$srcdir"/gt510-camera-permission.service -t "$pkgdir"/usr/lib/systemd/user/
+	install -Dm644 "$srcdir"/80-gt510.preset -t "$pkgdir"/usr/lib/systemd/user-preset/
+	install -Dm644 "$srcdir"/80-gt510-system.preset \
+		"$pkgdir"/usr/lib/systemd/system-preset/80-gt510.preset
+	# RetroArch: touch in menus, fullscreen, no GTK Mesa workarounds, no launch splash wait
+	install -Dm755 "$srcdir"/gt510-retroarch-defaults -t "$pkgdir"/usr/libexec/
+}

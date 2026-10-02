@@ -1,0 +1,4 @@
+# SM-T550 Home touch/hard key -> Phosh overview (Back reaches apps as XF86Back natively;
+# Recents is handled by hkdm, see /usr/bin/gt510-recents).
+[org.gnome.shell.keybindings]
+toggle-application-view=['<Super>a', 'XF86HomePage']

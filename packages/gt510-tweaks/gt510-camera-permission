@@ -1,0 +1,11 @@
+#!/bin/sh
+# gt510-tweaks: grant Snapshot camera access in the portal permission store once, so a fresh
+# image does not stop at "Allow Camera to Use the Camera?" (Yaron's choice). An existing
+# decision for org.gnome.Snapshot (yes OR no, e.g. revoked in Settings) is left alone.
+PS="--session --dest org.freedesktop.impl.portal.PermissionStore --object-path /org/freedesktop/impl/portal/PermissionStore"
+cur=$(gdbus call $PS --method org.freedesktop.impl.portal.PermissionStore.Lookup devices camera 2>/dev/null)
+case "$cur" in
+*"'org.gnome.Snapshot'"*) exit 0 ;;
+esac
+exec gdbus call $PS --method org.freedesktop.impl.portal.PermissionStore.SetPermission \
+	devices true camera org.gnome.Snapshot "['yes']" >/dev/null

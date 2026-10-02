@@ -1,0 +1,996 @@
+# tracer: nop
+#
+# entries-in-buffer/entries-written: 984/984   #P:4
+#
+#                                _-----=> irqs-off/BH-disabled
+#                               / _----=> need-resched
+#                              | / _---=> hardirq/softirq
+#                              || / _--=> preempt-depth
+#                              ||| / _-=> migrate-disable
+#                              |||| /     delay
+#           TASK-PID     CPU#  |||||  TIMESTAMP  FUNCTION
+#              | |         |   |||||     |         |
+             kgx-16001   [002] .....  2124.330747: msm_gpu_submit: id=37444 pid=16001 ring=0 bos=40 cmds=1
+   kworker/u16:0-12      [000] .....  2124.339328: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2124.345058: msm_gpu_submit_retired: id=37444 pid=16001 ring=0:37189 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2124.395953: msm_gpu_submit: id=37445 pid=1569 ring=0 bos=27 cmds=1
+      gpu-worker-139     [000] .....  2124.400182: msm_gpu_submit_retired: id=37445 pid=1569 ring=0:37190 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:0-12      [002] .....  2124.482986: msm_gpu_suspend: 0
+        snapshot-16058   [000] .....  2135.739868: msm_gpu_submit: id=37446 pid=16058 ring=0 bos=38 cmds=3
+   kworker/u16:0-12      [002] .....  2135.748750: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2135.753273: msm_gpu_submit_retired: id=37446 pid=16058 ring=0:37191 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:0-12      [003] .....  2135.833933: msm_gpu_suspend: 0
+        snapshot-16058   [002] .....  2136.850546: msm_gpu_submit: id=37447 pid=16058 ring=0 bos=13 cmds=1
+   kworker/u16:4-54      [000] .....  2136.855114: msm_gpu_resume: 0
+        snapshot-16058   [002] .....  2136.855972: msm_gpu_submit: id=37448 pid=16058 ring=0 bos=14 cmds=1
+      gpu-worker-139     [000] .....  2136.861921: msm_gpu_submit_retired: id=37447 pid=16058 ring=0:37192 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2136.864508: msm_gpu_submit_retired: id=37448 pid=16058 ring=0:37193 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16058   [002] .....  2136.865048: msm_gpu_submit: id=37449 pid=16058 ring=0 bos=13 cmds=1
+        snapshot-16058   [002] .....  2136.865461: msm_gpu_submit: id=37450 pid=16058 ring=0 bos=13 cmds=1
+        snapshot-16058   [002] .....  2136.865960: msm_gpu_submit: id=37451 pid=16058 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2136.866309: msm_gpu_submit_retired: id=37449 pid=16058 ring=0:37194 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2136.866529: msm_gpu_submit_retired: id=37450 pid=16058 ring=0:37195 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2136.866603: msm_gpu_submit_retired: id=37451 pid=16058 ring=0:37196 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16058   [002] .....  2136.866730: msm_gpu_submit: id=37452 pid=16058 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2136.866878: msm_gpu_submit_retired: id=37452 pid=16058 ring=0:37197 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16058   [002] .....  2136.866990: msm_gpu_submit: id=37453 pid=16058 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2136.867193: msm_gpu_submit_retired: id=37453 pid=16058 ring=0:37198 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16058   [002] .....  2136.867329: msm_gpu_submit: id=37454 pid=16058 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2136.867434: msm_gpu_submit_retired: id=37454 pid=16058 ring=0:37199 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16058   [002] .....  2136.867514: msm_gpu_submit: id=37455 pid=16058 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2136.867593: msm_gpu_submit_retired: id=37455 pid=16058 ring=0:37200 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16058   [002] .....  2136.867664: msm_gpu_submit: id=37456 pid=16058 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2136.867741: msm_gpu_submit_retired: id=37456 pid=16058 ring=0:37201 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16058   [002] .....  2136.867809: msm_gpu_submit: id=37457 pid=16058 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2136.867898: msm_gpu_submit_retired: id=37457 pid=16058 ring=0:37202 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16058   [002] .....  2136.876344: msm_gpu_submit: id=37458 pid=16058 ring=0 bos=27 cmds=1
+      gpu-worker-139     [000] .....  2136.876991: msm_gpu_submit_retired: id=37458 pid=16058 ring=0:37203 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:4-54      [001] .....  2136.943392: msm_gpu_suspend: 0
+ gnome-text-edit-16118   [003] .....  2147.656023: msm_gpu_submit: id=37459 pid=16118 ring=0 bos=40 cmds=1
+   kworker/u16:1-16103   [000] .....  2147.665362: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2147.674318: msm_gpu_submit_retired: id=37459 pid=16118 ring=0:37204 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [002] .....  2147.757132: msm_gpu_suspend: 0
+    gnome-clocks-16189   [002] .....  2170.241206: msm_gpu_submit: id=37460 pid=16189 ring=0 bos=33 cmds=1
+   kworker/u16:4-54      [000] .....  2170.250476: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2170.255991: msm_gpu_submit_retired: id=37460 pid=16189 ring=0:37205 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:4-54      [000] .....  2170.338679: msm_gpu_suspend: 0
+        nautilus-16256   [001] .....  2182.468517: msm_gpu_submit: id=37461 pid=16256 ring=0 bos=37 cmds=1
+   kworker/u16:3-5193    [002] .....  2182.478573: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2182.485840: msm_gpu_submit_retired: id=37461 pid=16256 ring=0:37206 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [002] .....  2182.563969: msm_gpu_suspend: 0
+             kgx-16375   [000] .....  2193.063099: msm_gpu_submit: id=37462 pid=16375 ring=0 bos=40 cmds=1
+   kworker/u16:3-5193    [002] .....  2193.072699: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2193.078362: msm_gpu_submit_retired: id=37462 pid=16375 ring=0:37207 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [003] .....  2193.161182: msm_gpu_suspend: 0
+        snapshot-16430   [003] .....  2204.475139: msm_gpu_submit: id=37463 pid=16430 ring=0 bos=38 cmds=3
+   kworker/u16:1-16103   [000] .....  2204.484871: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2204.489171: msm_gpu_submit_retired: id=37463 pid=16430 ring=0:37208 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [001] .....  2204.570668: msm_gpu_suspend: 0
+        snapshot-16430   [001] .....  2205.743799: msm_gpu_submit: id=37464 pid=16430 ring=0 bos=13 cmds=1
+   kworker/u16:1-16103   [003] .....  2205.749096: msm_gpu_resume: 0
+        snapshot-16430   [001] .....  2205.749570: msm_gpu_submit: id=37465 pid=16430 ring=0 bos=14 cmds=1
+      gpu-worker-139     [000] .....  2205.756250: msm_gpu_submit_retired: id=37464 pid=16430 ring=0:37209 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2205.757877: msm_gpu_submit_retired: id=37465 pid=16430 ring=0:37210 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16430   [001] .....  2205.758376: msm_gpu_submit: id=37466 pid=16430 ring=0 bos=13 cmds=1
+        snapshot-16430   [001] .....  2205.758744: msm_gpu_submit: id=37467 pid=16430 ring=0 bos=13 cmds=1
+        snapshot-16430   [001] .....  2205.759203: msm_gpu_submit: id=37468 pid=16430 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2205.759696: msm_gpu_submit_retired: id=37466 pid=16430 ring=0:37211 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2205.759735: msm_gpu_submit_retired: id=37467 pid=16430 ring=0:37212 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2205.759781: msm_gpu_submit_retired: id=37468 pid=16430 ring=0:37213 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16430   [001] .....  2205.759871: msm_gpu_submit: id=37469 pid=16430 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2205.759995: msm_gpu_submit_retired: id=37469 pid=16430 ring=0:37214 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16430   [001] .....  2205.760085: msm_gpu_submit: id=37470 pid=16430 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2205.760193: msm_gpu_submit_retired: id=37470 pid=16430 ring=0:37215 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16430   [001] .....  2205.760274: msm_gpu_submit: id=37471 pid=16430 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2205.760401: msm_gpu_submit_retired: id=37471 pid=16430 ring=0:37216 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16430   [001] .....  2205.760464: msm_gpu_submit: id=37472 pid=16430 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2205.760545: msm_gpu_submit_retired: id=37472 pid=16430 ring=0:37217 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16430   [001] .....  2205.760664: msm_gpu_submit: id=37473 pid=16430 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2205.760754: msm_gpu_submit_retired: id=37473 pid=16430 ring=0:37218 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16430   [001] .....  2205.760818: msm_gpu_submit: id=37474 pid=16430 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2205.760899: msm_gpu_submit_retired: id=37474 pid=16430 ring=0:37219 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16430   [001] .....  2205.767836: msm_gpu_submit: id=37475 pid=16430 ring=0 bos=27 cmds=1
+      gpu-worker-139     [000] .....  2205.768453: msm_gpu_submit_retired: id=37475 pid=16430 ring=0:37220 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [002] .....  2205.840731: msm_gpu_suspend: 0
+ gnome-text-edit-16493   [000] .....  2216.386258: msm_gpu_submit: id=37476 pid=16493 ring=0 bos=40 cmds=1
+   kworker/u16:1-16103   [002] .....  2216.395630: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2216.404624: msm_gpu_submit_retired: id=37476 pid=16493 ring=0:37221 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [001] .....  2216.487437: msm_gpu_suspend: 0
+    gnome-clocks-16564   [001] .....  2238.971391: msm_gpu_submit: id=37477 pid=16564 ring=0 bos=33 cmds=1
+   kworker/u16:1-16103   [002] .....  2238.981476: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2238.986972: msm_gpu_submit_retired: id=37477 pid=16564 ring=0:37222 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [000] .....  2239.060844: msm_gpu_suspend: 0
+        nautilus-16624   [002] .....  2250.848778: msm_gpu_submit: id=37478 pid=16624 ring=0 bos=37 cmds=1
+   kworker/u16:3-5193    [001] .....  2250.859299: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2250.866544: msm_gpu_submit_retired: id=37478 pid=16624 ring=0:37223 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [000] .....  2250.947457: msm_gpu_suspend: 0
+             kgx-16696   [002] .....  2261.809510: msm_gpu_submit: id=37479 pid=16696 ring=0 bos=40 cmds=1
+   kworker/u16:3-5193    [001] .....  2261.820141: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2261.825947: msm_gpu_submit_retired: id=37479 pid=16696 ring=0:37224 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [000] .....  2261.908664: msm_gpu_suspend: 0
+        snapshot-16750   [002] .....  2273.196508: msm_gpu_submit: id=37480 pid=16750 ring=0 bos=38 cmds=3
+   kworker/u16:1-16103   [000] .....  2273.205610: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2273.209937: msm_gpu_submit_retired: id=37480 pid=16750 ring=0:37225 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [001] .....  2273.290964: msm_gpu_suspend: 0
+        snapshot-16750   [001] .....  2274.310059: msm_gpu_submit: id=37481 pid=16750 ring=0 bos=13 cmds=1
+   kworker/u16:3-5193    [002] .....  2274.315782: msm_gpu_resume: 0
+        snapshot-16750   [000] .....  2274.316988: msm_gpu_submit: id=37482 pid=16750 ring=0 bos=14 cmds=1
+      gpu-worker-139     [000] .....  2274.322593: msm_gpu_submit_retired: id=37481 pid=16750 ring=0:37226 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16750   [000] .....  2274.323968: msm_gpu_submit: id=37483 pid=16750 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2274.324215: msm_gpu_submit_retired: id=37482 pid=16750 ring=0:37227 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16750   [000] .....  2274.324552: msm_gpu_submit: id=37484 pid=16750 ring=0 bos=13 cmds=1
+        snapshot-16750   [000] .....  2274.324967: msm_gpu_submit: id=37485 pid=16750 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2274.325150: msm_gpu_submit_retired: id=37483 pid=16750 ring=0:37228 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2274.325367: msm_gpu_submit_retired: id=37484 pid=16750 ring=0:37229 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2274.325416: msm_gpu_submit_retired: id=37485 pid=16750 ring=0:37230 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16750   [000] .....  2274.325502: msm_gpu_submit: id=37486 pid=16750 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2274.325648: msm_gpu_submit_retired: id=37486 pid=16750 ring=0:37231 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16750   [000] .....  2274.325792: msm_gpu_submit: id=37487 pid=16750 ring=0 bos=13 cmds=1
+        snapshot-16750   [000] .....  2274.326012: msm_gpu_submit: id=37488 pid=16750 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2274.326082: msm_gpu_submit_retired: id=37487 pid=16750 ring=0:37232 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2274.326280: msm_gpu_submit_retired: id=37488 pid=16750 ring=0:37233 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16750   [000] .....  2274.326397: msm_gpu_submit: id=37489 pid=16750 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2274.326511: msm_gpu_submit_retired: id=37489 pid=16750 ring=0:37234 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16750   [000] .....  2274.326635: msm_gpu_submit: id=37490 pid=16750 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2274.326737: msm_gpu_submit_retired: id=37490 pid=16750 ring=0:37235 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16750   [000] .....  2274.326851: msm_gpu_submit: id=37491 pid=16750 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2274.326945: msm_gpu_submit_retired: id=37491 pid=16750 ring=0:37236 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-16750   [000] .....  2274.333485: msm_gpu_submit: id=37492 pid=16750 ring=0 bos=27 cmds=1
+      gpu-worker-139     [000] .....  2274.334000: msm_gpu_submit_retired: id=37492 pid=16750 ring=0:37237 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [001] .....  2274.408183: msm_gpu_suspend: 0
+ gnome-text-edit-16804   [002] .....  2285.167891: msm_gpu_submit: id=37493 pid=16804 ring=0 bos=40 cmds=1
+   kworker/u16:1-16103   [003] .....  2285.178332: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2285.187272: msm_gpu_submit_retired: id=37493 pid=16804 ring=0:37238 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [002] .....  2285.270071: msm_gpu_suspend: 0
+    gnome-clocks-16875   [001] .....  2307.716087: msm_gpu_submit: id=37494 pid=16875 ring=0 bos=33 cmds=1
+   kworker/u16:3-5193    [003] .....  2307.726203: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2307.731625: msm_gpu_submit_retired: id=37494 pid=16875 ring=0:37239 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [000] .....  2307.814339: msm_gpu_suspend: 0
+        nautilus-16950   [002] .....  2319.607198: msm_gpu_submit: id=37495 pid=16950 ring=0 bos=37 cmds=1
+   kworker/u16:3-5193    [000] .....  2319.617770: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2319.625040: msm_gpu_submit_retired: id=37495 pid=16950 ring=0:37240 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [000] .....  2319.707593: msm_gpu_suspend: 0
+             kgx-17006   [002] .....  2330.560546: msm_gpu_submit: id=37496 pid=17006 ring=0 bos=40 cmds=1
+   kworker/u16:3-5193    [001] .....  2330.570275: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2330.576073: msm_gpu_submit_retired: id=37496 pid=17006 ring=0:37241 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [001] .....  2330.658899: msm_gpu_suspend: 0
+        snapshot-17061   [003] .....  2341.937444: msm_gpu_submit: id=37497 pid=17061 ring=0 bos=38 cmds=3
+   kworker/u16:2-17078   [002] .....  2341.946366: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2341.950711: msm_gpu_submit_retired: id=37497 pid=17061 ring=0:37242 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [001] .....  2342.024389: msm_gpu_suspend: 0
+        snapshot-17061   [001] .....  2343.073242: msm_gpu_submit: id=37498 pid=17061 ring=0 bos=13 cmds=1
+   kworker/u16:2-17078   [000] .....  2343.077982: msm_gpu_resume: 0
+        snapshot-17061   [001] .....  2343.079100: msm_gpu_submit: id=37499 pid=17061 ring=0 bos=14 cmds=1
+      gpu-worker-139     [000] .....  2343.084877: msm_gpu_submit_retired: id=37498 pid=17061 ring=0:37243 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2343.087096: msm_gpu_submit_retired: id=37499 pid=17061 ring=0:37244 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17061   [001] .....  2343.087623: msm_gpu_submit: id=37500 pid=17061 ring=0 bos=13 cmds=1
+        snapshot-17061   [001] .....  2343.087972: msm_gpu_submit: id=37501 pid=17061 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2343.088738: msm_gpu_submit_retired: id=37500 pid=17061 ring=0:37245 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17061   [001] .....  2343.088882: msm_gpu_submit: id=37502 pid=17061 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2343.088954: msm_gpu_submit_retired: id=37501 pid=17061 ring=0:37246 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2343.089155: msm_gpu_submit_retired: id=37502 pid=17061 ring=0:37247 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17061   [001] .....  2343.089192: msm_gpu_submit: id=37503 pid=17061 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2343.089301: msm_gpu_submit_retired: id=37503 pid=17061 ring=0:37248 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17061   [001] .....  2343.089388: msm_gpu_submit: id=37504 pid=17061 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2343.089486: msm_gpu_submit_retired: id=37504 pid=17061 ring=0:37249 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17061   [001] .....  2343.089563: msm_gpu_submit: id=37505 pid=17061 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2343.089650: msm_gpu_submit_retired: id=37505 pid=17061 ring=0:37250 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17061   [001] .....  2343.089724: msm_gpu_submit: id=37506 pid=17061 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2343.089809: msm_gpu_submit_retired: id=37506 pid=17061 ring=0:37251 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17061   [001] .....  2343.089882: msm_gpu_submit: id=37507 pid=17061 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2343.089964: msm_gpu_submit_retired: id=37507 pid=17061 ring=0:37252 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17061   [001] .....  2343.090028: msm_gpu_submit: id=37508 pid=17061 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2343.090110: msm_gpu_submit_retired: id=37508 pid=17061 ring=0:37253 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17061   [001] .....  2343.096924: msm_gpu_submit: id=37509 pid=17061 ring=0 bos=27 cmds=1
+      gpu-worker-139     [000] .....  2343.097545: msm_gpu_submit_retired: id=37509 pid=17061 ring=0:37254 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:2-17078   [002] .....  2343.167858: msm_gpu_suspend: 0
+ gnome-text-edit-17116   [003] .....  2353.891520: msm_gpu_submit: id=37510 pid=17116 ring=0 bos=40 cmds=1
+   kworker/u16:1-16103   [002] .....  2353.900130: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2353.909282: msm_gpu_submit_retired: id=37510 pid=17116 ring=0:37255 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [001] .....  2353.992102: msm_gpu_suspend: 0
+    gnome-clocks-17194   [000] .....  2376.436798: msm_gpu_submit: id=37511 pid=17194 ring=0 bos=33 cmds=1
+   kworker/u16:2-17078   [002] .....  2376.446957: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2376.452473: msm_gpu_submit_retired: id=37511 pid=17194 ring=0:37256 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:2-17078   [002] .....  2376.535262: msm_gpu_suspend: 0
+        nautilus-17260   [001] .....  2388.297503: msm_gpu_submit: id=37512 pid=17260 ring=0 bos=37 cmds=1
+   kworker/u16:1-16103   [003] .....  2388.306978: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2388.315485: msm_gpu_submit_retired: id=37512 pid=17260 ring=0:37257 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [001] .....  2388.397784: msm_gpu_suspend: 0
+             kgx-17323   [003] .....  2399.267899: msm_gpu_submit: id=37513 pid=17323 ring=0 bos=40 cmds=1
+   kworker/u16:2-17078   [000] .....  2399.277950: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2399.283684: msm_gpu_submit_retired: id=37513 pid=17323 ring=0:37258 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:2-17078   [000] .....  2399.366388: msm_gpu_suspend: 0
+        snapshot-17370   [000] .....  2410.659660: msm_gpu_submit: id=37514 pid=17370 ring=0 bos=38 cmds=3
+   kworker/u16:2-17078   [001] .....  2410.669515: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2410.673901: msm_gpu_submit_retired: id=37514 pid=17370 ring=0:37259 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:2-17078   [001] .....  2410.756510: msm_gpu_suspend: 0
+        snapshot-17370   [003] .....  2411.771906: msm_gpu_submit: id=37515 pid=17370 ring=0 bos=13 cmds=1
+   kworker/u16:1-16103   [000] .....  2411.777220: msm_gpu_resume: 0
+        snapshot-17370   [003] .....  2411.778106: msm_gpu_submit: id=37516 pid=17370 ring=0 bos=14 cmds=1
+      gpu-worker-139     [000] .....  2411.784074: msm_gpu_submit_retired: id=37515 pid=17370 ring=0:37260 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2411.788163: msm_gpu_submit_retired: id=37516 pid=17370 ring=0:37261 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17370   [003] .....  2411.789346: msm_gpu_submit: id=37517 pid=17370 ring=0 bos=13 cmds=1
+        snapshot-17370   [003] .....  2411.789706: msm_gpu_submit: id=37518 pid=17370 ring=0 bos=13 cmds=1
+        snapshot-17370   [003] .....  2411.790115: msm_gpu_submit: id=37519 pid=17370 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2411.790485: msm_gpu_submit_retired: id=37517 pid=17370 ring=0:37262 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2411.790697: msm_gpu_submit_retired: id=37518 pid=17370 ring=0:37263 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2411.790753: msm_gpu_submit_retired: id=37519 pid=17370 ring=0:37264 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17370   [003] .....  2411.791194: msm_gpu_submit: id=37520 pid=17370 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2411.791449: msm_gpu_submit_retired: id=37520 pid=17370 ring=0:37265 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17370   [003] .....  2411.791553: msm_gpu_submit: id=37521 pid=17370 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2411.791644: msm_gpu_submit_retired: id=37521 pid=17370 ring=0:37266 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17370   [003] .....  2411.791733: msm_gpu_submit: id=37522 pid=17370 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2411.791817: msm_gpu_submit_retired: id=37522 pid=17370 ring=0:37267 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17370   [003] .....  2411.791892: msm_gpu_submit: id=37523 pid=17370 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2411.791974: msm_gpu_submit_retired: id=37523 pid=17370 ring=0:37268 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17370   [003] .....  2411.792200: msm_gpu_submit: id=37524 pid=17370 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2411.792333: msm_gpu_submit_retired: id=37524 pid=17370 ring=0:37269 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17370   [003] .....  2411.792587: msm_gpu_submit: id=37525 pid=17370 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2411.792682: msm_gpu_submit_retired: id=37525 pid=17370 ring=0:37270 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17370   [001] .....  2411.800217: msm_gpu_submit: id=37526 pid=17370 ring=0 bos=27 cmds=1
+      gpu-worker-139     [000] .....  2411.800764: msm_gpu_submit_retired: id=37526 pid=17370 ring=0:37271 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [002] .....  2411.868987: msm_gpu_suspend: 0
+ gnome-text-edit-17432   [001] .....  2422.653546: msm_gpu_submit: id=37527 pid=17432 ring=0 bos=40 cmds=1
+   kworker/u16:3-5193    [003] .....  2422.663566: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2422.672737: msm_gpu_submit_retired: id=37527 pid=17432 ring=0:37272 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [002] .....  2422.755541: msm_gpu_suspend: 0
+    gnome-clocks-17510   [003] .....  2445.197712: msm_gpu_submit: id=37528 pid=17510 ring=0 bos=33 cmds=1
+   kworker/u16:2-17078   [001] .....  2445.207668: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2445.213189: msm_gpu_submit_retired: id=37528 pid=17510 ring=0:37273 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:2-17078   [001] .....  2445.295973: msm_gpu_suspend: 0
+        nautilus-17580   [001] .....  2457.055374: msm_gpu_submit: id=37529 pid=17580 ring=0 bos=37 cmds=1
+   kworker/u16:3-5193    [000] .....  2457.064057: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2457.071394: msm_gpu_submit_retired: id=37529 pid=17580 ring=0:37274 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:2-17078   [000] .....  2457.147635: msm_gpu_suspend: 0
+             kgx-17636   [000] .....  2468.010001: msm_gpu_submit: id=37530 pid=17636 ring=0 bos=40 cmds=1
+   kworker/u16:2-17078   [002] .....  2468.020144: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2468.025912: msm_gpu_submit_retired: id=37530 pid=17636 ring=0:37275 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:2-17078   [003] .....  2468.108732: msm_gpu_suspend: 0
+        snapshot-17691   [001] .....  2479.397235: msm_gpu_submit: id=37531 pid=17691 ring=0 bos=38 cmds=3
+   kworker/u16:3-5193    [002] .....  2479.406226: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2479.410540: msm_gpu_submit_retired: id=37531 pid=17691 ring=0:37276 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [000] .....  2479.490935: msm_gpu_suspend: 0
+        snapshot-17691   [003] .....  2480.672901: msm_gpu_submit: id=37532 pid=17691 ring=0 bos=13 cmds=1
+   kworker/u16:3-5193    [002] .....  2480.679038: msm_gpu_resume: 0
+        snapshot-17691   [003] .....  2480.679386: msm_gpu_submit: id=37533 pid=17691 ring=0 bos=14 cmds=1
+      gpu-worker-139     [000] .....  2480.685863: msm_gpu_submit_retired: id=37532 pid=17691 ring=0:37277 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2480.689946: msm_gpu_submit_retired: id=37533 pid=17691 ring=0:37278 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17691   [000] .....  2480.690648: msm_gpu_submit: id=37534 pid=17691 ring=0 bos=13 cmds=1
+        snapshot-17691   [000] .....  2480.691097: msm_gpu_submit: id=37535 pid=17691 ring=0 bos=13 cmds=1
+        snapshot-17691   [000] .....  2480.691519: msm_gpu_submit: id=37536 pid=17691 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2480.691835: msm_gpu_submit_retired: id=37534 pid=17691 ring=0:37279 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2480.692042: msm_gpu_submit_retired: id=37535 pid=17691 ring=0:37280 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2480.692107: msm_gpu_submit_retired: id=37536 pid=17691 ring=0:37281 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17691   [000] .....  2480.692399: msm_gpu_submit: id=37537 pid=17691 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2480.692549: msm_gpu_submit_retired: id=37537 pid=17691 ring=0:37282 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17691   [000] .....  2480.692698: msm_gpu_submit: id=37538 pid=17691 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2480.692819: msm_gpu_submit_retired: id=37538 pid=17691 ring=0:37283 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17691   [000] .....  2480.692954: msm_gpu_submit: id=37539 pid=17691 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2480.693064: msm_gpu_submit_retired: id=37539 pid=17691 ring=0:37284 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17691   [000] .....  2480.693195: msm_gpu_submit: id=37540 pid=17691 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2480.693302: msm_gpu_submit_retired: id=37540 pid=17691 ring=0:37285 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17691   [000] .....  2480.693435: msm_gpu_submit: id=37541 pid=17691 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2480.693551: msm_gpu_submit_retired: id=37541 pid=17691 ring=0:37286 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17691   [000] .....  2480.693680: msm_gpu_submit: id=37542 pid=17691 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2480.693786: msm_gpu_submit_retired: id=37542 pid=17691 ring=0:37287 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-17691   [000] .....  2480.700289: msm_gpu_submit: id=37543 pid=17691 ring=0 bos=27 cmds=1
+      gpu-worker-139     [000] .....  2480.700838: msm_gpu_submit_retired: id=37543 pid=17691 ring=0:37288 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [002] .....  2480.772810: msm_gpu_suspend: 0
+ gnome-text-edit-17747   [003] .....  2491.365775: msm_gpu_submit: id=37544 pid=17747 ring=0 bos=40 cmds=1
+   kworker/u16:1-16103   [000] .....  2491.375608: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2491.384697: msm_gpu_submit_retired: id=37544 pid=17747 ring=0:37289 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [001] .....  2491.467589: msm_gpu_suspend: 0
+    gnome-clocks-17827   [000] .....  2513.967142: msm_gpu_submit: id=37545 pid=17827 ring=0 bos=33 cmds=1
+   kworker/u16:2-17078   [001] .....  2513.976353: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2513.981805: msm_gpu_submit_retired: id=37545 pid=17827 ring=0:37290 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:2-17078   [003] .....  2514.064517: msm_gpu_suspend: 0
+        nautilus-17895   [001] .....  2525.804394: msm_gpu_submit: id=37546 pid=17895 ring=0 bos=37 cmds=1
+   kworker/u16:1-16103   [000] .....  2525.814279: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2525.821516: msm_gpu_submit_retired: id=37546 pid=17895 ring=0:37291 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [000] .....  2525.904214: msm_gpu_suspend: 0
+             kgx-17950   [002] .....  2536.868265: msm_gpu_submit: id=37547 pid=17950 ring=0 bos=40 cmds=1
+   kworker/u16:1-16103   [001] .....  2536.878641: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2536.884339: msm_gpu_submit_retired: id=37547 pid=17950 ring=0:37292 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [000] .....  2536.957682: msm_gpu_suspend: 0
+        snapshot-18013   [000] .....  2548.239106: msm_gpu_submit: id=37548 pid=18013 ring=0 bos=38 cmds=3
+   kworker/u16:2-17078   [002] .....  2548.249724: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2548.254168: msm_gpu_submit_retired: id=37548 pid=18013 ring=0:37293 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:2-17078   [003] .....  2548.336897: msm_gpu_suspend: 0
+        snapshot-18013   [001] .....  2549.377152: msm_gpu_submit: id=37549 pid=18013 ring=0 bos=13 cmds=1
+   kworker/u16:1-16103   [003] .....  2549.381838: msm_gpu_resume: 0
+        snapshot-18013   [001] .....  2549.382393: msm_gpu_submit: id=37550 pid=18013 ring=0 bos=14 cmds=1
+      gpu-worker-139     [000] .....  2549.389065: msm_gpu_submit_retired: id=37549 pid=18013 ring=0:37294 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2549.391140: msm_gpu_submit_retired: id=37550 pid=18013 ring=0:37295 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18013   [001] .....  2549.392176: msm_gpu_submit: id=37551 pid=18013 ring=0 bos=13 cmds=1
+        snapshot-18013   [001] .....  2549.392602: msm_gpu_submit: id=37552 pid=18013 ring=0 bos=13 cmds=1
+        snapshot-18013   [001] .....  2549.393064: msm_gpu_submit: id=37553 pid=18013 ring=0 bos=13 cmds=1
+        snapshot-18013   [001] .....  2549.393455: msm_gpu_submit: id=37554 pid=18013 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2549.393487: msm_gpu_submit_retired: id=37551 pid=18013 ring=0:37296 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2549.393559: msm_gpu_submit_retired: id=37552 pid=18013 ring=0:37297 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2549.393596: msm_gpu_submit_retired: id=37553 pid=18013 ring=0:37298 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2549.393612: msm_gpu_submit_retired: id=37554 pid=18013 ring=0:37299 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18013   [001] .....  2549.393710: msm_gpu_submit: id=37555 pid=18013 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2549.393830: msm_gpu_submit_retired: id=37555 pid=18013 ring=0:37300 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18013   [001] .....  2549.393931: msm_gpu_submit: id=37556 pid=18013 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2549.394044: msm_gpu_submit_retired: id=37556 pid=18013 ring=0:37301 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18013   [001] .....  2549.394189: msm_gpu_submit: id=37557 pid=18013 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2549.394303: msm_gpu_submit_retired: id=37557 pid=18013 ring=0:37302 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18013   [001] .....  2549.394405: msm_gpu_submit: id=37558 pid=18013 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2549.394486: msm_gpu_submit_retired: id=37558 pid=18013 ring=0:37303 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18013   [001] .....  2549.394552: msm_gpu_submit: id=37559 pid=18013 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2549.394630: msm_gpu_submit_retired: id=37559 pid=18013 ring=0:37304 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18013   [001] .....  2549.403438: msm_gpu_submit: id=37560 pid=18013 ring=0 bos=27 cmds=1
+      gpu-worker-139     [000] .....  2549.404053: msm_gpu_submit_retired: id=37560 pid=18013 ring=0:37305 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [002] .....  2549.472117: msm_gpu_suspend: 0
+ gnome-text-edit-18082   [001] .....  2560.185391: msm_gpu_submit: id=37561 pid=18082 ring=0 bos=40 cmds=1
+   kworker/u16:2-17078   [002] .....  2560.195407: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2560.204428: msm_gpu_submit_retired: id=37561 pid=18082 ring=0:37306 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:2-17078   [003] .....  2560.278488: msm_gpu_suspend: 0
+    gnome-clocks-18155   [003] .....  2582.783690: msm_gpu_submit: id=37562 pid=18155 ring=0 bos=33 cmds=1
+   kworker/u16:3-5193    [000] .....  2582.793840: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2582.799367: msm_gpu_submit_retired: id=37562 pid=18155 ring=0:37307 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [000] .....  2582.882064: msm_gpu_suspend: 0
+        nautilus-18215   [003] .....  2594.654771: msm_gpu_submit: id=37563 pid=18215 ring=0 bos=37 cmds=1
+   kworker/u16:3-5193    [000] .....  2594.665254: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2594.672513: msm_gpu_submit_retired: id=37563 pid=18215 ring=0:37308 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [002] .....  2594.754431: msm_gpu_suspend: 0
+             kgx-18277   [001] .....  2605.599594: msm_gpu_submit: id=37564 pid=18277 ring=0 bos=40 cmds=1
+   kworker/u16:3-5193    [002] .....  2605.609749: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2605.615449: msm_gpu_submit_retired: id=37564 pid=18277 ring=0:37309 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [002] .....  2605.684327: msm_gpu_suspend: 0
+        snapshot-18325   [000] .....  2616.998689: msm_gpu_submit: id=37565 pid=18325 ring=0 bos=38 cmds=3
+   kworker/u16:2-17078   [001] .....  2617.008981: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2617.013363: msm_gpu_submit_retired: id=37565 pid=18325 ring=0:37310 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:2-17078   [001] .....  2617.094239: msm_gpu_suspend: 0
+        snapshot-18325   [000] .....  2618.139813: msm_gpu_submit: id=37566 pid=18325 ring=0 bos=13 cmds=1
+   kworker/u16:3-5193    [001] .....  2618.145600: msm_gpu_resume: 0
+        snapshot-18325   [000] .....  2618.146121: msm_gpu_submit: id=37567 pid=18325 ring=0 bos=14 cmds=1
+      gpu-worker-139     [000] .....  2618.152335: msm_gpu_submit_retired: id=37566 pid=18325 ring=0:37311 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2618.155192: msm_gpu_submit_retired: id=37567 pid=18325 ring=0:37312 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18325   [000] .....  2618.156030: msm_gpu_submit: id=37568 pid=18325 ring=0 bos=13 cmds=1
+        snapshot-18325   [000] .....  2618.156449: msm_gpu_submit: id=37569 pid=18325 ring=0 bos=13 cmds=1
+        snapshot-18325   [000] .....  2618.156904: msm_gpu_submit: id=37570 pid=18325 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2618.157172: msm_gpu_submit_retired: id=37568 pid=18325 ring=0:37313 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2618.157455: msm_gpu_submit_retired: id=37569 pid=18325 ring=0:37314 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2618.157472: msm_gpu_submit_retired: id=37570 pid=18325 ring=0:37315 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18325   [000] .....  2618.157651: msm_gpu_submit: id=37571 pid=18325 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2618.157821: msm_gpu_submit_retired: id=37571 pid=18325 ring=0:37316 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18325   [000] .....  2618.157993: msm_gpu_submit: id=37572 pid=18325 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2618.158155: msm_gpu_submit_retired: id=37572 pid=18325 ring=0:37317 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18325   [000] .....  2618.158366: msm_gpu_submit: id=37573 pid=18325 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2618.158476: msm_gpu_submit_retired: id=37573 pid=18325 ring=0:37318 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18325   [000] .....  2618.158590: msm_gpu_submit: id=37574 pid=18325 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2618.158689: msm_gpu_submit_retired: id=37574 pid=18325 ring=0:37319 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18325   [000] .....  2618.158833: msm_gpu_submit: id=37575 pid=18325 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2618.158981: msm_gpu_submit_retired: id=37575 pid=18325 ring=0:37320 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18325   [000] .....  2618.159158: msm_gpu_submit: id=37576 pid=18325 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2618.159285: msm_gpu_submit_retired: id=37576 pid=18325 ring=0:37321 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18325   [000] .....  2618.168096: msm_gpu_submit: id=37577 pid=18325 ring=0 bos=27 cmds=1
+      gpu-worker-139     [000] .....  2618.168700: msm_gpu_submit_retired: id=37577 pid=18325 ring=0:37322 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [001] .....  2618.236265: msm_gpu_suspend: 0
+ gnome-text-edit-18394   [000] .....  2628.959228: msm_gpu_submit: id=37578 pid=18394 ring=0 bos=40 cmds=1
+   kworker/u16:1-16103   [003] .....  2628.967786: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2628.976796: msm_gpu_submit_retired: id=37578 pid=18394 ring=0:37323 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [001] .....  2629.059529: msm_gpu_suspend: 0
+    gnome-clocks-18473   [003] .....  2651.542398: msm_gpu_submit: id=37579 pid=18473 ring=0 bos=33 cmds=1
+   kworker/u16:1-16103   [001] .....  2651.553021: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2651.558442: msm_gpu_submit_retired: id=37579 pid=18473 ring=0:37324 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [000] .....  2651.641141: msm_gpu_suspend: 0
+        nautilus-18540   [000] .....  2663.422562: msm_gpu_submit: id=37580 pid=18540 ring=0 bos=37 cmds=1
+   kworker/u16:2-17078   [002] .....  2663.431631: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2663.438889: msm_gpu_submit_retired: id=37580 pid=18540 ring=0:37325 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [002] .....  2663.520841: msm_gpu_suspend: 0
+             kgx-18594   [003] .....  2674.400254: msm_gpu_submit: id=37581 pid=18594 ring=0 bos=40 cmds=1
+   kworker/u16:1-16103   [002] .....  2674.408776: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2674.414489: msm_gpu_submit_retired: id=37581 pid=18594 ring=0:37326 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [002] .....  2674.497331: msm_gpu_suspend: 0
+        snapshot-18657   [003] .....  2685.761656: msm_gpu_submit: id=37582 pid=18657 ring=0 bos=38 cmds=3
+   kworker/u16:2-17078   [002] .....  2685.771674: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2685.776062: msm_gpu_submit_retired: id=37582 pid=18657 ring=0:37327 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:2-17078   [002] .....  2685.857357: msm_gpu_suspend: 0
+        snapshot-18657   [000] .....  2686.864221: msm_gpu_submit: id=37583 pid=18657 ring=0 bos=13 cmds=1
+   kworker/u16:2-17078   [002] .....  2686.868647: msm_gpu_resume: 0
+        snapshot-18657   [000] .....  2686.869102: msm_gpu_submit: id=37584 pid=18657 ring=0 bos=14 cmds=1
+      gpu-worker-139     [000] .....  2686.875411: msm_gpu_submit_retired: id=37583 pid=18657 ring=0:37328 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2686.877015: msm_gpu_submit_retired: id=37584 pid=18657 ring=0:37329 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18657   [000] .....  2686.877784: msm_gpu_submit: id=37585 pid=18657 ring=0 bos=13 cmds=1
+        snapshot-18657   [000] .....  2686.878252: msm_gpu_submit: id=37586 pid=18657 ring=0 bos=13 cmds=1
+        snapshot-18657   [000] .....  2686.878689: msm_gpu_submit: id=37587 pid=18657 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2686.878928: msm_gpu_submit_retired: id=37585 pid=18657 ring=0:37330 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2686.879141: msm_gpu_submit_retired: id=37586 pid=18657 ring=0:37331 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2686.879169: msm_gpu_submit_retired: id=37587 pid=18657 ring=0:37332 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18657   [000] .....  2686.879291: msm_gpu_submit: id=37588 pid=18657 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2686.879443: msm_gpu_submit_retired: id=37588 pid=18657 ring=0:37333 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18657   [000] .....  2686.879634: msm_gpu_submit: id=37589 pid=18657 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2686.879770: msm_gpu_submit_retired: id=37589 pid=18657 ring=0:37334 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18657   [000] .....  2686.879941: msm_gpu_submit: id=37590 pid=18657 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2686.880067: msm_gpu_submit_retired: id=37590 pid=18657 ring=0:37335 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18657   [000] .....  2686.880231: msm_gpu_submit: id=37591 pid=18657 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2686.880374: msm_gpu_submit_retired: id=37591 pid=18657 ring=0:37336 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18657   [000] .....  2686.880550: msm_gpu_submit: id=37592 pid=18657 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2686.880742: msm_gpu_submit_retired: id=37592 pid=18657 ring=0:37337 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18657   [000] .....  2686.880907: msm_gpu_submit: id=37593 pid=18657 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2686.881042: msm_gpu_submit_retired: id=37593 pid=18657 ring=0:37338 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18657   [000] .....  2686.890250: msm_gpu_submit: id=37594 pid=18657 ring=0 bos=27 cmds=1
+      gpu-worker-139     [000] .....  2686.890883: msm_gpu_submit_retired: id=37594 pid=18657 ring=0:37339 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:2-17078   [002] .....  2686.959870: msm_gpu_suspend: 0
+ gnome-text-edit-18711   [000] .....  2697.695553: msm_gpu_submit: id=37595 pid=18711 ring=0 bos=40 cmds=1
+   kworker/u16:2-17078   [002] .....  2697.705781: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2697.714760: msm_gpu_submit_retired: id=37595 pid=18711 ring=0:37340 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:2-17078   [002] .....  2697.797568: msm_gpu_suspend: 0
+    gnome-clocks-18783   [000] .....  2720.281862: msm_gpu_submit: id=37596 pid=18783 ring=0 bos=33 cmds=1
+   kworker/u16:1-16103   [003] .....  2720.291320: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2720.296752: msm_gpu_submit_retired: id=37596 pid=18783 ring=0:37341 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [003] .....  2720.379541: msm_gpu_suspend: 0
+        nautilus-18850   [002] .....  2732.145880: msm_gpu_submit: id=37597 pid=18850 ring=0 bos=37 cmds=1
+   kworker/u16:1-16103   [000] .....  2732.156392: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2732.163722: msm_gpu_submit_retired: id=37597 pid=18850 ring=0:37342 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [000] .....  2732.246368: msm_gpu_suspend: 0
+             kgx-18922   [002] .....  2743.112549: msm_gpu_submit: id=37598 pid=18922 ring=0 bos=40 cmds=1
+   kworker/u16:1-16103   [000] .....  2743.121942: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2743.127599: msm_gpu_submit_retired: id=37598 pid=18922 ring=0:37343 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [000] .....  2743.210313: msm_gpu_suspend: 0
+        snapshot-18970   [001] .....  2754.507708: msm_gpu_submit: id=37599 pid=18970 ring=0 bos=38 cmds=3
+   kworker/u16:1-16103   [000] .....  2754.517037: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2754.521459: msm_gpu_submit_retired: id=37599 pid=18970 ring=0:37344 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [001] .....  2754.590690: msm_gpu_suspend: 0
+        snapshot-18970   [002] .....  2755.802110: msm_gpu_submit: id=37600 pid=18970 ring=0 bos=13 cmds=1
+   kworker/u16:3-5193    [001] .....  2755.808132: msm_gpu_resume: 0
+        snapshot-18970   [002] .....  2755.808665: msm_gpu_submit: id=37601 pid=18970 ring=0 bos=14 cmds=1
+      gpu-worker-139     [000] .....  2755.815219: msm_gpu_submit_retired: id=37600 pid=18970 ring=0:37345 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2755.817206: msm_gpu_submit_retired: id=37601 pid=18970 ring=0:37346 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18970   [002] .....  2755.818263: msm_gpu_submit: id=37602 pid=18970 ring=0 bos=13 cmds=1
+        snapshot-18970   [002] .....  2755.818670: msm_gpu_submit: id=37603 pid=18970 ring=0 bos=13 cmds=1
+        snapshot-18970   [002] .....  2755.819130: msm_gpu_submit: id=37604 pid=18970 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2755.819369: msm_gpu_submit_retired: id=37602 pid=18970 ring=0:37347 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18970   [002] .....  2755.819502: msm_gpu_submit: id=37605 pid=18970 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2755.819579: msm_gpu_submit_retired: id=37603 pid=18970 ring=0:37348 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2755.819657: msm_gpu_submit_retired: id=37604 pid=18970 ring=0:37349 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2755.819668: msm_gpu_submit_retired: id=37605 pid=18970 ring=0:37350 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18970   [002] .....  2755.819763: msm_gpu_submit: id=37606 pid=18970 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2755.819872: msm_gpu_submit_retired: id=37606 pid=18970 ring=0:37351 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18970   [002] .....  2755.819978: msm_gpu_submit: id=37607 pid=18970 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2755.820081: msm_gpu_submit_retired: id=37607 pid=18970 ring=0:37352 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18970   [002] .....  2755.820183: msm_gpu_submit: id=37608 pid=18970 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2755.820289: msm_gpu_submit_retired: id=37608 pid=18970 ring=0:37353 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18970   [002] .....  2755.820366: msm_gpu_submit: id=37609 pid=18970 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2755.820495: msm_gpu_submit_retired: id=37609 pid=18970 ring=0:37354 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18970   [002] .....  2755.820576: msm_gpu_submit: id=37610 pid=18970 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2755.820660: msm_gpu_submit_retired: id=37610 pid=18970 ring=0:37355 elapsed=0 ns mhz=0 start=0 end=0
+        snapshot-18970   [002] .....  2755.828608: msm_gpu_submit: id=37611 pid=18970 ring=0 bos=27 cmds=1
+      gpu-worker-139     [000] .....  2755.829174: msm_gpu_submit_retired: id=37611 pid=18970 ring=0:37356 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [001] .....  2755.898282: msm_gpu_suspend: 0
+            phoc-1569    [002] .....  2762.096888: msm_gpu_submit: id=37612 pid=1569 ring=0 bos=22 cmds=1
+   kworker/u16:3-5193    [003] .....  2762.104146: msm_gpu_resume: 0
+      gpu-worker-139     [001] .....  2762.108282: msm_gpu_submit_retired: id=37612 pid=1569 ring=0:37357 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [002] .....  2762.190708: msm_gpu_suspend: 0
+            phoc-1569    [000] .....  2762.293611: msm_gpu_submit: id=37613 pid=1569 ring=0 bos=36 cmds=2
+   kworker/u16:2-17078   [001] .....  2762.313063: msm_gpu_resume: 0
+      gpu-worker-139     [001] .....  2762.324368: msm_gpu_submit_retired: id=37613 pid=1569 ring=0:37358 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2762.334541: msm_gpu_submit: id=37614 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2762.347155: msm_gpu_submit_retired: id=37614 pid=1569 ring=0:37359 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2762.351072: msm_gpu_submit: id=37615 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [001] .....  2762.359848: msm_gpu_submit_retired: id=37615 pid=1569 ring=0:37360 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [003] .....  2762.436605: msm_gpu_suspend: 0
+            phoc-1569    [003] .....  2763.423240: msm_gpu_submit: id=37616 pid=1569 ring=0 bos=34 cmds=2
+   kworker/u16:1-16103   [002] .....  2763.423623: msm_gpu_resume: 0
+      gpu-worker-139     [001] .....  2763.432503: msm_gpu_submit_retired: id=37616 pid=1569 ring=0:37361 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2763.470130: msm_gpu_submit: id=37617 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [001] .....  2763.478533: msm_gpu_submit_retired: id=37617 pid=1569 ring=0:37362 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [002] .....  2763.561476: msm_gpu_suspend: 0
+            phoc-1569    [001] .....  2764.908331: msm_gpu_submit: id=37618 pid=1569 ring=0 bos=34 cmds=2
+   kworker/u16:1-16103   [002] .....  2764.908727: msm_gpu_resume: 0
+      gpu-worker-139     [001] .....  2764.917514: msm_gpu_submit_retired: id=37618 pid=1569 ring=0:37363 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2764.933959: msm_gpu_submit: id=37619 pid=1569 ring=0 bos=41 cmds=3
+      gpu-worker-139     [001] .....  2764.942371: msm_gpu_submit_retired: id=37619 pid=1569 ring=0:37364 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2764.951388: msm_gpu_submit: id=37620 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [001] .....  2764.959694: msm_gpu_submit_retired: id=37620 pid=1569 ring=0:37365 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2764.967473: msm_gpu_submit: id=37621 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2764.978491: msm_gpu_submit_retired: id=37621 pid=1569 ring=0:37366 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2764.985404: msm_gpu_submit: id=37622 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2764.995771: msm_gpu_submit_retired: id=37622 pid=1569 ring=0:37367 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2765.000559: msm_gpu_submit: id=37623 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2765.011005: msm_gpu_submit_retired: id=37623 pid=1569 ring=0:37368 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2765.017134: msm_gpu_submit: id=37624 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2765.027623: msm_gpu_submit_retired: id=37624 pid=1569 ring=0:37369 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.034017: msm_gpu_submit: id=37625 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2765.044652: msm_gpu_submit_retired: id=37625 pid=1569 ring=0:37370 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2765.051029: msm_gpu_submit: id=37626 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2765.062536: msm_gpu_submit_retired: id=37626 pid=1569 ring=0:37371 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.067447: msm_gpu_submit: id=37627 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2765.078140: msm_gpu_submit_retired: id=37627 pid=1569 ring=0:37372 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.084339: msm_gpu_submit: id=37628 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2765.095055: msm_gpu_submit_retired: id=37628 pid=1569 ring=0:37373 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.100838: msm_gpu_submit: id=37629 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2765.111473: msm_gpu_submit_retired: id=37629 pid=1569 ring=0:37374 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.117392: msm_gpu_submit: id=37630 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2765.127973: msm_gpu_submit_retired: id=37630 pid=1569 ring=0:37375 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.134031: msm_gpu_submit: id=37631 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2765.144415: msm_gpu_submit_retired: id=37631 pid=1569 ring=0:37376 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.150728: msm_gpu_submit: id=37632 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2765.161062: msm_gpu_submit_retired: id=37632 pid=1569 ring=0:37377 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.167372: msm_gpu_submit: id=37633 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2765.177851: msm_gpu_submit_retired: id=37633 pid=1569 ring=0:37378 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.184076: msm_gpu_submit: id=37634 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2765.194569: msm_gpu_submit_retired: id=37634 pid=1569 ring=0:37379 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.200969: msm_gpu_submit: id=37635 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2765.211212: msm_gpu_submit_retired: id=37635 pid=1569 ring=0:37380 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.217388: msm_gpu_submit: id=37636 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2765.227771: msm_gpu_submit_retired: id=37636 pid=1569 ring=0:37381 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.234129: msm_gpu_submit: id=37637 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2765.244734: msm_gpu_submit_retired: id=37637 pid=1569 ring=0:37382 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.250856: msm_gpu_submit: id=37638 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2765.261418: msm_gpu_submit_retired: id=37638 pid=1569 ring=0:37383 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.267293: msm_gpu_submit: id=37639 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [001] .....  2765.277537: msm_gpu_submit_retired: id=37639 pid=1569 ring=0:37384 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.283959: msm_gpu_submit: id=37640 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [001] .....  2765.292211: msm_gpu_submit_retired: id=37640 pid=1569 ring=0:37385 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.313968: msm_gpu_submit: id=37641 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [001] .....  2765.322270: msm_gpu_submit_retired: id=37641 pid=1569 ring=0:37386 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [003] .....  2765.403794: msm_gpu_suspend: 0
+            phoc-1569    [003] .....  2765.714388: msm_gpu_submit: id=37642 pid=1569 ring=0 bos=34 cmds=2
+   kworker/u16:2-17078   [001] .....  2765.714812: msm_gpu_resume: 0
+      gpu-worker-139     [001] .....  2765.723596: msm_gpu_submit_retired: id=37642 pid=1569 ring=0:37387 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.734205: msm_gpu_submit: id=37643 pid=1569 ring=0 bos=41 cmds=3
+      gpu-worker-139     [001] .....  2765.742719: msm_gpu_submit_retired: id=37643 pid=1569 ring=0:37388 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.750903: msm_gpu_submit: id=37644 pid=1569 ring=0 bos=42 cmds=3
+      gpu-worker-139     [000] .....  2765.761899: msm_gpu_submit_retired: id=37644 pid=1569 ring=0:37389 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.767509: msm_gpu_submit: id=37645 pid=1569 ring=0 bos=42 cmds=3
+      gpu-worker-139     [000] .....  2765.779577: msm_gpu_submit_retired: id=37645 pid=1569 ring=0:37390 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.791255: msm_gpu_submit: id=37646 pid=1569 ring=0 bos=42 cmds=3
+      gpu-worker-139     [000] .....  2765.805905: msm_gpu_submit_retired: id=37646 pid=1569 ring=0:37391 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.817491: msm_gpu_submit: id=37647 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [000] .....  2765.828526: msm_gpu_submit_retired: id=37647 pid=1569 ring=0:37392 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2765.834018: msm_gpu_submit: id=37648 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2765.844883: msm_gpu_submit_retired: id=37648 pid=1569 ring=0:37393 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2765.850838: msm_gpu_submit: id=37649 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2765.861728: msm_gpu_submit_retired: id=37649 pid=1569 ring=0:37394 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2765.867423: msm_gpu_submit: id=37650 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2765.878310: msm_gpu_submit_retired: id=37650 pid=1569 ring=0:37395 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2765.884155: msm_gpu_submit: id=37651 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2765.895678: msm_gpu_submit_retired: id=37651 pid=1569 ring=0:37396 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2765.900720: msm_gpu_submit: id=37652 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2765.912063: msm_gpu_submit_retired: id=37652 pid=1569 ring=0:37397 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2765.917503: msm_gpu_submit: id=37653 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2765.929193: msm_gpu_submit_retired: id=37653 pid=1569 ring=0:37398 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2765.934474: msm_gpu_submit: id=37654 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2765.946362: msm_gpu_submit_retired: id=37654 pid=1569 ring=0:37399 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.950794: msm_gpu_submit: id=37655 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2765.962747: msm_gpu_submit_retired: id=37655 pid=1569 ring=0:37400 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.967672: msm_gpu_submit: id=37656 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2765.979884: msm_gpu_submit_retired: id=37656 pid=1569 ring=0:37401 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2765.984305: msm_gpu_submit: id=37657 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2765.996637: msm_gpu_submit_retired: id=37657 pid=1569 ring=0:37402 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2766.000947: msm_gpu_submit: id=37658 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2766.013526: msm_gpu_submit_retired: id=37658 pid=1569 ring=0:37403 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2766.017567: msm_gpu_submit: id=37659 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2766.030221: msm_gpu_submit_retired: id=37659 pid=1569 ring=0:37404 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2766.034398: msm_gpu_submit: id=37660 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2766.046768: msm_gpu_submit_retired: id=37660 pid=1569 ring=0:37405 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2766.050977: msm_gpu_submit: id=37661 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2766.063617: msm_gpu_submit_retired: id=37661 pid=1569 ring=0:37406 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2766.067669: msm_gpu_submit: id=37662 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2766.080320: msm_gpu_submit_retired: id=37662 pid=1569 ring=0:37407 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2766.084089: msm_gpu_submit: id=37663 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2766.096699: msm_gpu_submit_retired: id=37663 pid=1569 ring=0:37408 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2766.100886: msm_gpu_submit: id=37664 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2766.113376: msm_gpu_submit_retired: id=37664 pid=1569 ring=0:37409 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2766.117555: msm_gpu_submit: id=37665 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2766.130049: msm_gpu_submit_retired: id=37665 pid=1569 ring=0:37410 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2766.134235: msm_gpu_submit: id=37666 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2766.147727: msm_gpu_submit_retired: id=37666 pid=1569 ring=0:37411 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2766.152121: msm_gpu_submit: id=37667 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2766.164665: msm_gpu_submit_retired: id=37667 pid=1569 ring=0:37412 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [001] .....  2766.247237: msm_gpu_suspend: 0
+ gnome-text-edit-19167   [000] .....  2766.578757: msm_gpu_submit: id=37668 pid=19167 ring=0 bos=40 cmds=1
+   kworker/u16:1-16103   [001] .....  2766.587762: msm_gpu_resume: 0
+            phoc-1569    [002] .....  2766.590170: msm_gpu_submit: id=37669 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2766.596839: msm_gpu_submit_retired: id=37668 pid=19167 ring=0:37413 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [003] .....  2766.611906: msm_gpu_submit_retired: id=37669 pid=1569 ring=0:37414 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2766.617697: msm_gpu_submit: id=37670 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2766.633018: msm_gpu_submit_retired: id=37670 pid=1569 ring=0:37415 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2766.652379: msm_gpu_submit: id=37671 pid=1569 ring=0 bos=36 cmds=2
+            phoc-1569    [003] .....  2766.655700: msm_gpu_submit: id=37672 pid=1569 ring=0 bos=27 cmds=1
+      gpu-worker-139     [003] .....  2766.667402: msm_gpu_submit_retired: id=37671 pid=1569 ring=0:37416 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [003] .....  2766.670185: msm_gpu_submit_retired: id=37672 pid=1569 ring=0:37417 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2766.684303: msm_gpu_submit: id=37673 pid=1569 ring=0 bos=26 cmds=1
+      gpu-worker-139     [003] .....  2766.689094: msm_gpu_submit_retired: id=37673 pid=1569 ring=0:37418 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2766.697809: msm_gpu_submit: id=37674 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2766.712140: msm_gpu_submit_retired: id=37674 pid=1569 ring=0:37419 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2766.717715: msm_gpu_submit: id=37675 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2766.730749: msm_gpu_submit_retired: id=37675 pid=1569 ring=0:37420 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2766.734521: msm_gpu_submit: id=37676 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2766.747419: msm_gpu_submit_retired: id=37676 pid=1569 ring=0:37421 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2766.750960: msm_gpu_submit: id=37677 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2766.763797: msm_gpu_submit_retired: id=37677 pid=1569 ring=0:37422 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2766.767760: msm_gpu_submit: id=37678 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2766.780527: msm_gpu_submit_retired: id=37678 pid=1569 ring=0:37423 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2766.784155: msm_gpu_submit: id=37679 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2766.796794: msm_gpu_submit_retired: id=37679 pid=1569 ring=0:37424 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2766.801109: msm_gpu_submit: id=37680 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2766.815216: msm_gpu_submit_retired: id=37680 pid=1569 ring=0:37425 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2766.819388: msm_gpu_submit: id=37681 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2766.832713: msm_gpu_submit_retired: id=37681 pid=1569 ring=0:37426 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2766.850962: msm_gpu_submit: id=37682 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2766.863711: msm_gpu_submit_retired: id=37682 pid=1569 ring=0:37427 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2766.867668: msm_gpu_submit: id=37683 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2766.880569: msm_gpu_submit_retired: id=37683 pid=1569 ring=0:37428 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2766.884343: msm_gpu_submit: id=37684 pid=1569 ring=0 bos=36 cmds=2
+ gnome-text-edit-19167   [000] .....  2766.890171: msm_gpu_submit: id=37685 pid=19167 ring=0 bos=25 cmds=1
+      gpu-worker-139     [003] .....  2766.897485: msm_gpu_submit_retired: id=37684 pid=1569 ring=0:37429 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [003] .....  2766.897567: msm_gpu_submit_retired: id=37685 pid=19167 ring=0:37430 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2766.901118: msm_gpu_submit: id=37686 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [003] .....  2766.914080: msm_gpu_submit_retired: id=37686 pid=1569 ring=0:37431 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2766.917764: msm_gpu_submit: id=37687 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [003] .....  2766.930868: msm_gpu_submit_retired: id=37687 pid=1569 ring=0:37432 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2766.934549: msm_gpu_submit: id=37688 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2766.945090: msm_gpu_submit_retired: id=37688 pid=1569 ring=0:37433 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2766.984669: msm_gpu_submit: id=37689 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2766.995974: msm_gpu_submit_retired: id=37689 pid=1569 ring=0:37434 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2766.997536: msm_gpu_submit: id=37690 pid=19167 ring=0 bos=40 cmds=1
+            phoc-1569    [001] .....  2767.004732: msm_gpu_submit: id=37691 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2767.011036: msm_gpu_submit_retired: id=37690 pid=19167 ring=0:37435 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2767.011592: msm_gpu_submit: id=37692 pid=19167 ring=0 bos=41 cmds=1
+      gpu-worker-139     [003] .....  2767.021336: msm_gpu_submit_retired: id=37691 pid=1569 ring=0:37436 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [003] .....  2767.029473: msm_gpu_submit_retired: id=37692 pid=19167 ring=0:37437 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.034405: msm_gpu_submit: id=37693 pid=1569 ring=0 bos=35 cmds=2
+ gnome-text-edit-19167   [000] .....  2767.042917: msm_gpu_submit: id=37694 pid=19167 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2767.044809: msm_gpu_submit_retired: id=37693 pid=1569 ring=0:37438 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [003] .....  2767.047889: msm_gpu_submit_retired: id=37694 pid=19167 ring=0:37439 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.050870: msm_gpu_submit: id=37695 pid=1569 ring=0 bos=36 cmds=2
+ gnome-text-edit-19167   [000] .....  2767.059691: msm_gpu_submit: id=37696 pid=19167 ring=0 bos=34 cmds=2
+      gpu-worker-139     [003] .....  2767.061548: msm_gpu_submit_retired: id=37695 pid=1569 ring=0:37440 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [003] .....  2767.064702: msm_gpu_submit_retired: id=37696 pid=19167 ring=0:37441 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.067836: msm_gpu_submit: id=37697 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2767.073809: msm_gpu_submit_retired: id=37697 pid=1569 ring=0:37442 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2767.075770: msm_gpu_submit: id=37698 pid=19167 ring=0 bos=34 cmds=2
+      gpu-worker-139     [003] .....  2767.079398: msm_gpu_submit_retired: id=37698 pid=19167 ring=0:37443 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.085108: msm_gpu_submit: id=37699 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2767.090930: msm_gpu_submit_retired: id=37699 pid=1569 ring=0:37444 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2767.092597: msm_gpu_submit: id=37700 pid=19167 ring=0 bos=34 cmds=2
+      gpu-worker-139     [003] .....  2767.096203: msm_gpu_submit_retired: id=37700 pid=19167 ring=0:37445 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.100998: msm_gpu_submit: id=37701 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [003] .....  2767.104955: msm_gpu_submit_retired: id=37701 pid=1569 ring=0:37446 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2767.108970: msm_gpu_submit: id=37702 pid=19167 ring=0 bos=34 cmds=2
+      gpu-worker-139     [003] .....  2767.112378: msm_gpu_submit_retired: id=37702 pid=19167 ring=0:37447 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.117657: msm_gpu_submit: id=37703 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2767.123599: msm_gpu_submit_retired: id=37703 pid=1569 ring=0:37448 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [001] .....  2767.125699: msm_gpu_submit: id=37704 pid=19167 ring=0 bos=34 cmds=2
+      gpu-worker-139     [003] .....  2767.129484: msm_gpu_submit_retired: id=37704 pid=19167 ring=0:37449 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2767.134530: msm_gpu_submit: id=37705 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [003] .....  2767.140587: msm_gpu_submit_retired: id=37705 pid=1569 ring=0:37450 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [001] .....  2767.142642: msm_gpu_submit: id=37706 pid=19167 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.146176: msm_gpu_submit_retired: id=37706 pid=19167 ring=0:37451 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2767.151191: msm_gpu_submit: id=37707 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [000] .....  2767.157178: msm_gpu_submit_retired: id=37707 pid=1569 ring=0:37452 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [001] .....  2767.159145: msm_gpu_submit: id=37708 pid=19167 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.162699: msm_gpu_submit_retired: id=37708 pid=19167 ring=0:37453 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2767.168329: msm_gpu_submit: id=37709 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [000] .....  2767.174422: msm_gpu_submit_retired: id=37709 pid=1569 ring=0:37454 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [001] .....  2767.176370: msm_gpu_submit: id=37710 pid=19167 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.179880: msm_gpu_submit_retired: id=37710 pid=19167 ring=0:37455 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2767.184992: msm_gpu_submit: id=37711 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [000] .....  2767.190910: msm_gpu_submit_retired: id=37711 pid=1569 ring=0:37456 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [001] .....  2767.192915: msm_gpu_submit: id=37712 pid=19167 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.196402: msm_gpu_submit_retired: id=37712 pid=19167 ring=0:37457 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2767.201450: msm_gpu_submit: id=37713 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [000] .....  2767.205220: msm_gpu_submit_retired: id=37713 pid=1569 ring=0:37458 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [001] .....  2767.211171: msm_gpu_submit: id=37714 pid=19167 ring=0 bos=40 cmds=1
+      gpu-worker-139     [000] .....  2767.228065: msm_gpu_submit_retired: id=37714 pid=19167 ring=0:37459 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2767.231791: msm_gpu_submit: id=37715 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2767.241984: msm_gpu_submit_retired: id=37715 pid=1569 ring=0:37460 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [001] .....  2767.244180: msm_gpu_submit: id=37716 pid=19167 ring=0 bos=40 cmds=1
+      gpu-worker-139     [000] .....  2767.259043: msm_gpu_submit_retired: id=37716 pid=19167 ring=0:37461 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2767.261584: msm_gpu_submit: id=37717 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2767.271610: msm_gpu_submit_retired: id=37717 pid=1569 ring=0:37462 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [001] .....  2767.276512: msm_gpu_submit: id=37718 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.279272: msm_gpu_submit_retired: id=37718 pid=19167 ring=0:37463 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2767.285353: msm_gpu_submit: id=37719 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [000] .....  2767.294026: msm_gpu_submit_retired: id=37719 pid=1569 ring=0:37464 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [001] .....  2767.294557: msm_gpu_submit: id=37720 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.297516: msm_gpu_submit_retired: id=37720 pid=19167 ring=0:37465 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2767.301599: msm_gpu_submit: id=37721 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.305656: msm_gpu_submit_retired: id=37721 pid=1569 ring=0:37466 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:2-17078   [002] .....  2767.387838: msm_gpu_suspend: 0
+ gnome-text-edit-19167   [000] .....  2767.598149: msm_gpu_submit: id=37722 pid=19167 ring=0 bos=33 cmds=1
+   kworker/u16:2-17078   [002] .....  2767.599001: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2767.602774: msm_gpu_submit_retired: id=37722 pid=19167 ring=0:37467 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2767.604108: msm_gpu_submit: id=37723 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.607919: msm_gpu_submit_retired: id=37723 pid=1569 ring=0:37468 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2767.610693: msm_gpu_submit: id=37724 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.613921: msm_gpu_submit_retired: id=37724 pid=19167 ring=0:37469 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2767.619053: msm_gpu_submit: id=37725 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.623050: msm_gpu_submit_retired: id=37725 pid=1569 ring=0:37470 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2767.625684: msm_gpu_submit: id=37726 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.628366: msm_gpu_submit_retired: id=37726 pid=19167 ring=0:37471 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.635211: msm_gpu_submit: id=37727 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.639215: msm_gpu_submit_retired: id=37727 pid=1569 ring=0:37472 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [003] .....  2767.642621: msm_gpu_submit: id=37728 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.645443: msm_gpu_submit_retired: id=37728 pid=19167 ring=0:37473 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.651727: msm_gpu_submit: id=37729 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.655411: msm_gpu_submit_retired: id=37729 pid=1569 ring=0:37474 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [003] .....  2767.661907: msm_gpu_submit: id=37730 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.664919: msm_gpu_submit_retired: id=37730 pid=19167 ring=0:37475 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.667996: msm_gpu_submit: id=37731 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.671934: msm_gpu_submit_retired: id=37731 pid=1569 ring=0:37476 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2767.677377: msm_gpu_submit: id=37732 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.680370: msm_gpu_submit_retired: id=37732 pid=19167 ring=0:37477 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.685098: msm_gpu_submit: id=37733 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.689091: msm_gpu_submit_retired: id=37733 pid=1569 ring=0:37478 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2767.694496: msm_gpu_submit: id=37734 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.697243: msm_gpu_submit_retired: id=37734 pid=19167 ring=0:37479 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.701865: msm_gpu_submit: id=37735 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.705704: msm_gpu_submit_retired: id=37735 pid=1569 ring=0:37480 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2767.709130: msm_gpu_submit: id=37736 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.711814: msm_gpu_submit_retired: id=37736 pid=19167 ring=0:37481 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.718526: msm_gpu_submit: id=37737 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.722545: msm_gpu_submit_retired: id=37737 pid=1569 ring=0:37482 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [003] .....  2767.725910: msm_gpu_submit: id=37738 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.728561: msm_gpu_submit_retired: id=37738 pid=19167 ring=0:37483 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.734781: msm_gpu_submit: id=37739 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.738534: msm_gpu_submit_retired: id=37739 pid=1569 ring=0:37484 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [003] .....  2767.743796: msm_gpu_submit: id=37740 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.746654: msm_gpu_submit_retired: id=37740 pid=19167 ring=0:37485 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.751409: msm_gpu_submit: id=37741 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.755340: msm_gpu_submit_retired: id=37741 pid=1569 ring=0:37486 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [003] .....  2767.760362: msm_gpu_submit: id=37742 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.763414: msm_gpu_submit_retired: id=37742 pid=19167 ring=0:37487 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.768234: msm_gpu_submit: id=37743 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.772156: msm_gpu_submit_retired: id=37743 pid=1569 ring=0:37488 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [003] .....  2767.777400: msm_gpu_submit: id=37744 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.780504: msm_gpu_submit_retired: id=37744 pid=19167 ring=0:37489 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.784935: msm_gpu_submit: id=37745 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.788964: msm_gpu_submit_retired: id=37745 pid=1569 ring=0:37490 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [003] .....  2767.793680: msm_gpu_submit: id=37746 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.796822: msm_gpu_submit_retired: id=37746 pid=19167 ring=0:37491 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.801457: msm_gpu_submit: id=37747 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.805333: msm_gpu_submit_retired: id=37747 pid=1569 ring=0:37492 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [003] .....  2767.810351: msm_gpu_submit: id=37748 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.813147: msm_gpu_submit_retired: id=37748 pid=19167 ring=0:37493 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.818086: msm_gpu_submit: id=37749 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.821851: msm_gpu_submit_retired: id=37749 pid=1569 ring=0:37494 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [003] .....  2767.827022: msm_gpu_submit: id=37750 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.829973: msm_gpu_submit_retired: id=37750 pid=19167 ring=0:37495 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.835169: msm_gpu_submit: id=37751 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.839129: msm_gpu_submit_retired: id=37751 pid=1569 ring=0:37496 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [003] .....  2767.842115: msm_gpu_submit: id=37752 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.844889: msm_gpu_submit_retired: id=37752 pid=19167 ring=0:37497 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.851615: msm_gpu_submit: id=37753 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.855487: msm_gpu_submit_retired: id=37753 pid=1569 ring=0:37498 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [003] .....  2767.860368: msm_gpu_submit: id=37754 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.863320: msm_gpu_submit_retired: id=37754 pid=19167 ring=0:37499 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.868132: msm_gpu_submit: id=37755 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.872211: msm_gpu_submit_retired: id=37755 pid=1569 ring=0:37500 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [003] .....  2767.877202: msm_gpu_submit: id=37756 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.880208: msm_gpu_submit_retired: id=37756 pid=19167 ring=0:37501 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.884758: msm_gpu_submit: id=37757 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.888695: msm_gpu_submit_retired: id=37757 pid=1569 ring=0:37502 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [003] .....  2767.893682: msm_gpu_submit: id=37758 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2767.896611: msm_gpu_submit_retired: id=37758 pid=19167 ring=0:37503 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2767.901580: msm_gpu_submit: id=37759 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2767.905473: msm_gpu_submit_retired: id=37759 pid=1569 ring=0:37504 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:2-17078   [002] .....  2767.988183: msm_gpu_suspend: 0
+ gnome-text-edit-19167   [003] .....  2768.199711: msm_gpu_submit: id=37760 pid=19167 ring=0 bos=33 cmds=1
+   kworker/u16:3-5193    [001] .....  2768.200725: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2768.204977: msm_gpu_submit_retired: id=37760 pid=19167 ring=0:37505 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2768.206540: msm_gpu_submit: id=37761 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2768.211330: msm_gpu_submit_retired: id=37761 pid=1569 ring=0:37506 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2768.229887: msm_gpu_submit: id=37762 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2768.233399: msm_gpu_submit_retired: id=37762 pid=19167 ring=0:37507 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2768.235697: msm_gpu_submit: id=37763 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2768.239477: msm_gpu_submit_retired: id=37763 pid=1569 ring=0:37508 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2768.242972: msm_gpu_submit: id=37764 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2768.245768: msm_gpu_submit_retired: id=37764 pid=19167 ring=0:37509 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2768.251867: msm_gpu_submit: id=37765 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2768.255834: msm_gpu_submit_retired: id=37765 pid=1569 ring=0:37510 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2768.260765: msm_gpu_submit: id=37766 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2768.263828: msm_gpu_submit_retired: id=37766 pid=19167 ring=0:37511 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2768.268514: msm_gpu_submit: id=37767 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2768.272486: msm_gpu_submit_retired: id=37767 pid=1569 ring=0:37512 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2768.275847: msm_gpu_submit: id=37768 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2768.278509: msm_gpu_submit_retired: id=37768 pid=19167 ring=0:37513 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2768.285207: msm_gpu_submit: id=37769 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2768.289200: msm_gpu_submit_retired: id=37769 pid=1569 ring=0:37514 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2768.292424: msm_gpu_submit: id=37770 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2768.295277: msm_gpu_submit_retired: id=37770 pid=19167 ring=0:37515 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2768.302104: msm_gpu_submit: id=37771 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2768.306099: msm_gpu_submit_retired: id=37771 pid=1569 ring=0:37516 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2768.309655: msm_gpu_submit: id=37772 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2768.312319: msm_gpu_submit_retired: id=37772 pid=19167 ring=0:37517 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2768.318534: msm_gpu_submit: id=37773 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2768.322531: msm_gpu_submit_retired: id=37773 pid=1569 ring=0:37518 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2768.325724: msm_gpu_submit: id=37774 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2768.328435: msm_gpu_submit_retired: id=37774 pid=19167 ring=0:37519 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2768.335274: msm_gpu_submit: id=37775 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2768.339264: msm_gpu_submit_retired: id=37775 pid=1569 ring=0:37520 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2768.342568: msm_gpu_submit: id=37776 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2768.345382: msm_gpu_submit_retired: id=37776 pid=19167 ring=0:37521 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2768.352127: msm_gpu_submit: id=37777 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2768.356130: msm_gpu_submit_retired: id=37777 pid=1569 ring=0:37522 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2768.359390: msm_gpu_submit: id=37778 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2768.362244: msm_gpu_submit_retired: id=37778 pid=19167 ring=0:37523 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2768.368792: msm_gpu_submit: id=37779 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2768.372794: msm_gpu_submit_retired: id=37779 pid=1569 ring=0:37524 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2768.375895: msm_gpu_submit: id=37780 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2768.378710: msm_gpu_submit_retired: id=37780 pid=19167 ring=0:37525 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2768.385444: msm_gpu_submit: id=37781 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2768.389447: msm_gpu_submit_retired: id=37781 pid=1569 ring=0:37526 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2768.392697: msm_gpu_submit: id=37782 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2768.395507: msm_gpu_submit_retired: id=37782 pid=19167 ring=0:37527 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2768.402097: msm_gpu_submit: id=37783 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2768.406090: msm_gpu_submit_retired: id=37783 pid=1569 ring=0:37528 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2768.410835: msm_gpu_submit: id=37784 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2768.413652: msm_gpu_submit_retired: id=37784 pid=19167 ring=0:37529 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2768.418532: msm_gpu_submit: id=37785 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2768.422369: msm_gpu_submit_retired: id=37785 pid=1569 ring=0:37530 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2768.427588: msm_gpu_submit: id=37786 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2768.430593: msm_gpu_submit_retired: id=37786 pid=19167 ring=0:37531 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2768.435195: msm_gpu_submit: id=37787 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2768.439187: msm_gpu_submit_retired: id=37787 pid=1569 ring=0:37532 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2768.442587: msm_gpu_submit: id=37788 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2768.445277: msm_gpu_submit_retired: id=37788 pid=19167 ring=0:37533 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2768.452138: msm_gpu_submit: id=37789 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2768.456007: msm_gpu_submit_retired: id=37789 pid=1569 ring=0:37534 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [003] .....  2768.459285: msm_gpu_submit: id=37790 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2768.462096: msm_gpu_submit_retired: id=37790 pid=19167 ring=0:37535 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2768.468268: msm_gpu_submit: id=37791 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2768.472324: msm_gpu_submit_retired: id=37791 pid=1569 ring=0:37536 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2768.509441: msm_gpu_submit: id=37792 pid=1569 ring=0 bos=34 cmds=2
+ gnome-text-edit-19167   [003] .....  2768.511155: msm_gpu_submit: id=37793 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2768.513154: msm_gpu_submit_retired: id=37792 pid=1569 ring=0:37537 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2768.515429: msm_gpu_submit_retired: id=37793 pid=19167 ring=0:37538 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2768.517432: msm_gpu_submit: id=37794 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2768.521101: msm_gpu_submit_retired: id=37794 pid=1569 ring=0:37539 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [002] .....  2768.601919: msm_gpu_suspend: 0
+            phoc-1569    [001] .....  2770.034797: msm_gpu_submit: id=37795 pid=1569 ring=0 bos=36 cmds=2
+   kworker/u16:3-5193    [000] .....  2770.036067: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2770.047963: msm_gpu_submit_retired: id=37795 pid=1569 ring=0:37540 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2770.052540: msm_gpu_submit: id=37796 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [000] .....  2770.063807: msm_gpu_submit_retired: id=37796 pid=1569 ring=0:37541 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2770.075417: msm_gpu_submit: id=37797 pid=1569 ring=0 bos=44 cmds=3
+            phoc-1569    [001] .....  2770.086381: msm_gpu_submit: id=37798 pid=1569 ring=0 bos=34 cmds=2
+      gpu-worker-139     [000] .....  2770.094580: msm_gpu_submit_retired: id=37797 pid=1569 ring=0:37542 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2770.097010: msm_gpu_submit_retired: id=37798 pid=1569 ring=0:37543 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2770.108157: msm_gpu_submit: id=37799 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2770.122627: msm_gpu_submit_retired: id=37799 pid=1569 ring=0:37544 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2770.135652: msm_gpu_submit: id=37800 pid=1569 ring=0 bos=44 cmds=3
+      gpu-worker-139     [000] .....  2770.150834: msm_gpu_submit_retired: id=37800 pid=1569 ring=0:37545 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2770.168390: msm_gpu_submit: id=37801 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2770.182728: msm_gpu_submit_retired: id=37801 pid=1569 ring=0:37546 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2770.186072: msm_gpu_submit: id=37802 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2770.200674: msm_gpu_submit_retired: id=37802 pid=1569 ring=0:37547 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2770.219272: msm_gpu_submit: id=37803 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2770.234157: msm_gpu_submit_retired: id=37803 pid=1569 ring=0:37548 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2770.252992: msm_gpu_submit: id=37804 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2770.267952: msm_gpu_submit_retired: id=37804 pid=1569 ring=0:37549 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2770.281163: msm_gpu_submit: id=37805 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2770.284538: msm_gpu_submit_retired: id=37805 pid=19167 ring=0:37550 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2770.286681: msm_gpu_submit: id=37806 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2770.301543: msm_gpu_submit_retired: id=37806 pid=1569 ring=0:37551 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2770.319823: msm_gpu_submit: id=37807 pid=1569 ring=0 bos=37 cmds=2
+ gnome-text-edit-19167   [000] .....  2770.327934: msm_gpu_submit: id=37808 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2770.334877: msm_gpu_submit_retired: id=37807 pid=1569 ring=0:37552 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2770.337223: msm_gpu_submit_retired: id=37808 pid=19167 ring=0:37553 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2770.352825: msm_gpu_submit: id=37809 pid=1569 ring=0 bos=37 cmds=2
+ gnome-text-edit-19167   [000] .....  2770.358080: msm_gpu_submit: id=37810 pid=19167 ring=0 bos=33 cmds=1
+      gpu-worker-139     [000] .....  2770.369078: msm_gpu_submit_retired: id=37809 pid=1569 ring=0:37554 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2770.371418: msm_gpu_submit_retired: id=37810 pid=19167 ring=0:37555 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2770.385560: msm_gpu_submit: id=37811 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2770.400791: msm_gpu_submit_retired: id=37811 pid=1569 ring=0:37556 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [003] .....  2770.425103: msm_gpu_submit: id=37812 pid=19167 ring=0 bos=13 cmds=1
+      gpu-worker-139     [000] .....  2770.425706: msm_gpu_submit_retired: id=37812 pid=19167 ring=0:37557 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2770.427534: msm_gpu_submit: id=37813 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [000] .....  2770.442479: msm_gpu_submit_retired: id=37813 pid=1569 ring=0:37558 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2770.459357: msm_gpu_submit: id=37814 pid=1569 ring=0 bos=36 cmds=2
+            phoc-1569    [001] .....  2770.462127: msm_gpu_submit: id=37815 pid=1569 ring=0 bos=26 cmds=1
+      gpu-worker-139     [000] .....  2770.474035: msm_gpu_submit_retired: id=37814 pid=1569 ring=0:37559 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2770.474891: msm_gpu_submit_retired: id=37815 pid=1569 ring=0:37560 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [000] .....  2770.483589: msm_gpu_submit: id=37816 pid=19167 ring=0 bos=40 cmds=1
+            phoc-1569    [001] .....  2770.492551: msm_gpu_submit: id=37817 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [000] .....  2770.498988: msm_gpu_submit_retired: id=37816 pid=19167 ring=0:37561 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2770.593992: msm_gpu_submit_retired: id=37817 pid=1569 ring=0:37562 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2770.601499: msm_gpu_submit: id=37818 pid=1569 ring=0 bos=45 cmds=3
+      gpu-worker-139     [000] .....  2770.616889: msm_gpu_submit_retired: id=37818 pid=1569 ring=0:37563 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [001] .....  2770.618294: msm_gpu_submit: id=37819 pid=19167 ring=0 bos=40 cmds=1
+      gpu-worker-139     [000] .....  2770.630883: msm_gpu_submit_retired: id=37819 pid=19167 ring=0:37564 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2770.634917: msm_gpu_submit: id=37820 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2770.649518: msm_gpu_submit_retired: id=37820 pid=1569 ring=0:37565 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2770.651518: msm_gpu_submit: id=37821 pid=1569 ring=0 bos=37 cmds=2
+            phoc-1569    [002] .....  2770.654403: msm_gpu_submit: id=37822 pid=1569 ring=0 bos=26 cmds=1
+      gpu-worker-139     [000] .....  2770.666126: msm_gpu_submit_retired: id=37821 pid=1569 ring=0:37566 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2770.667436: msm_gpu_submit_retired: id=37822 pid=1569 ring=0:37567 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2770.683084: msm_gpu_submit: id=37823 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [000] .....  2770.695309: msm_gpu_submit_retired: id=37823 pid=1569 ring=0:37568 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:1-16103   [001] .....  2770.761999: msm_gpu_suspend: 0
+            phoc-1569    [002] .....  2771.187536: msm_gpu_submit: id=37824 pid=1569 ring=0 bos=35 cmds=2
+   kworker/u16:2-17078   [003] .....  2771.188053: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2771.195403: msm_gpu_submit_retired: id=37824 pid=1569 ring=0:37569 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [000] .....  2771.278212: msm_gpu_suspend: 0
+            phoc-1569    [002] .....  2771.589516: msm_gpu_submit: id=37825 pid=1569 ring=0 bos=35 cmds=2
+   kworker/u16:1-16103   [001] .....  2771.590118: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2771.595253: msm_gpu_submit_retired: id=37825 pid=1569 ring=0:37570 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [001] .....  2771.678416: msm_gpu_suspend: 0
+            phoc-1569    [002] .....  2772.398996: msm_gpu_submit: id=37826 pid=1569 ring=0 bos=35 cmds=2
+   kworker/u16:2-17078   [003] .....  2772.400056: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2772.405688: msm_gpu_submit_retired: id=37826 pid=1569 ring=0:37571 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:2-17078   [001] .....  2772.488663: msm_gpu_suspend: 0
+            phoc-1569    [002] .....  2772.799560: msm_gpu_submit: id=37827 pid=1569 ring=0 bos=35 cmds=2
+   kworker/u16:3-5193    [001] .....  2772.800180: msm_gpu_resume: 0
+      gpu-worker-139     [000] .....  2772.805273: msm_gpu_submit_retired: id=37827 pid=1569 ring=0:37572 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2772.851367: msm_gpu_submit: id=37828 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [000] .....  2772.858032: msm_gpu_submit_retired: id=37828 pid=1569 ring=0:37573 elapsed=0 ns mhz=0 start=0 end=0
+ gnome-text-edit-19167   [001] .....  2772.860280: msm_gpu_submit: id=37829 pid=19167 ring=0 bos=40 cmds=1
+            phoc-1569    [002] .....  2772.869140: msm_gpu_submit: id=37830 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [000] .....  2772.875573: msm_gpu_submit_retired: id=37829 pid=19167 ring=0:37574 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2772.880924: msm_gpu_submit_retired: id=37830 pid=1569 ring=0:37575 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2772.885125: msm_gpu_submit: id=37831 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2772.900195: msm_gpu_submit_retired: id=37831 pid=1569 ring=0:37576 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2772.918443: msm_gpu_submit: id=37832 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2772.933603: msm_gpu_submit_retired: id=37832 pid=1569 ring=0:37577 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2772.951909: msm_gpu_submit: id=37833 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2772.967475: msm_gpu_submit_retired: id=37833 pid=1569 ring=0:37578 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2772.984804: msm_gpu_submit: id=37834 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2772.999047: msm_gpu_submit_retired: id=37834 pid=1569 ring=0:37579 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2773.001731: msm_gpu_submit: id=37835 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2773.016550: msm_gpu_submit_retired: id=37835 pid=1569 ring=0:37580 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2773.018315: msm_gpu_submit: id=37836 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2773.032407: msm_gpu_submit_retired: id=37836 pid=1569 ring=0:37581 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2773.035294: msm_gpu_submit: id=37837 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2773.050490: msm_gpu_submit_retired: id=37837 pid=1569 ring=0:37582 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2773.068746: msm_gpu_submit: id=37838 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2773.083961: msm_gpu_submit_retired: id=37838 pid=1569 ring=0:37583 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2773.101837: msm_gpu_submit: id=37839 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2773.115307: msm_gpu_submit_retired: id=37839 pid=1569 ring=0:37584 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2773.118252: msm_gpu_submit: id=37840 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [000] .....  2773.131376: msm_gpu_submit_retired: id=37840 pid=1569 ring=0:37585 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2773.134783: msm_gpu_submit: id=37841 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [000] .....  2773.147877: msm_gpu_submit_retired: id=37841 pid=1569 ring=0:37586 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2773.151544: msm_gpu_submit: id=37842 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [000] .....  2773.164568: msm_gpu_submit_retired: id=37842 pid=1569 ring=0:37587 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2773.168200: msm_gpu_submit: id=37843 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [000] .....  2773.181549: msm_gpu_submit_retired: id=37843 pid=1569 ring=0:37588 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2773.185110: msm_gpu_submit: id=37844 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [000] .....  2773.199611: msm_gpu_submit_retired: id=37844 pid=1569 ring=0:37589 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2773.201683: msm_gpu_submit: id=37845 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [000] .....  2773.216750: msm_gpu_submit_retired: id=37845 pid=1569 ring=0:37590 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2773.218328: msm_gpu_submit: id=37846 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [000] .....  2773.231547: msm_gpu_submit_retired: id=37846 pid=1569 ring=0:37591 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2773.234853: msm_gpu_submit: id=37847 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [000] .....  2773.248110: msm_gpu_submit_retired: id=37847 pid=1569 ring=0:37592 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2773.251595: msm_gpu_submit: id=37848 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [000] .....  2773.267824: msm_gpu_submit_retired: id=37848 pid=1569 ring=0:37593 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [001] .....  2773.281532: msm_gpu_submit: id=37849 pid=1569 ring=0 bos=27 cmds=1
+      gpu-worker-139     [000] .....  2773.285870: msm_gpu_submit_retired: id=37849 pid=1569 ring=0:37594 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2773.294314: msm_gpu_submit: id=37850 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [000] .....  2773.307964: msm_gpu_submit_retired: id=37850 pid=1569 ring=0:37595 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2773.318386: msm_gpu_submit: id=37851 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2773.335396: msm_gpu_submit_retired: id=37851 pid=1569 ring=0:37596 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2773.342839: msm_gpu_submit: id=37852 pid=1569 ring=0 bos=27 cmds=1
+      gpu-worker-139     [000] .....  2773.347402: msm_gpu_submit_retired: id=37852 pid=1569 ring=0:37597 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2773.356321: msm_gpu_submit: id=37853 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2773.372962: msm_gpu_submit_retired: id=37853 pid=1569 ring=0:37598 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2773.385239: msm_gpu_submit: id=37854 pid=1569 ring=0 bos=44 cmds=3
+      gpu-worker-139     [000] .....  2773.401665: msm_gpu_submit_retired: id=37854 pid=1569 ring=0:37599 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2773.418426: msm_gpu_submit: id=37855 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2773.433650: msm_gpu_submit_retired: id=37855 pid=1569 ring=0:37600 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2773.451802: msm_gpu_submit: id=37856 pid=1569 ring=0 bos=37 cmds=2
+      gpu-worker-139     [000] .....  2773.467222: msm_gpu_submit_retired: id=37856 pid=1569 ring=0:37601 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2773.485844: msm_gpu_submit: id=37857 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [000] .....  2773.497220: msm_gpu_submit_retired: id=37857 pid=1569 ring=0:37602 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [003] .....  2773.519863: msm_gpu_submit: id=37858 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [000] .....  2773.530225: msm_gpu_submit_retired: id=37858 pid=1569 ring=0:37603 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:3-5193    [002] .....  2773.612937: msm_gpu_suspend: 0
+          papers-19194   [001] .....  2774.958453: msm_gpu_submit: id=37859 pid=19194 ring=0 bos=33 cmds=1
+   kworker/u16:2-17078   [002] .....  2774.967175: msm_gpu_resume: 0
+            phoc-1569    [000] .....  2774.970006: msm_gpu_submit: id=37860 pid=1569 ring=0 bos=36 cmds=2
+      gpu-worker-139     [000] .....  2774.972118: msm_gpu_submit_retired: id=37859 pid=19194 ring=0:37604 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2774.984775: msm_gpu_submit_retired: id=37860 pid=1569 ring=0:37605 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2774.991712: msm_gpu_submit: id=37861 pid=1569 ring=0 bos=27 cmds=1
+      gpu-worker-139     [000] .....  2774.995867: msm_gpu_submit_retired: id=37861 pid=1569 ring=0:37606 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [000] .....  2775.006814: msm_gpu_submit: id=37862 pid=1569 ring=0 bos=35 cmds=2
+            phoc-1569    [000] .....  2775.009025: msm_gpu_submit: id=37863 pid=1569 ring=0 bos=27 cmds=1
+      gpu-worker-139     [000] .....  2775.017651: msm_gpu_submit_retired: id=37862 pid=1569 ring=0:37607 elapsed=0 ns mhz=0 start=0 end=0
+      gpu-worker-139     [000] .....  2775.020402: msm_gpu_submit_retired: id=37863 pid=1569 ring=0:37608 elapsed=0 ns mhz=0 start=0 end=0
+            phoc-1569    [002] .....  2775.035997: msm_gpu_submit: id=37864 pid=1569 ring=0 bos=35 cmds=2
+      gpu-worker-139     [000] .....  2775.046963: msm_gpu_submit_retired: id=37864 pid=1569 ring=0:37609 elapsed=0 ns mhz=0 start=0 end=0
+   kworker/u16:2-17078   [001] .....  2775.129878: msm_gpu_suspend: 0

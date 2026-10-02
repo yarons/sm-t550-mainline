@@ -1,0 +1,27 @@
+From: gt510 <gt510@localhost>
+Subject: media: venus: hfi_cmds: treat H264 8x8 transform as unsupported on HFI 1.x
+
+venc_set_properties() sets HFI_PROPERTY_PARAM_VENC_H264_TRANSFORM_8X8 for
+every H.264 session, but only the 4XX/6XX packet builders know it. On HFI
+1.x (msm8916) pkt_session_set_property_1x() fell into the default -EINVAL,
+venc_init_session() failed and VIDIOC_REQBUFS returned EINVAL, so the venus
+encoder could never be used. Return -ENOTSUPP, which
+venus_session_set_property() treats as "skip this property".
+---
+--- a/drivers/media/platform/qcom/venus/hfi_cmds.c
++++ b/drivers/media/platform/qcom/venus/hfi_cmds.c
+@@ -1080,6 +1080,14 @@
+ 	case HFI_PROPERTY_PARAM_CAPABILITY_SUPPORTED:
+ 	case HFI_PROPERTY_PARAM_NAL_STREAM_FORMAT_SUPPORTED:
+ 	case HFI_PROPERTY_PARAM_MULTI_VIEW_FORMAT:
++	case HFI_PROPERTY_PARAM_VENC_H264_TRANSFORM_8X8:
++		/*
++		 * Only HFI 4XX and later know this property. The encoder sets it
++		 * unconditionally for H.264, and -EINVAL here tears the whole
++		 * session down, so report it as unsupported and let the firmware
++		 * pick the transform itself.
++		 */
++		return -ENOTSUPP;
+ 	case HFI_PROPERTY_PARAM_MAX_SEQUENCE_HEADER_SIZE:
+ 	case HFI_PROPERTY_PARAM_CODEC_SUPPORTED:
+ 	case HFI_PROPERTY_PARAM_VDEC_MULTI_VIEW_SELECT:

@@ -1,0 +1,3 @@
+# SM-T550: lz4 zram decompresses ~3x faster than zstd on the Cortex-A53s;
+# swap-in latency matters more than compression ratio here.
+deviceinfo_zram_swap_algo="lz4"

@@ -1,0 +1,5 @@
+# gt510-tweaks: pmOS presets every new system unit after post-install (99-default.preset: disable *),
+# which undid post-install's `systemctl enable` on a fresh image (gpsd-pds was off).
+enable gpsd-pds.service
+enable hkdm.service
+enable rmtfs.service

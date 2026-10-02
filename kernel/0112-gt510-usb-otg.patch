@@ -1,0 +1,292 @@
+From: gt510 <gt510@localhost>
+Subject: arm64: dts: qcom: msm8916-samsung-gt510: USB OTG with the MAX77849 boost
+
+Let the USB controller switch roles, wired like the other Samsung MSM8916
+boards with a MUIC (a2015, j5): the MAX77849 MUIC is the extcon for both
+VBUS (EXTCON_USB) and ID (EXTCON_USB_HOST) of the controller and for the
+VBUS of the HS PHY. The PMIC usbin extcon reported our own boost as VBUS
+while in host mode.
+
+5 V for the attached device comes from the charger boost, exposed by the
+max77693 charger driver as an "otg-vbus" regulator that follows the
+downstream Samsung sequence: CHG_CNFG_00 OTG|BOOST|DIS_MUIC_CTRL with
+CHG+BUCK cleared, CHG_CNFG_11 VBYPSET 5 V, 1.2 A OTG current limit.
+Flipping the MODE bits alone (0x5 <-> 0xa) left VBUS off.
+
+While a USB host cable is attached the MUIC charger detection is turned
+off; otherwise it detects the boosted VBUS as an SDP charger.
+
+The MAX77849 reads STATUS1 bit 5 (ADCLow on MAX77693) as 1 both with ID
+open and with ID grounded by an OTG cable, so the MUIC driver took a plain
+OTG cable for an "AV cable with load" (audio path, EXTCON_USB): ignore
+that bit on MAX77849.
+
+The boost survives a reboot (the PMIC stays powered), and rebooting with
+it on left the tablet dark with dead keys: switch it off at shutdown.
+---
+--- a/drivers/extcon/extcon-max77693.c
++++ b/drivers/extcon/extcon-max77693.c
+@@ -14,6 +14,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/err.h>
+ #include <linux/platform_device.h>
++#include <linux/of.h>
+ #include <linux/mfd/max77693.h>
+ #include <linux/mfd/max77693-common.h>
+ #include <linux/mfd/max77693-private.h>
+@@ -94,6 +95,9 @@
+ 	 */
+ 	int path_usb;
+ 	int path_uart;
++
++	/* MAX77849: STATUS1 bit 5 (ADCLow on MAX77693) reads 1 whatever ID does */
++	bool max77849;
+ };
+ 
+ enum max77693_muic_cable_group {
+@@ -364,6 +368,9 @@
+ 
+ 			adclow = info->status[0] & MAX77693_STATUS1_ADCLOW_MASK;
+ 			adclow >>= MAX77693_STATUS1_ADCLOW_SHIFT;
++			/* else a plain OTG cable looks like an AV cable with load */
++			if (info->max77849)
++				adclow = 0;
+ 			adc1k = info->status[0] & MAX77693_STATUS1_ADC1K_MASK;
+ 			adc1k >>= MAX77693_STATUS1_ADC1K_SHIFT;
+ 
+@@ -589,6 +596,17 @@
+ 						attached);
+ 		if (ret < 0)
+ 			return ret;
++		/*
++		 * The host session is powered by our own boost: keep charger
++		 * detection off meanwhile, or the MUIC reports that VBUS as a
++		 * USB charger (SDP) plugged into us.
++		 */
++		ret = regmap_update_bits(info->max77693->regmap_muic,
++				MAX77693_MUIC_REG_CDETCTRL1,
++				CDETCTRL1_CHGDETEN_MASK,
++				attached ? 0 : CDETCTRL1_CHGDETEN_MASK);
++		if (ret < 0)
++			return ret;
+ 		extcon_set_state_sync(info->edev, EXTCON_USB_HOST, attached);
+ 		break;
+ 	case MAX77693_MUIC_GND_AV_CABLE_LOAD:
+@@ -1086,6 +1104,8 @@
+ 
+ 	info->dev = &pdev->dev;
+ 	info->max77693 = max77693;
++	info->max77849 = of_device_is_compatible(pdev->dev.parent->of_node,
++						 "maxim,max77849");
+ 	if (info->max77693->regmap_muic) {
+ 		dev_dbg(&pdev->dev, "allocate register map\n");
+ 	} else {
+--- a/drivers/power/supply/max77693_charger.c
++++ b/drivers/power/supply/max77693_charger.c
+@@ -5,6 +5,7 @@
+ // Copyright (C) 2014 Samsung Electronics
+ // Krzysztof Kozlowski <krzk@kernel.org>
+ 
++#include <linux/delay.h>
+ #include <linux/devm-helpers.h>
+ #include <linux/extcon.h>
+ #include <linux/module.h>
+@@ -12,6 +13,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/power_supply.h>
+ #include <linux/regmap.h>
++#include <linux/regulator/driver.h>
+ #include <linux/workqueue.h>
+ #include <linux/mfd/max77693.h>
+ #include <linux/mfd/max77693-common.h>
+@@ -854,6 +856,104 @@
+ 	return NOTIFY_OK;
+ }
+ 
++/*
++ * MAX77849 OTG boost, as the downstream Samsung driver drives it: 5 V on
++ * VBUS needs OTG + BOOST with CHG + BUCK off and DIS_MUIC_CTRL set in
++ * CHG_CNFG_00 (else the MUIC turns the charger back on), VBYPSET = 5 V in
++ * CHG_CNFG_11 and the 1.2 A OTG current limit in CHG_CNFG_02. Switching the
++ * MODE bits alone (0x5 <-> 0xa) leaves VBUS off. Exposed as a regulator so
++ * the USB controller can enable it with "vbus-supply".
++ */
++#define CHG_CNFG_00_OTG_CTRL_MASK	0x2f	/* DIS_MUIC_CTRL|BOOST|BUCK|OTG|CHG */
++#define CHG_CNFG_00_OTG_ON		0x2a	/* DIS_MUIC_CTRL|BOOST|OTG */
++#define CHG_CNFG_00_OTG_OFF		0x04	/* BUCK; the MUIC re-enables CHG */
++#define CHG_CNFG_00_OTG_BOOST		0x0a	/* BOOST|OTG */
++#define CHG_CNFG_02_OTG_ILIM_1200MA	BIT(7)
++#define CHG_CNFG_11_VBYPSET_5V		0x50
++#define CHG_CNFG_11_VBYPSET_3V		0x00
++
++static int max77849_otg_enable(struct regulator_dev *rdev)
++{
++	struct regmap *regmap = rdev_get_regmap(rdev);
++	int ret;
++
++	ret = regmap_update_bits(regmap, MAX77693_CHG_REG_CHG_CNFG_02,
++				 CHG_CNFG_02_OTG_ILIM_1200MA,
++				 CHG_CNFG_02_OTG_ILIM_1200MA);
++	if (ret)
++		return ret;
++
++	ret = regmap_write(regmap, MAX77693_CHG_REG_CHG_CNFG_11,
++			   CHG_CNFG_11_VBYPSET_5V);
++	if (ret)
++		return ret;
++
++	return regmap_update_bits(regmap, MAX77693_CHG_REG_CHG_CNFG_00,
++				  CHG_CNFG_00_OTG_CTRL_MASK, CHG_CNFG_00_OTG_ON);
++}
++
++static int max77849_otg_disable(struct regulator_dev *rdev)
++{
++	struct regmap *regmap = rdev_get_regmap(rdev);
++	int ret;
++
++	ret = regmap_update_bits(regmap, MAX77693_CHG_REG_CHG_CNFG_00,
++				 CHG_CNFG_00_OTG_CTRL_MASK, CHG_CNFG_00_OTG_OFF);
++	if (ret)
++		return ret;
++
++	msleep(50);
++
++	return regmap_write(regmap, MAX77693_CHG_REG_CHG_CNFG_11,
++			    CHG_CNFG_11_VBYPSET_3V);
++}
++
++static int max77849_otg_is_enabled(struct regulator_dev *rdev)
++{
++	unsigned int val;
++	int ret;
++
++	ret = regmap_read(rdev_get_regmap(rdev), MAX77693_CHG_REG_CHG_CNFG_00,
++			  &val);
++	if (ret)
++		return ret;
++
++	return (val & CHG_CNFG_00_OTG_BOOST) == CHG_CNFG_00_OTG_BOOST;
++}
++
++static const struct regulator_ops max77849_otg_ops = {
++	.enable = max77849_otg_enable,
++	.disable = max77849_otg_disable,
++	.is_enabled = max77849_otg_is_enabled,
++};
++
++static const struct regulator_desc max77849_otg_desc = {
++	.name = "otg-vbus",
++	.of_match = of_match_ptr("otg-vbus"),
++	.type = REGULATOR_VOLTAGE,
++	.owner = THIS_MODULE,
++	.n_voltages = 1,
++	.fixed_uV = 5000000,
++	.ops = &max77849_otg_ops,
++};
++
++static int max77849_register_otg(struct max77693_charger *chg)
++{
++	struct regulator_config rcfg = {
++		.dev = chg->dev,
++		.regmap = chg->max77693->regmap,
++		.driver_data = chg,
++	};
++	struct regulator_dev *rdev;
++
++	rdev = devm_regulator_register(chg->dev, &max77849_otg_desc, &rcfg);
++	if (IS_ERR(rdev))
++		return dev_err_probe(chg->dev, PTR_ERR(rdev),
++				     "failed to register the OTG boost\n");
++
++	return 0;
++}
++
+ static int max77693_charger_probe(struct platform_device *pdev)
+ {
+ 	struct max77693_charger *chg;
+@@ -937,6 +1037,10 @@
+ 
+ 		/* Apply the limits for whatever is plugged in right now */
+ 		schedule_work(&chg->cable_work);
++
++		ret = max77849_register_otg(chg);
++		if (ret)
++			goto err;
+ 	}
+ 
+ 	return 0;
+@@ -956,6 +1060,27 @@
+ 	device_remove_file(&pdev->dev, &dev_attr_fast_charge_timer);
+ }
+ 
++/*
++ * The PMIC keeps the OTG boost running across a reboot, and a reboot with
++ * the boost still on left the tablet dark with dead keys (the bootloader
++ * sees our own VBUS). Switch the boost off on the way down.
++ */
++static void max77693_charger_shutdown(struct platform_device *pdev)
++{
++	struct max77693_charger *chg = platform_get_drvdata(pdev);
++	struct regmap *regmap = chg->max77693->regmap;
++	unsigned int val;
++
++	if (!chg->max77849 ||
++	    regmap_read(regmap, MAX77693_CHG_REG_CHG_CNFG_00, &val) ||
++	    (val & CHG_CNFG_00_OTG_BOOST) != CHG_CNFG_00_OTG_BOOST)
++		return;
++
++	regmap_update_bits(regmap, MAX77693_CHG_REG_CHG_CNFG_00,
++			   CHG_CNFG_00_OTG_CTRL_MASK, CHG_CNFG_00_OTG_OFF);
++	regmap_write(regmap, MAX77693_CHG_REG_CHG_CNFG_11, CHG_CNFG_11_VBYPSET_3V);
++}
++
+ static const struct platform_device_id max77693_charger_id[] = {
+ 	{ .name = "max77693-charger" },
+ 	{ }
+@@ -976,6 +1101,7 @@
+ 	},
+ 	.probe		= max77693_charger_probe,
+ 	.remove		= max77693_charger_remove,
++	.shutdown	= max77693_charger_shutdown,
+ 	.id_table	= max77693_charger_id,
+ };
+ module_platform_driver(max77693_charger_driver);
+--- a/arch/arm64/boot/dts/qcom/msm8916-samsung-gt510.dts
++++ b/arch/arm64/boot/dts/qcom/msm8916-samsung-gt510.dts
+@@ -114,9 +114,16 @@
+ 		charger {
+ 			compatible = "maxim,max77693-charger";
+ 			maxim,constant-microvolt = <4350000>;
++
++			/* OTG boost: 5 V on VBUS for USB host mode */
++			otg_vbus: otg-vbus {
++				regulator-name = "otg-vbus";
++				regulator-min-microvolt = <5000000>;
++				regulator-max-microvolt = <5000000>;
++			};
+ 		};
+ 
+-		muic {
++		muic: muic {
+ 			compatible = "maxim,max77693-muic";
+ 		};
+ 	};
+@@ -253,3 +260,18 @@
+ 		bias-disable;
+ 	};
+ };
++
++/*
++ * USB OTG, wired like a2015/j5: the MAX77849 MUIC reports VBUS (USB) and
++ * cable ID (USB-HOST) to the controller and VBUS to the HS PHY; 5 V for
++ * host mode comes from the charger's boost.
++ */
++&usb {
++	dr_mode = "otg";
++	extcon = <&muic>, <&muic>;
++	vbus-supply = <&otg_vbus>;
++};
++
++&usb_hs_phy {
++	extcon = <&muic>;
++};

@@ -1,0 +1,16 @@
+# Single-user tablet with auto-login: blanking never locks, the lock screen needs no PIN.
+[org.gnome.desktop.screensaver]
+lock-enabled=false
+
+[sm.puri.phosh.lockscreen]
+require-unlock=false
+
+# phrog's greeter (XDG_CURRENT_DESKTOP=Phrog:Phosh:GNOME) IS Phosh's lock screen: without the PIN
+# a swipe dismissed it into the bare greeter shell (no login after a logout).
+[sm.puri.phosh.lockscreen:Phrog]
+require-unlock=true
+
+# Blank after 5 minutes idle, not Phosh's phone default of 1 minute
+# ([org.gnome.desktop.session:Phosh] idle-delay=60 in 00_mobi.Phosh.gschema.override).
+[org.gnome.desktop.session:Phosh]
+idle-delay=300

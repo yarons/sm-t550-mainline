@@ -1,0 +1,71 @@
+diff -ru a/src/gallium/drivers/freedreno/a3xx/fd3_emit.c b/src/gallium/drivers/freedreno/a3xx/fd3_emit.c
+--- a/src/gallium/drivers/freedreno/a3xx/fd3_emit.c	2026-09-30 17:31:31
++++ b/src/gallium/drivers/freedreno/a3xx/fd3_emit.c	2026-09-30 17:31:31
+@@ -61,6 +61,19 @@
+                   const struct ir3_shader_variant *v, uint32_t regid,
+                   uint32_t offset, uint32_t sizedwords, struct fd_bo *bo)
+ {
++   /* An indirect (SS_INDIRECT) const load into the fragment shader state
++    * block hangs the a306 GPU (GTK4's GL renderer hangs within seconds);
++    * vertex shader loads work. Copy fragment constants into the
++    * cmdstream instead. The buffer is CPU-written (UBO data), so its
++    * current contents are what the draw would have read.
++    */
++   if (v->type == MESA_SHADER_FRAGMENT) {
++      const uint32_t *dwords =
++         (const uint32_t *)((const uint8_t *)fd_bo_map(bo) + offset);
++      fd3_emit_const_user(ring, v, regid, sizedwords, dwords);
++      return;
++   }
++
+    uint32_t dst_off = regid / 2;
+    /* The blob driver aligns all const uploads dst_off to 64.  We've been
+     * successfully aligning to 8 vec4s as const_upload_unit so far with no
+diff -ru a/src/gallium/drivers/freedreno/freedreno_resource.c b/src/gallium/drivers/freedreno/freedreno_resource.c
+--- a/src/gallium/drivers/freedreno/freedreno_resource.c	2026-09-30 17:31:31
++++ b/src/gallium/drivers/freedreno/freedreno_resource.c	2026-09-30 17:31:31
+@@ -901,7 +901,18 @@
+           * the rsc->track is swapped but before the shadow blit completes.
+           * I think this scenario only comes up with rusticl.
+           */
+-         if (needs_flush && !(usage & TC_TRANSFER_MAP_NO_INVALIDATE) &&
++         /* Without a hw blitter (a2xx-a4xx) the staging path below ends up
++          * in util_resource_copy_region(), which for a buffer maps the busy
++          * resource again with DISCARD_RANGE and takes this path
++          * recursively, unsynchronized with the GPU still reading it: an
++          * app rewriting a UBO every frame (GTK4's GL renderer) then gets
++          * draws with stale uniforms (black frames on a306). Shadowing
++          * swaps in fresh storage instead, so try it for every busy buffer
++          * there, not only when it avoids a flush.
++          */
++         bool shadow_buffer = prsc->target == PIPE_BUFFER && !ctx->blit;
++         if ((needs_flush || shadow_buffer) &&
++             !(usage & TC_TRANSFER_MAP_NO_INVALIDATE) &&
+                !(ctx->flags & PIPE_CONTEXT_COMPUTE_ONLY) &&
+                fd_try_shadow_resource(ctx, rsc, level, box, DRM_FORMAT_MOD_LINEAR)) {
+             needs_flush = busy = false;
+@@ -920,7 +931,7 @@
+              * already had rendering flushed for all tiles.  So we can
+              * use a staging buffer to do the upload.
+              */
+-            if (is_renderable(prsc))
++            if (!shadow_buffer && is_renderable(prsc))
+                staging_rsc = fd_alloc_staging(ctx, rsc, level, box, usage);
+             if (staging_rsc) {
+                trans->staging_prsc = &staging_rsc->b.b;
+diff -ru a/src/gallium/drivers/freedreno/freedreno_screen.c b/src/gallium/drivers/freedreno/freedreno_screen.c
+--- a/src/gallium/drivers/freedreno/freedreno_screen.c	2026-09-30 17:31:31
++++ b/src/gallium/drivers/freedreno/freedreno_screen.c	2026-09-30 17:31:31
+@@ -510,7 +510,11 @@
+     */
+    caps->start_instance = is_a4xx(screen) || is_a6xx(screen);
+ 
+-   caps->constant_buffer_offset_alignment = 64;
++   /* a3xx uploads UBO ranges into the const file with CP_LOAD_STATE
++    * SS_INDIRECT, whose source must be aligned to const_upload_unit
++    * (8 vec4 = 128 bytes), like ir3 aligns constant_data_offset.
++    */
++   caps->constant_buffer_offset_alignment = is_a3xx(screen) ? 128 : 64;
+ 
+    caps->int64 =
+    caps->doubles = is_ir3(screen);

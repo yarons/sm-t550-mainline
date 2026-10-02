@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=GT510 display power state sync
+Exec=/usr/bin/gt510-phosh-unblank
+NoDisplay=true
+OnlyShowIn=GNOME;Phosh;
+X-GNOME-Autostart-Phase=Applications

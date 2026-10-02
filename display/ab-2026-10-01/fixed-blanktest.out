@@ -1,0 +1,12 @@
+start PowerSaveMode=0
+cycle 1 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+cycle 2 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+cycle 3 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+cycle 4 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+cycle 5 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+cycle 6 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+cycle 7 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+cycle 8 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+cycle 9 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+cycle 10 on: faults+0 vblank+0 dcs+0 | off: faults+0 vblank+0 dcs+0 bl=97
+done

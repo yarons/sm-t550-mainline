@@ -1,0 +1,6 @@
+[terrain] duration=3: FPS: 7 FrameTime: 150.982 ms
+                                  glmark2 Score: 80
+[glmark] resumes so far=121 bad-lines(since last dmesg -c)=10 status=suspended
+[idle10s] resumes so far=123 bad-lines(since last dmesg -c)=10 status=suspended
+TOTAL resumes=123 suspended_ms=219412 active_ms=93256
+done

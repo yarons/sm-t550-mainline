@@ -1,0 +1,7 @@
+# Copyright 1999-2010 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+# Config file for gpsd server
+GPSD_OPTIONS="-n -b"
+DEVICES="pds://any"  # SM-T550 modem GNSS via Qualcomm PDS (QRTR)
+GPSD_SOCKET="/var/run/gpsd.sock"

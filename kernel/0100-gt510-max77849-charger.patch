@@ -1,0 +1,329 @@
+--- a/drivers/mfd/max77693.c
++++ b/drivers/mfd/max77693.c
+@@ -217,13 +217,16 @@
+ 		goto err_regmap;
+ 	}
+ 
+-	ret = regmap_add_irq_chip(max77693->regmap, max77693->irq,
+-				IRQF_ONESHOT | IRQF_SHARED, 0,
+-				&max77693_led_irq_chip,
+-				&max77693->irq_data_led);
+-	if (ret) {
+-		dev_err(max77693->dev, "failed to add irq chip: %d\n", ret);
+-		goto err_regmap;
++	/* MAX77849 has no flash LED block: leave irq_data_led NULL */
++	if (!of_device_is_compatible(i2c->dev.of_node, "maxim,max77849")) {
++		ret = regmap_add_irq_chip(max77693->regmap, max77693->irq,
++					IRQF_ONESHOT | IRQF_SHARED, 0,
++					&max77693_led_irq_chip,
++					&max77693->irq_data_led);
++		if (ret) {
++			dev_err(max77693->dev, "failed to add irq chip: %d\n", ret);
++			goto err_regmap;
++		}
+ 	}
+ 
+ 	ret = regmap_add_irq_chip(max77693->regmap, max77693->irq,
+@@ -307,6 +310,7 @@
+ 
+ static const struct i2c_device_id max77693_i2c_id[] = {
+ 	{ "max77693", TYPE_MAX77693 },
++	{ "max77849", TYPE_MAX77693 },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(i2c, max77693_i2c_id);
+@@ -345,6 +349,7 @@
+ #ifdef CONFIG_OF
+ static const struct of_device_id max77693_dt_match[] = {
+ 	{ .compatible = "maxim,max77693" },
++	{ .compatible = "maxim,max77849" },
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, max77693_dt_match);
+--- a/drivers/power/supply/max77693_charger.c
++++ b/drivers/power/supply/max77693_charger.c
+@@ -5,10 +5,14 @@
+ // Copyright (C) 2014 Samsung Electronics
+ // Krzysztof Kozlowski <krzk@kernel.org>
+ 
++#include <linux/devm-helpers.h>
++#include <linux/extcon.h>
+ #include <linux/module.h>
++#include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/power_supply.h>
+ #include <linux/regmap.h>
++#include <linux/workqueue.h>
+ #include <linux/mfd/max77693.h>
+ #include <linux/mfd/max77693-common.h>
+ #include <linux/mfd/max77693-private.h>
+@@ -27,8 +31,25 @@
+ 	u32 thermal_regulation_temp;
+ 	u32 batttery_overcurrent;
+ 	u32 charge_input_threshold_volt;
++
++	/*
++	 * MAX77849 (Samsung Galaxy Tab A 2015): same register map as MAX77693,
++	 * but CHGIN_ILIM is 25 mA/LSB and CHG_CC is 40 mA/LSB. Only the float
++	 * voltage is (re)programmed; charge/input currents follow the MUIC cable.
++	 */
++	bool max77849;
++	struct extcon_dev *edev;
++	struct notifier_block cable_nb;
++	struct work_struct cable_work;
++	u32 dcp_input_current;
++	u32 dcp_charge_current;
++	u32 usb_input_current;
++	u32 usb_charge_current;
+ };
+ 
++#define MAX77849_CHGIN_ILIM_STEP	25000	/* uA */
++#define MAX77849_CHG_CC_STEP		40000	/* uA */
++
+ static int max77693_get_charger_state(struct regmap *regmap, int *val)
+ {
+ 	int ret;
+@@ -241,6 +262,27 @@
+ 	return 0;
+ }
+ 
++static int max77849_get_current(struct regmap *regmap, unsigned int reg,
++				unsigned int mask, unsigned int step, int *val)
++{
++	unsigned int data;
++	int ret;
++
++	ret = regmap_read(regmap, reg, &data);
++	if (ret < 0)
++		return ret;
++
++	*val = (data & mask) * step;
++
++	return 0;
++}
++
++static int max77849_set_current(struct regmap *regmap, unsigned int reg,
++				unsigned int mask, unsigned int step, u32 uA)
++{
++	return regmap_update_bits(regmap, reg, mask, min(uA / step, mask));
++}
++
+ static enum power_supply_property max77693_charger_props[] = {
+ 	POWER_SUPPLY_PROP_STATUS,
+ 	POWER_SUPPLY_PROP_CHARGE_TYPE,
+@@ -278,10 +320,20 @@
+ 		ret = max77693_get_online(regmap, &val->intval);
+ 		break;
+ 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
+-		ret = max77693_get_input_current_limit(regmap, &val->intval);
++		if (chg->max77849)
++			ret = max77849_get_current(regmap, MAX77693_CHG_REG_CHG_CNFG_09,
++					CHG_CNFG_09_CHGIN_ILIM_MASK,
++					MAX77849_CHGIN_ILIM_STEP, &val->intval);
++		else
++			ret = max77693_get_input_current_limit(regmap, &val->intval);
+ 		break;
+ 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
+-		ret = max77693_get_fast_charge_current(regmap, &val->intval);
++		if (chg->max77849)
++			ret = max77849_get_current(regmap, MAX77693_CHG_REG_CHG_CNFG_02,
++					CHG_CNFG_02_CC_MASK,
++					MAX77849_CHG_CC_STEP, &val->intval);
++		else
++			ret = max77693_get_fast_charge_current(regmap, &val->intval);
+ 		break;
+ 	case POWER_SUPPLY_PROP_MODEL_NAME:
+ 		val->strval = max77693_charger_model;
+@@ -643,6 +695,13 @@
+ 		return ret;
+ 	}
+ 
++	/*
++	 * The remaining MAX77693 defaults use encodings that are not verified
++	 * on MAX77849; keep the bootloader values there.
++	 */
++	if (chg->max77849)
++		return max77693_set_constant_volt(chg, chg->constant_volt);
++
+ 	ret = max77693_set_fast_charge_timer(chg, DEFAULT_FAST_CHARGE_TIMER);
+ 	if (ret)
+ 		return ret;
+@@ -707,6 +766,24 @@
+ 			&chg->charge_input_threshold_volt))
+ 		chg->charge_input_threshold_volt =
+ 			DEFAULT_CHARGER_INPUT_THRESHOLD_VOLT;
++
++	chg->max77849 = of_device_is_compatible(dev->parent->of_node,
++						"maxim,max77849");
++	if (chg->max77849) {
++		/* Defaults from the Samsung gt510 battery table (mA): TA 1800/2200, USB 460/520 */
++		if (of_property_read_u32(np, "maxim,dcp-input-current-microamp",
++					 &chg->dcp_input_current))
++			chg->dcp_input_current = 1800000;
++		if (of_property_read_u32(np, "maxim,dcp-charge-current-microamp",
++					 &chg->dcp_charge_current))
++			chg->dcp_charge_current = 2200000;
++		if (of_property_read_u32(np, "maxim,usb-input-current-microamp",
++					 &chg->usb_input_current))
++			chg->usb_input_current = 460000;
++		if (of_property_read_u32(np, "maxim,usb-charge-current-microamp",
++					 &chg->usb_charge_current))
++			chg->usb_charge_current = 520000;
++	}
+ 
+ 	return 0;
+ }
+@@ -717,6 +794,49 @@
+ }
+ #endif /* CONFIG_OF */
+ 
++static void max77849_cable_work(struct work_struct *work)
++{
++	struct max77693_charger *chg = container_of(work, struct max77693_charger,
++						    cable_work);
++	struct regmap *regmap = chg->max77693->regmap;
++	u32 ilim, cc;
++
++	if (extcon_get_state(chg->edev, EXTCON_CHG_USB_DCP) > 0 ||
++	    extcon_get_state(chg->edev, EXTCON_CHG_USB_CDP) > 0 ||
++	    extcon_get_state(chg->edev, EXTCON_CHG_USB_FAST) > 0) {
++		ilim = chg->dcp_input_current;
++		cc = chg->dcp_charge_current;
++	} else if (extcon_get_state(chg->edev, EXTCON_CHG_USB_SDP) > 0 ||
++		   extcon_get_state(chg->edev, EXTCON_CHG_USB_SLOW) > 0) {
++		ilim = chg->usb_input_current;
++		cc = chg->usb_charge_current;
++	} else {
++		/* No cable (or unknown type): leave the current settings */
++		power_supply_changed(chg->charger);
++		return;
++	}
++
++	max77849_set_current(regmap, MAX77693_CHG_REG_CHG_CNFG_09,
++			     CHG_CNFG_09_CHGIN_ILIM_MASK, MAX77849_CHGIN_ILIM_STEP, ilim);
++	max77849_set_current(regmap, MAX77693_CHG_REG_CHG_CNFG_02,
++			     CHG_CNFG_02_CC_MASK, MAX77849_CHG_CC_STEP, cc);
++	dev_info(chg->dev, "cable: input limit %u mA, charge current %u mA\n",
++		 ilim / 1000, cc / 1000);
++
++	power_supply_changed(chg->charger);
++}
++
++static int max77849_cable_notifier(struct notifier_block *nb,
++				   unsigned long event, void *ptr)
++{
++	struct max77693_charger *chg = container_of(nb, struct max77693_charger,
++						    cable_nb);
++
++	schedule_work(&chg->cable_work);
++
++	return NOTIFY_OK;
++}
++
+ static int max77693_charger_probe(struct platform_device *pdev)
+ {
+ 	struct max77693_charger *chg;
+@@ -736,6 +856,14 @@
+ 	if (ret)
+ 		return ret;
+ 
++	if (chg->max77849) {
++		/* Cable type comes from the sibling MUIC (extcon-max77693) */
++		chg->edev = extcon_get_extcon_dev("max77693-muic");
++		if (IS_ERR(chg->edev))
++			return dev_err_probe(&pdev->dev, PTR_ERR(chg->edev),
++					     "MUIC extcon not available\n");
++	}
++
+ 	ret = max77693_reg_init(chg);
+ 	if (ret)
+ 		return ret;
+@@ -770,6 +898,24 @@
+ 		goto err;
+ 	}
+ 
++	if (chg->max77849) {
++		ret = devm_work_autocancel(&pdev->dev, &chg->cable_work,
++					   max77849_cable_work);
++		if (ret)
++			goto err;
++
++		chg->cable_nb.notifier_call = max77849_cable_notifier;
++		ret = devm_extcon_register_notifier_all(&pdev->dev, chg->edev,
++							&chg->cable_nb);
++		if (ret) {
++			dev_err(&pdev->dev, "failed to register extcon notifier\n");
++			goto err;
++		}
++
++		/* Apply the limits for whatever is plugged in right now */
++		schedule_work(&chg->cable_work);
++	}
++
+ 	return 0;
+ 
+ err:
+@@ -793,9 +939,17 @@
+ };
+ MODULE_DEVICE_TABLE(platform, max77693_charger_id);
+ 
++/* The MFD cell carries an OF node, so udev requests the of: alias */
++static const struct of_device_id max77693_charger_of_match[] = {
++	{ .compatible = "maxim,max77693-charger" },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, max77693_charger_of_match);
++
+ static struct platform_driver max77693_charger_driver = {
+ 	.driver = {
+ 		.name	= "max77693-charger",
++		.of_match_table = max77693_charger_of_match,
+ 	},
+ 	.probe		= max77693_charger_probe,
+ 	.remove		= max77693_charger_remove,
+--- a/arch/arm64/boot/dts/qcom/msm8916-samsung-gt510.dts
++++ b/arch/arm64/boot/dts/qcom/msm8916-samsung-gt510.dts
+@@ -99,6 +99,29 @@
+ 	};
+ };
+ 
++&blsp_i2c1 {
++	status = "okay";
++
++	/* MAX77849: MAX77693-compatible PMIC with charger and MUIC */
++	pmic@66 {
++		compatible = "maxim,max77849";
++		reg = <0x66>;
++		interrupts-extended = <&tlmm 12 IRQ_TYPE_LEVEL_LOW>;
++
++		pinctrl-0 = <&pmic_int_default>;
++		pinctrl-names = "default";
++
++		charger {
++			compatible = "maxim,max77693-charger";
++			maxim,constant-microvolt = <4350000>;
++		};
++
++		muic {
++			compatible = "maxim,max77693-muic";
++		};
++	};
++};
++
+ &blsp_i2c5 {
+ 	status = "okay";
+ 
+@@ -209,6 +232,13 @@
+ 		bias-pull-down;
+ 	};
+ 
++	pmic_int_default: pmic-int-default-state {
++		pins = "gpio12";
++		function = "gpio";
++		drive-strength = <2>;
++		bias-disable;
++	};
++
+ 	tsp_en_default: tsp-en-default-state {
+ 		pins = "gpio73";
+ 		function = "gpio";

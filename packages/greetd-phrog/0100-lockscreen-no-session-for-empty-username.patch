@@ -1,0 +1,43 @@
+From: gt510 <gt510@localhost>
+Subject: lockscreen: don't create a greetd session for an empty username
+
+With one user and one session phrog jumps straight to the keypad as soon as the
+user list is populated, but the row's username is bound from an AccountsService
+user that is still loading, so create_session() sent CreateSession for "".
+greetd then kept that nameless session configuring: the real CreateSession for
+the user failed with "a session is already being configured" ("Error, please
+try again"), the first password was consumed by the nameless session, and only
+the second attempt logged in.
+
+Wait (up to 5 s) for the username to be known before creating the session.
+
+---
+--- a/src/lockscreen.rs
++++ b/src/lockscreen.rs
+@@ -182,8 +182,24 @@
+         }
+ 
+         async fn create_session(&self) {
+-            let user = self.user_session_page.get().unwrap().username();
+-            if user.is_none() || self.session.borrow().eq(&user) {
++            // The selected row's username is bound from an AccountsService user that loads
++            // asynchronously, so when the single user/session flow jumps straight to the keypad
++            // at startup it can still be empty. A CreateSession for "" leaves greetd configuring
++            // a nameless session: the real CreateSession then fails with "a session is already
++            // being configured" and the first password typed is taken as a username.
++            let mut user = self.user_session_page.get().unwrap().username();
++            for _ in 0..50 {
++                if !user.as_deref().is_some_and(str::is_empty) {
++                    break;
++                }
++                glib::timeout_future(Duration::from_millis(100)).await;
++                user = self.user_session_page.get().unwrap().username();
++            }
++            if self.obj().page() != LockscreenPage::Unlock {
++                // The keypad was left while we waited.
++                return;
++            }
++            if user.as_deref().map_or(true, str::is_empty) || self.session.borrow().eq(&user) {
+                 // no user selected, or the session for that user is already started
+                 return;
+             }

@@ -1,0 +1,22 @@
+From b061622f140c6d48c369089a2f6c9fdc569f418c Mon Sep 17 00:00:00 2001
+From: Stephan Gerhold <stephan@gerhold.net>
+Date: Fri, 11 Aug 2023 20:20:15 +0200
+Subject: [PATCH] soc: qcom: cpr: Initialize loop_disabled
+
+Signed-off-by: Stephan Gerhold <stephan@gerhold.net>
+---
+ drivers/pmdomain/qcom/cpr.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/pmdomain/qcom/cpr.c b/drivers/pmdomain/qcom/cpr.c
+index 53c8d8f5d99920..e71bb14468dca0 100644
+--- a/drivers/pmdomain/qcom/cpr.c
++++ b/drivers/pmdomain/qcom/cpr.c
+@@ -1651,6 +1651,7 @@ static int cpr_probe(struct platform_device *pdev)
+ 	drv->dev = dev;
+ 	drv->desc = data->cpr_desc;
+ 	drv->acc_desc = data->acc_desc;
++	drv->loop_disabled = true;
+ 
+ 	drv->fuse_corners = devm_kcalloc(dev, drv->desc->num_fuse_corners,
+ 					 sizeof(*drv->fuse_corners),

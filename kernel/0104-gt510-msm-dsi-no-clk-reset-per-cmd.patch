@@ -1,0 +1,29 @@
+From: gt510 <gt510@localhost>
+Subject: drm/msm/dsi: do not re-set link clock rates for every command
+
+msm_dsi_host_xfer_prepare() called link_clk_set_rate() before every DSI
+command. On MSM8916 the 28nm-lp PLL delivers 398322656 Hz for a requested
+398358000 Hz, so the clock core treats every call as a change and relocks
+the DSI PLL while video scan-out is running. Each backlight update (a DCS
+write) then corrupts the picture. Only set the rates while the host is not
+yet powered on; afterwards they are already correct.
+---
+--- a/drivers/gpu/drm/msm/dsi/dsi_host.c
++++ b/drivers/gpu/drm/msm/dsi/dsi_host.c
+@@ -2175,7 +2175,15 @@
+ 	 * mdp clock need to be enabled to receive dsi interrupt
+ 	 */
+ 	pm_runtime_get_sync(&msm_host->pdev->dev);
+-	cfg_hnd->ops->link_clk_set_rate(msm_host);
++	/*
++	 * Once the host is powered on the link clocks already run at the mode's
++	 * rates. Setting them again for every command is not a no-op when the
++	 * PLL cannot hit the requested rate exactly (MSM8916 28nm-lp: 398358000
++	 * requested, 398322656 delivered): the clock core reprograms the DSI
++	 * PLL mid-frame and video mode panels glitch on every backlight change.
++	 */
++	if (!msm_host->power_on)
++		cfg_hnd->ops->link_clk_set_rate(msm_host);
+ 	cfg_hnd->ops->link_clk_enable(msm_host);
+ 
+ 	/* TODO: vote for bus bandwidth */

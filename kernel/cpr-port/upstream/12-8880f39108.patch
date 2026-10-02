@@ -1,0 +1,269 @@
+From 8880f39108206d7a60a0a8351c0373bddf58657c Mon Sep 17 00:00:00 2001
+From: Stephan Gerhold <stephan@gerhold.net>
+Date: Sat, 12 Aug 2023 15:31:22 +0200
+Subject: [PATCH] arm64: dts: qcom: msm8916: Add cpufreq scaling with DVFS
+
+For cpufreq on MSM8916 we need to scale 3 different power domains:
+
+ 1. VDD_MX, managed by RPMPD
+ 2. VDD_APC, managed by CPR
+ 3. VDD_CX, for the higher CPU frequencies provided by the A53PLL
+
+Signed-off-by: Stephan Gerhold <stephan@gerhold.net>
+---
+ arch/arm64/boot/dts/qcom/msm8916-pm8916.dtsi |  13 ++
+ arch/arm64/boot/dts/qcom/msm8916.dtsi        | 132 +++++++++++++++++--
+ arch/arm64/boot/dts/qcom/pm8916.dtsi         |   4 +
+ 3 files changed, 140 insertions(+), 9 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/qcom/msm8916-pm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916-pm8916.dtsi
+index b1a7eafbee31f7..d4c55d330839aa 100644
+--- a/arch/arm64/boot/dts/qcom/msm8916-pm8916.dtsi
++++ b/arch/arm64/boot/dts/qcom/msm8916-pm8916.dtsi
+@@ -15,6 +15,10 @@
+ 	vdda-supply = <&pm8916_l2>;
+ };
+ 
++&cpr {
++	vdd-apc-supply = <&pm8916_spmi_s2>;
++};
++
+ &mdss_dsi0 {
+ 	vdda-supply = <&pm8916_l2>;
+ 	vddio-supply = <&pm8916_l6>;
+@@ -34,6 +38,15 @@
+ 	vdd-micbias-supply = <&pm8916_l13>;
+ };
+ 
++&pm8916_spmi_regulators {
++	pm8916_spmi_s2: s2 {
++		regulator-min-microvolt = <1050000>;
++		regulator-max-microvolt = <1350000>;
++		/* Disabled automatically by hardware when CPU is in deep idle */
++		regulator-always-on;
++	};
++};
++
+ &sdhc_1 {
+ 	vmmc-supply = <&pm8916_l8>;
+ 	vqmmc-supply = <&pm8916_l5>;
+diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+index 3e9de157cefbc8..d1b2be4586f7d7 100644
+--- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
++++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+@@ -151,8 +151,14 @@
+ 			clocks = <&apcs>;
+ 			operating-points-v2 = <&cpu_opp_table>;
+ 			#cooling-cells = <2>;
+-			power-domains = <&CPU_PD0>;
+-			power-domain-names = "psci";
++			power-domains = <&CPU_PD0>,
++					<&cpr>,
++					<&rpmpd MSM8916_VDDMX_AO>,
++					<&rpmpd MSM8916_VDDCX_AO>;
++			power-domain-names = "psci",
++					     "apc",
++					     "mx",
++					     "cx";
+ 			qcom,acc = <&cpu0_acc>;
+ 			qcom,saw = <&cpu0_saw>;
+ 		};
+@@ -166,8 +172,14 @@
+ 			clocks = <&apcs>;
+ 			operating-points-v2 = <&cpu_opp_table>;
+ 			#cooling-cells = <2>;
+-			power-domains = <&CPU_PD1>;
+-			power-domain-names = "psci";
++			power-domains = <&CPU_PD1>,
++					<&cpr>,
++					<&rpmpd MSM8916_VDDMX_AO>,
++					<&rpmpd MSM8916_VDDCX_AO>;
++			power-domain-names = "psci",
++					     "apc",
++					     "mx",
++					     "cx";
+ 			qcom,acc = <&cpu1_acc>;
+ 			qcom,saw = <&cpu1_saw>;
+ 		};
+@@ -181,8 +193,14 @@
+ 			clocks = <&apcs>;
+ 			operating-points-v2 = <&cpu_opp_table>;
+ 			#cooling-cells = <2>;
+-			power-domains = <&CPU_PD2>;
+-			power-domain-names = "psci";
++			power-domains = <&CPU_PD2>,
++					<&cpr>,
++					<&rpmpd MSM8916_VDDMX_AO>,
++					<&rpmpd MSM8916_VDDCX_AO>;
++			power-domain-names = "psci",
++					     "apc",
++					     "mx",
++					     "cx";
+ 			qcom,acc = <&cpu2_acc>;
+ 			qcom,saw = <&cpu2_saw>;
+ 		};
+@@ -196,8 +214,14 @@
+ 			clocks = <&apcs>;
+ 			operating-points-v2 = <&cpu_opp_table>;
+ 			#cooling-cells = <2>;
+-			power-domains = <&CPU_PD3>;
+-			power-domain-names = "psci";
++			power-domains = <&CPU_PD3>,
++					<&cpr>,
++					<&rpmpd MSM8916_VDDMX_AO>,
++					<&rpmpd MSM8916_VDDCX_AO>;
++			power-domain-names = "psci",
++					     "apc",
++					     "mx",
++					     "cx";
+ 			qcom,acc = <&cpu3_acc>;
+ 			qcom,saw = <&cpu3_saw>;
+ 		};
+@@ -243,20 +267,56 @@
+ 	};
+ 
+ 	cpu_opp_table: opp-table-cpu {
+-		compatible = "operating-points-v2";
++		compatible = "operating-points-v2-kryo-cpu", "operating-points-v2";
++		nvmem-cells = <&pte_pvs_version>, <&pte_speedbin1>, <&pte_speedbin2>;
++		nvmem-cell-names = "pvs", "bin1", "bin2";
+ 		opp-shared;
+ 
++		/* CX votes are for the A53PLL (only used for >= 998.4 MHz) */
+ 		opp-200000000 {
+ 			opp-hz = /bits/ 64 <200000000>;
++			required-opps = <&rpmpd_opp_svs_soc>, <&cpr_opp1>, <&rpmpd_opp_none>;
++			opp-supported-hw = <0xf>; /* 0, 1, 2, 3 */
+ 		};
+ 		opp-400000000 {
+ 			opp-hz = /bits/ 64 <400000000>;
++			required-opps = <&rpmpd_opp_svs_soc>, <&cpr_opp1>, <&rpmpd_opp_none>;
++			opp-supported-hw = <0xf>; /* 0, 1, 2, 3 */
++		};
++		opp-533333000 {
++			opp-hz = /bits/ 64 <533333000>;
++			required-opps = <&rpmpd_opp_nom>, <&cpr_opp2>, <&rpmpd_opp_none>;
++			opp-supported-hw = <0xf>; /* 0, 1, 2, 3 */
+ 		};
+ 		opp-800000000 {
+ 			opp-hz = /bits/ 64 <800000000>;
++			required-opps = <&rpmpd_opp_nom>, <&cpr_opp2>, <&rpmpd_opp_none>;
++			opp-supported-hw = <0xf>; /* 0, 1, 2, 3 */
+ 		};
+ 		opp-998400000 {
+ 			opp-hz = /bits/ 64 <998400000>;
++			required-opps = <&rpmpd_opp_super_turbo>, <&cpr_opp3>, <&rpmpd_opp_svs_soc>;
++			opp-supported-hw = <0xf>; /* 0, 1, 2, 3 */
++		};
++		opp-1094400000 {
++			opp-hz = /bits/ 64 <1094400000>;
++			required-opps = <&rpmpd_opp_super_turbo>, <&cpr_opp3>, <&rpmpd_opp_nom>;
++			opp-supported-hw = <0x7>; /* 0, 1, 2 */
++		};
++		opp-1152000000 {
++			opp-hz = /bits/ 64 <1152000000>;
++			required-opps = <&rpmpd_opp_super_turbo>, <&cpr_opp3>, <&rpmpd_opp_nom>;
++			opp-supported-hw = <0x7>; /* 0, 1, 2 */
++		};
++		opp-1209600000 {
++			opp-hz = /bits/ 64 <1209600000>;
++			required-opps = <&rpmpd_opp_super_turbo>, <&cpr_opp3>, <&rpmpd_opp_nom>;
++			opp-supported-hw = <0x5>; /* 0, 2 */
++		};
++		opp-1363200000 {
++			opp-hz = /bits/ 64 <1363200000>;
++			required-opps = <&rpmpd_opp_super_turbo>, <&cpr_opp3>, <&rpmpd_opp_nom>;
++			opp-supported-hw = <0x4>; /* 2 */
+ 		};
+ 	};
+ 
+@@ -362,6 +422,9 @@
+ 					rpmpd_opp_table: opp-table {
+ 						compatible = "operating-points-v2";
+ 
++						rpmpd_opp_none: opp0 {
++							opp-level = <0>;
++						};
+ 						rpmpd_opp_ret: opp1 {
+ 							opp-level = <1>;
+ 						};
+@@ -492,6 +555,26 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+ 
++			pte_pvs_version: pvs-version@6 {
++				reg = <0x06 0x1>;
++				bits = <2 2>;
++			};
++
++			mem_acc_override: mem-acc-override@6 {
++				reg = <0x06 0x1>;
++				bits = <4 1>;
++			};
++
++			pte_speedbin1: speedbin1@6 {
++				reg = <0x06 0x2>;
++				bits = <7 2>;
++			};
++
++			pte_speedbin2: speedbin2@c {
++				reg = <0x0c 0x1>;
++				bits = <2 3>;
++			};
++
+ 			tsens_base1: base1@d0 {
+ 				reg = <0xd0 0x1>;
+ 				bits = <0 7>;
+@@ -2574,6 +2657,37 @@
+ 			clock-names = "xo";
+ 		};
+ 
++		cpr: power-controller@b018000 {
++			compatible = "qcom,msm8916-cpr", "qcom,cpr";
++			reg = <0x0b018000 0x1000>;
++			interrupts = <GIC_SPI 15 IRQ_TYPE_EDGE_RISING>;
++			clocks = <&xo_board>;
++			clock-names = "ref";
++			#power-domain-cells = <0>;
++			operating-points-v2 = <&cpr_opp_table>;
++			acc-syscon = <&tcsr>;
++			nvmem-cells = <&mem_acc_override>;
++			nvmem-cell-names = "mem_acc_override";
++			qcom,force-ceiling-voltage;
++
++			cpr_opp_table: opp-table {
++				compatible = "operating-points-v2-qcom-level";
++
++				cpr_opp1: opp1 {
++					opp-level = <1>;
++					qcom,opp-fuse-level = <1>;
++				};
++				cpr_opp2: opp2 {
++					opp-level = <2>;
++					qcom,opp-fuse-level = <2>;
++				};
++				cpr_opp3: opp3 {
++					opp-level = <3>;
++					qcom,opp-fuse-level = <3>;
++				};
++			};
++		};
++
+ 		timer@b020000 {
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+diff --git a/arch/arm64/boot/dts/qcom/pm8916.dtsi b/arch/arm64/boot/dts/qcom/pm8916.dtsi
+index 24690cfdabb631..147aafd9816121 100644
+--- a/arch/arm64/boot/dts/qcom/pm8916.dtsi
++++ b/arch/arm64/boot/dts/qcom/pm8916.dtsi
+@@ -181,6 +181,10 @@
+ 			status = "disabled";
+ 		};
+ 
++		pm8916_spmi_regulators: regulators {
++			compatible = "qcom,pm8916-regulators";
++		};
++
+ 		pm8916_vib: vibrator@c000 {
+ 			compatible = "qcom,pm8916-vib";
+ 			reg = <0xc000>;

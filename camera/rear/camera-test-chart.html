@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Camera Test Chart</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg: #777777; --ink: #000000; --paper: #ffffff; }
+  html, body { margin: 0; height: 100%; background: var(--bg); }
+  body { font-family: Helvetica, Arial, sans-serif; color: var(--ink); display: flex; align-items: center; justify-content: center; }
+  #chart { width: min(96vw, 150vh); aspect-ratio: 4 / 3; background: var(--bg); position: relative; box-sizing: border-box; padding: 2.2%; display: grid; grid-template-rows: 9% 30% 30% 12% 1fr; gap: 1.6%; }
+  .corner { position: absolute; width: 5%; aspect-ratio: 1; background: conic-gradient(#000 0 25%, #fff 0 50%, #000 0 75%, #fff 0); }
+  .corner.tl { left: 0; top: 0; } .corner.tr { right: 0; top: 0; } .corner.bl { left: 0; bottom: 0; } .corner.br { right: 0; bottom: 0; }
+  .row { display: grid; gap: 1.2%; }
+  .ramp { grid-template-columns: repeat(11, 1fr); }
+  .six { grid-template-columns: repeat(6, 1fr); }
+  .patch { display: flex; align-items: flex-end; justify-content: center; font-size: 1.1vw; font-weight: 700; padding-bottom: 0.3vw; border: 1px solid #000; }
+  .patch span { background: rgba(255,255,255,.85); color: #000; padding: 0 .4em; border-radius: .3em; }
+  .bw { grid-template-columns: 1fr 1fr 2fr; }
+  .lines { background: repeating-linear-gradient(90deg, #000 0 2px, #fff 2px 4px); border: 1px solid #000; }
+  .focus { background: #fff; border: 1px solid #000; display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; text-align: center; padding: 0 1%; }
+  .focus div:nth-child(1) { font-size: 2.6vw; font-weight: 700; }
+  .focus div:nth-child(2) { font-size: 1.5vw; }
+  .focus div:nth-child(3) { font-size: .85vw; line-height: 1.15; }
+</style>
+</head>
+<body>
+<div id="chart">
+  <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+
+  <!-- grey ramp, 0 to 255 in 11 steps -->
+  <div class="row ramp" id="ramp"></div>
+
+  <!-- fully saturated primaries and secondaries -->
+  <div class="row six" id="pure"></div>
+
+  <!-- moderate colours, close to a ColorChecker's: skin, sky, foliage, orange, purple, yellow-green -->
+  <div class="row six" id="soft"></div>
+
+  <!-- black, white, fine lines -->
+  <div class="row bw">
+    <div class="patch" style="background:#000"><span>black</span></div>
+    <div class="patch" style="background:#fff"><span>white</span></div>
+    <div class="lines"></div>
+  </div>
+
+  <div class="focus">
+    <div>FOCUS 12pt</div>
+    <div>The quick brown fox jumps over the lazy dog 0123456789</div>
+    <div>Small text: libcamera software ISP on a Samsung Galaxy Tab A 8.0 (2019), GC8034 rear and GC2375H front sensor, mainline Linux. If you can read this in the photo, the lens is in focus.</div>
+  </div>
+</div>
+<script>
+  const ramp = document.getElementById('ramp');
+  for (let i = 0; i <= 10; i++) {
+    const v = Math.round(i * 25.5);
+    const d = document.createElement('div');
+    d.className = 'patch';
+    d.style.background = `rgb(${v},${v},${v})`;
+    d.innerHTML = `<span>${v}</span>`;
+    ramp.appendChild(d);
+  }
+  const add = (id, list) => {
+    const row = document.getElementById(id);
+    for (const [name, rgb] of list) {
+      const d = document.createElement('div');
+      d.className = 'patch';
+      d.style.background = `rgb(${rgb.join(',')})`;
+      d.innerHTML = `<span>${name} ${rgb.join(' ')}</span>`;
+      row.appendChild(d);
+    }
+  };
+  add('pure', [['red', [255, 0, 0]], ['green', [0, 255, 0]], ['blue', [0, 0, 255]],
+               ['cyan', [0, 255, 255]], ['magenta', [255, 0, 255]], ['yellow', [255, 255, 0]]]);
+  add('soft', [['skin', [194, 150, 130]], ['sky', [98, 122, 157]], ['foliage', [87, 108, 67]],
+               ['orange', [214, 126, 44]], ['purple', [94, 60, 108]], ['lime', [157, 188, 64]]]);
+</script>
+</body>
+</html>

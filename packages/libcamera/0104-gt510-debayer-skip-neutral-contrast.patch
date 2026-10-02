@@ -1,0 +1,54 @@
+From: gt510 <gt510@localhost>
+Subject: software_isp: debayer shaders: skip the contrast curve when neutral
+
+The GPU debayer applies the contrast S-curve with one pow() per colour
+channel on every pixel, even at the default neutral contrast where the curve
+is the identity (contrastExp = tan(pi/4) = 1). On the Adreno 306 (SM-T550)
+the debayer is the most expensive GPU job per camera frame. Branch on the
+uniform and skip the curve when it cannot change anything.
+
+---
+--- a/src/libcamera/shaders/bayer_1x_packed.frag
++++ b/src/libcamera/shaders/bayer_1x_packed.frag
+@@ -288,9 +288,16 @@
+ 	 * contrastExp 0..2 contrast to 0..infinity; avoid actual infinity at tan(pi/2)
+ 	 */
+ 	rgb = clamp(rgb, 0.0, 1.0);
+-	rgb.r = apply_contrast(rgb.r);
+-	rgb.g = apply_contrast(rgb.g);
+-	rgb.b = apply_contrast(rgb.b);
++	/*
++	 * Neutral contrast (the default, contrastExp = tan(pi/4)) is the
++	 * identity: skip three pow() per pixel, which are expensive on small
++	 * GPUs. The branch is uniform, so it costs nothing per fragment.
++	 */
++	if (abs(contrastExp - 1.0) > 0.001) {
++		rgb.r = apply_contrast(rgb.r);
++		rgb.g = apply_contrast(rgb.g);
++		rgb.b = apply_contrast(rgb.b);
++	}
+ 
+ 	/* Apply gamma after colour correction */
+ 	rgb = pow(rgb, vec3(gamma));
+--- a/src/libcamera/shaders/bayer_unpacked.frag
++++ b/src/libcamera/shaders/bayer_unpacked.frag
+@@ -145,9 +145,16 @@
+      * Contrast
+      */
+     rgb = clamp(rgb, 0.0, 1.0);
+-    rgb.r = apply_contrast(rgb.r);
+-    rgb.g = apply_contrast(rgb.g);
+-    rgb.b = apply_contrast(rgb.b);
++    /*
++     * Neutral contrast (the default, contrastExp = tan(pi/4)) is the
++     * identity: skip three pow() per pixel, which are expensive on small
++     * GPUs. The branch is uniform, so it costs nothing per fragment.
++     */
++    if (abs(contrastExp - 1.0) > 0.001) {
++        rgb.r = apply_contrast(rgb.r);
++        rgb.g = apply_contrast(rgb.g);
++        rgb.b = apply_contrast(rgb.b);
++    }
+ 
+     /* Apply gamma after colour correction */
+     rgb = pow(rgb, vec3(gamma));

@@ -1,0 +1,13 @@
+# SM-T550: follow the cm3323 ambient light sensor (Phosh auto-brightness). The sensor's
+# clear-channel counts read low as "lux", so start 25% brighter; moving the slider
+# while auto-brightness is on re-learns this offset.
+# Phosh ships "ambient-enabled=false" for XDG_CURRENT_DESKTOP=Phosh, which beats a plain
+# [schema] default, so set it for Phosh too.
+[org.gnome.settings-daemon.plugins.power]
+ambient-enabled=true
+
+[org.gnome.settings-daemon.plugins.power:Phosh]
+ambient-enabled=true
+
+[mobi.phosh.shell.brightness]
+auto-brightness-offset=0.25

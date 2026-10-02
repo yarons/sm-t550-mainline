@@ -1,0 +1,43 @@
+From: gt510 <gt510@localhost>
+Subject: simple: Apply the swISP output cap only to scalable outputs
+
+The max_output_width/height cap (0007) shrank the maximum of every
+pipeline configuration, including the discrete passthrough size of a
+sensor with its own ISP (the SR200PC20 front camera, 1600x1200). That
+turned the size into an inverted range, StreamFormats::sizes() logged
+"Range format is ambiguous" and returned nothing, so the camera exposed
+no formats at all and disappeared from PipeWire clients.
+---
+--- a/src/libcamera/pipeline/simple/simple.cpp
++++ b/src/libcamera/pipeline/simple/simple.cpp
+@@ -765,14 +765,23 @@
+ 			config.outputSizes = config.captureSize;
+ 		}
+ 
++		/*
++		 * The output cap only makes sense for outputs that can be
++		 * scaled (converter or software ISP). A passthrough output is
++		 * a single discrete size: shrinking its maximum would turn it
++		 * into an inverted range that StreamFormats rejects as
++		 * ambiguous, hiding every format of the camera.
++		 */
+ 		const GlobalConfiguration &configuration = pipe()->cameraManager()->_d()->configuration();
+-		if (auto maxOutputWidth = configuration.configuration()["pipelines"]["simple"]["max_output_width"].get<unsigned int>()) {
+-			if (config.outputSizes.max.width > maxOutputWidth.value())
+-				config.outputSizes.max.width = maxOutputWidth.value();
+-		}
+-		if (auto maxOutputHeight = configuration.configuration()["pipelines"]["simple"]["max_output_height"].get<unsigned int>()) {
+-			if (config.outputSizes.max.height > maxOutputHeight.value())
+-				config.outputSizes.max.height = maxOutputHeight.value();
++		if (config.outputSizes.min != config.outputSizes.max) {
++			if (auto maxOutputWidth = configuration.configuration()["pipelines"]["simple"]["max_output_width"].get<unsigned int>()) {
++				if (config.outputSizes.max.width > maxOutputWidth.value())
++					config.outputSizes.max.width = std::max(maxOutputWidth.value(), config.outputSizes.min.width);
++			}
++			if (auto maxOutputHeight = configuration.configuration()["pipelines"]["simple"]["max_output_height"].get<unsigned int>()) {
++				if (config.outputSizes.max.height > maxOutputHeight.value())
++					config.outputSizes.max.height = std::max(maxOutputHeight.value(), config.outputSizes.min.height);
++			}
+ 		}
+ 
+ 		configs_.push_back(config);

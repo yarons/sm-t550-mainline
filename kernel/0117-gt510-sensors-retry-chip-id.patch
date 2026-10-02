@@ -1,0 +1,109 @@
+From: gt510 <gt510@localhost>
+Subject: media: i2c: sr544, sr200pc20: retry the chip id read at probe
+
+Both SM-T550 sensors sit on CCI master 0 and probe concurrently. Once, the
+rear sensor probe hit a CCI timeout ("i2c-qcom-cci ... master 0 queue 0
+timeout", chip id 0x0000, -110) and failed: the camss async graph then never
+completed and neither camera showed up until a manual rebind.
+
+Power-cycle the sensor and retry the chip id read up to three times, as
+sr544_enable_streams() already does for stream start.
+
+---
+--- a/drivers/media/i2c/sr544.c
++++ b/drivers/media/i2c/sr544.c
+@@ -473,8 +473,8 @@
+ 	struct fwnode_handle *endpoint;
+ 	struct sr544 *s;
+ 	unsigned long xclk_rate;
+-	unsigned int i;
+-	u16 id;
++	unsigned int i, attempt;
++	u16 id = 0;
+ 	int ret;
+ 
+ 	s = devm_kzalloc(dev, sizeof(*s), GFP_KERNEL);
+@@ -528,15 +528,28 @@
+ 	if (ret)
+ 		goto err_ctrls;
+ 
+-	ret = sr544_power_on(dev);
+-	if (ret)
+-		goto err_entity;
+-
+-	ret = sr544_read(s, SR544_REG_CHIP_ID, &id);
+-	if (ret || id != SR544_CHIP_ID) {
+-		ret = dev_err_probe(dev, -ENODEV, "chip id 0x%04x != 0x%04x (%d)\n",
+-				    id, SR544_CHIP_ID, ret);
+-		goto err_power;
++	/*
++	 * Both gt510 sensors sit on CCI master 0 and probe concurrently. A CCI
++	 * timeout here ("master 0 queue 0 timeout", id 0x0000) left the camss
++	 * graph incomplete and hid both cameras: power-cycle and try again.
++	 */
++	for (attempt = 1; ; attempt++) {
++		ret = sr544_power_on(dev);
++		if (ret)
++			goto err_entity;
++
++		ret = sr544_read(s, SR544_REG_CHIP_ID, &id);
++		if (!ret && id == SR544_CHIP_ID)
++			break;
++		if (attempt == 3) {
++			ret = dev_err_probe(dev, -ENODEV, "chip id 0x%04x != 0x%04x (%d)\n",
++					    id, SR544_CHIP_ID, ret);
++			goto err_power;
++		}
++		dev_warn(dev, "chip id read %u failed: 0x%04x (%d), power-cycling\n",
++			 attempt, id, ret);
++		sr544_power_off(dev);
++		msleep(50);
+ 	}
+ 	dev_info(dev, "SR544 detected at 0x%02x, xclk %lu Hz, link %lld Hz\n",
+ 		 client->addr, xclk_rate, s->link_freq);
+--- a/drivers/media/i2c/sr200pc20.c
++++ b/drivers/media/i2c/sr200pc20.c
+@@ -330,7 +330,7 @@
+ 	struct fwnode_handle *endpoint;
+ 	struct sr200pc20 *s;
+ 	struct v4l2_ctrl *ctrl;
+-	unsigned int i;
++	unsigned int i, attempt;
+ 	int ret, id;
+ 
+ 	s = devm_kzalloc(dev, sizeof(*s), GFP_KERNEL);
+@@ -395,16 +395,24 @@
+ 	if (ret)
+ 		goto err_ctrls;
+ 
+-	ret = sr200pc20_power_on(dev);
+-	if (ret)
+-		goto err_entity;
+-
+-	ret = sr200pc20_write(s, SR200PC20_REG_PAGE, 0x00);
+-	id = ret < 0 ? ret : i2c_smbus_read_byte_data(client, SR200PC20_REG_CHIP_ID);
+-	if (id != SR200PC20_CHIP_ID) {
+-		ret = dev_err_probe(dev, -ENODEV, "chip id 0x%02x != 0x%02x\n",
+-				    id & 0xff, SR200PC20_CHIP_ID);
+-		goto err_power;
++	/* Shares CCI master 0 with the rear sensor: retry like sr544 does. */
++	for (attempt = 1; ; attempt++) {
++		ret = sr200pc20_power_on(dev);
++		if (ret)
++			goto err_entity;
++
++		ret = sr200pc20_write(s, SR200PC20_REG_PAGE, 0x00);
++		id = ret < 0 ? ret : i2c_smbus_read_byte_data(client, SR200PC20_REG_CHIP_ID);
++		if (id == SR200PC20_CHIP_ID)
++			break;
++		if (attempt == 3) {
++			ret = dev_err_probe(dev, -ENODEV, "chip id 0x%02x != 0x%02x\n",
++					    id & 0xff, SR200PC20_CHIP_ID);
++			goto err_power;
++		}
++		dev_warn(dev, "chip id read %u failed (%d), power-cycling\n", attempt, id);
++		sr200pc20_power_off(dev);
++		msleep(50);
+ 	}
+ 	dev_info(dev, "SR200PC20 detected at 0x%02x\n", client->addr);
+ 

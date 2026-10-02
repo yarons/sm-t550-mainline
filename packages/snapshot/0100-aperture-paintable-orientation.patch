@@ -1,0 +1,292 @@
+From: gt510 <gt510@localhost>
+Subject: aperture: rotate the preview and tag captures for the camera mounting and the shell rotation
+
+The GTK4 paintable sink did not honour the image-orientation tag pipewiresrc
+derives from the libcamera orientation, so both cameras showed the raw sensor
+frame. Set the paintable orientation property directly: the inverse of the
+libcamera mounting rotation plus the shell output transform from
+org.gnome.Mutter.DisplayConfig (phone shells rotate the whole logical output;
+the preview has to be counter-rotated, in the opposite direction for a front
+camera), re-applied on MonitorsChanged. Captures get the same value as their
+image-orientation tag, and the stream tag from pipewiresrc is rewritten at the
+source pad with the same value (the muxers keep the first tag they see), so
+saved photos and videos are upright in every orientation.
+APERTURE_ORIENTATION forces the total, APERTURE_DISPLAY_ROTATION the display
+part. APERTURE_OPTIMAL_RATIO=4:3 makes best_mode prefer the sensor aspect.
+---
+--- a/aperture/src/viewfinder.rs
++++ b/aperture/src/viewfinder.rs
+@@ -2,6 +2,8 @@
+ use std::path::Path;
+ use std::path::PathBuf;
+ use std::sync::LazyLock;
++use std::sync::atomic::{AtomicU32, Ordering};
++use std::sync::Arc;
+ 
+ use gst::prelude::*;
+ use gtk::prelude::*;
+@@ -67,6 +69,9 @@
+         pub is_stopping_recording: Cell<bool>,
+         pub is_taking_picture: Cell<bool>,
+         pub is_front_camera: Cell<bool>,
++        pub display_config: OnceCell<gio::DBusProxy>,
++        /// Current preview/capture rotation, readable from streaming threads.
++        pub orientation_degrees: Arc<AtomicU32>,
+ 
+         pub timeout_handler: RefCell<Option<glib::SourceId>>,
+ 
+@@ -175,9 +180,127 @@
+                 obj.start_stream();
+             }
+ 
++            self.apply_orientation();
+             obj.notify_camera();
+         }
+ 
++        /// The shell's current output rotation in degrees (0/90/180/270).
++        ///
++        /// Phone shells rotate the whole logical output, so the preview has to be
++        /// counter-rotated on top of the camera's own mounting rotation. Read from
++        /// org.gnome.Mutter.DisplayConfig (phoc/mutter); APERTURE_DISPLAY_ROTATION
++        /// overrides it.
++        fn display_rotation(&self) -> u32 {
++            if let Some(forced) = std::env::var("APERTURE_DISPLAY_ROTATION")
++                .ok()
++                .and_then(|value| value.trim().parse::<u32>().ok())
++            {
++                return forced % 360;
++            }
++            let Some(proxy) = self.display_config.get() else {
++                return 0;
++            };
++            let Ok(state) = proxy.call_sync(
++                "GetCurrentState",
++                None,
++                gio::DBusCallFlags::NONE,
++                1000,
++                gio::Cancellable::NONE,
++            ) else {
++                return 0;
++            };
++            // (u serial, a(...) monitors, a(iiduba(ssss)a{sv}) logical monitors, a{sv})
++            if state.n_children() < 3 {
++                return 0;
++            }
++            let logical = state.child_value(2);
++            let mut rotation = 0;
++            for i in 0..logical.n_children() {
++                let monitor = logical.child_value(i);
++                if monitor.n_children() < 5 {
++                    continue;
++                }
++                let transform = monitor.child_value(3).get::<u32>().unwrap_or(0);
++                let primary = monitor.child_value(4).get::<bool>().unwrap_or(false);
++                let degrees = (transform % 4) * 90;
++                if primary || i == 0 {
++                    rotation = degrees;
++                }
++                if primary {
++                    break;
++                }
++            }
++            rotation
++        }
++
++        /// Rotates the preview to match the camera's mounting and the shell rotation.
++        ///
++        /// pipewiresrc turns the libcamera rotation into an image-orientation tag,
++        /// but the GTK4 sink did not honour it here, so the paintable's orientation
++        /// property is set directly. APERTURE_ORIENTATION (degrees) forces the total.
++        pub(crate) fn apply_orientation(&self) {
++            let Some(paintable) = self
++                .sink_paintable
++                .get()
++                .map(|sink| sink.property::<gdk::Paintable>("paintable"))
++            else {
++                return;
++            };
++            let rotation = self.total_rotation();
++            self.orientation_degrees.store(rotation, Ordering::Relaxed);
++            // GstGtk4PaintableSinkOrientation: auto, rotate-0, rotate-90, rotate-180, rotate-270, ...
++            let index = match rotation {
++                90 => 2,
++                180 => 3,
++                270 => 4,
++                _ => 1,
++            };
++            let Some(pspec) = paintable.find_property("orientation") else {
++                log::warn!("gtk4paintablesink paintable has no orientation property");
++                return;
++            };
++            let Some(class) = glib::EnumClass::with_type(pspec.value_type()) else {
++                return;
++            };
++            if let Some(value) = class.value(index) {
++                paintable.set_property("orientation", value.to_value(&class));
++            }
++        }
++
++        /// Clockwise degrees the captured frame must be turned to be upright on
++        /// screen: the inverse of the libcamera mounting rotation (libcamera's
++        /// `Rotate90` is undone by turning 270 clockwise) plus the shell rotation.
++        pub(crate) fn total_rotation(&self) -> u32 {
++            let camera_rotation = self.camera.borrow().as_ref().and_then(|camera| {
++                let properties = camera.properties();
++                let value = properties.get("api.libcamera.rotation")?;
++                value
++                    .get::<String>()
++                    .ok()
++                    .and_then(|s| s.parse::<u32>().ok())
++                    .or_else(|| value.get::<i32>().ok().map(|i| i.rem_euclid(360) as u32))
++            });
++            let display = self.display_rotation();
++            // A front camera faces the other way, so the shell rotation turns its
++            // image in the opposite direction (Android's front/back formula).
++            let front = self
++                .camera
++                .borrow()
++                .as_ref()
++                .is_some_and(|camera| matches!(camera.location(), crate::CameraLocation::Front));
++            let display_term = if front { (360 - display) % 360 } else { display };
++            let camera_term = (360 - camera_rotation.unwrap_or(0) % 360) % 360;
++            let rotation = std::env::var("APERTURE_ORIENTATION")
++                .ok()
++                .and_then(|value| value.trim().parse::<u32>().ok())
++                .unwrap_or(camera_term + display_term)
++                % 360;
++            log::info!(
++                "Orientation: libcamera rotation {camera_rotation:?} (front {front}) -> {camera_term}, display {display} -> rotate-{rotation}"
++            );
++            rotation
++        }
++
+         fn set_disable_audio_recording(&self, value: bool) {
+             let obj = self.obj();
+ 
+@@ -340,6 +463,39 @@
+             self.offload.set_parent(&*obj);
+             self.offload.set_black_background(true);
+ 
++            // Follow the shell's output rotation (phoc/mutter DisplayConfig).
++            if let Ok(proxy) = gio::DBusProxy::for_bus_sync(
++                gio::BusType::Session,
++                gio::DBusProxyFlags::DO_NOT_LOAD_PROPERTIES,
++                None,
++                "org.gnome.Mutter.DisplayConfig",
++                "/org/gnome/Mutter/DisplayConfig",
++                "org.gnome.Mutter.DisplayConfig",
++                gio::Cancellable::NONE,
++            ) {
++                proxy.connect_local(
++                    "g-signal",
++                    false,
++                    glib::clone!(
++                        #[weak]
++                        obj,
++                        #[upgrade_or]
++                        None,
++                        move |args| {
++                            let is_monitors_changed = args
++                                .get(2)
++                                .and_then(|v| v.get::<String>().ok())
++                                .is_some_and(|name| name == "MonitorsChanged");
++                            if is_monitors_changed {
++                                obj.imp().apply_orientation();
++                            }
++                            None
++                        }
++                    ),
++                );
++                let _ = self.display_config.set(proxy);
++            }
++
+             self.tee.set(tee).unwrap();
+ 
+             let devices = crate::DeviceProvider::instance();
+@@ -899,6 +1055,13 @@
+                 gst::TagMergeMode::Replace,
+             );
+         }
++        // Stored frames are the raw sensor frames: tell viewers how to turn them,
++        // exactly as the preview is turned (camera mounting plus shell rotation).
++        let orientation = format!("rotate-{}", imp.total_rotation());
++        tagsetter.add_tag::<gst::tags::ImageOrientation>(
++            &orientation.as_str(),
++            gst::TagMergeMode::Replace,
++        );
+     }
+ 
+     fn setup_recording(&self) {
+@@ -1205,6 +1368,38 @@
+             camera.reconfigure(element)?;
+         } else {
+             let element = camera.create_element()?;
++
++            // pipewiresrc tags the stream with the camera mounting only, and the
++            // muxers keep the first image-orientation they see (before the tags
++            // set on camerabin arrive). Rewrite it at the source so every branch
++            // (preview, picture, video) carries the full rotation.
++            if let Some(pad) = element.static_pad("src") {
++                let degrees = imp.orientation_degrees.clone();
++                pad.add_probe(gst::PadProbeType::EVENT_DOWNSTREAM, move |_pad, info| {
++                    let new_event = match &info.data {
++                        Some(gst::PadProbeData::Event(event)) => match event.view() {
++                            gst::EventView::Tag(tag_event) => {
++                                let tags = tag_event.tag();
++                                tags.get::<gst::tags::ImageOrientation>().map(|_| {
++                                    let value = format!("rotate-{}", degrees.load(Ordering::Relaxed));
++                                    let mut new_tags = tags.to_owned();
++                                    new_tags.make_mut().add::<gst::tags::ImageOrientation>(
++                                        &value.as_str(),
++                                        gst::TagMergeMode::Replace,
++                                    );
++                                    gst::event::Tag::new(new_tags)
++                                })
++                            }
++                            _ => None,
++                        },
++                        _ => None,
++                    };
++                    if let Some(event) = new_event {
++                        info.data = Some(gst::PadProbeData::Event(event));
++                    }
++                    gst::PadProbeReturn::Ok
++                });
++            }
+ 
+             let wrapper = self.create_camera_element(&element)?;
+             imp.camerabin().set_property("camera-source", &wrapper);
+--- a/aperture/src/utils.rs
++++ b/aperture/src/utils.rs
+@@ -33,7 +33,16 @@
+         const MIN_WIDTH: i32 = 640;
+         const MIN_HEIGHT: i32 = 480;
+         const MAX_HEIGHT: i32 = 1080;
+-        const OPTIMAL_RATIO: f32 = 16.0 / 9.0;
++        // APERTURE_OPTIMAL_RATIO="4:3" prefers the sensor's native aspect on devices
++        // whose 16:9 modes are crops of a 4:3 sensor shown on a 4:3 screen.
++        let optimal_ratio: f32 = std::env::var("APERTURE_OPTIMAL_RATIO")
++            .ok()
++            .and_then(|value| {
++                let (w, h) = value.trim().split_once(':')?;
++                Some(w.parse::<f32>().ok()? / h.parse::<f32>().ok()?)
++            })
++            .filter(|ratio| ratio.is_finite() && *ratio > 0.0)
++            .unwrap_or(16.0 / 9.0);
+ 
+         let mut best_size_optimal_ratio: Option<Size> = None;
+         let mut best_size_any_ratio: Option<Size> = None;
+@@ -51,11 +60,11 @@
+                 best_size_fallback = Some(Size { width, height });
+             }
+ 
+-            let max_width = (height as f32 * OPTIMAL_RATIO).ceil() as i32;
++            let max_width = (height as f32 * optimal_ratio).ceil() as i32;
+             if (MIN_WIDTH..=max_width).contains(&width)
+                 && (MIN_HEIGHT..=MAX_HEIGHT).contains(&height)
+             {
+-                if width == (height as f32 * OPTIMAL_RATIO) as i32 {
++                if width == (height as f32 * optimal_ratio) as i32 {
+                     if let Some(Size {
+                         width: best_w,
+                         height: best_h,

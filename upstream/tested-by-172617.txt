@@ -1,0 +1,39 @@
+# Reply-all to patch 2/2 of Dmitry Baryshkov's
+# series (plain text, inline, no top-posting). Review the wording first; it is your statement.
+#   Message-Id: <20260822-msm-fix-export-v1-2-917b3cbedd43@oss.qualcomm.com>
+#   https://patchwork.freedesktop.org/series/172617/  (patch 747937; 1/2 = 747936)
+From: Yaron Shahrabani <EMAIL>
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Rob Clark <robin.clark@oss.qualcomm.com>, Dmitry Baryshkov <lumag@kernel.org>, Abhinav Kumar <abhinav.kumar@linux.dev>, Jessica Zhang <jesszhan0024@gmail.com>, Sean Paul <sean@poorly.run>, Marijn Suijten <marijn.suijten@somainline.org>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Konrad Dybcio <konradybcio@kernel.org>, Akhil P Oommen <akhilpo@oss.qualcomm.com>, Sumit Semwal <sumit.semwal@linaro.org>, Christian König <christian.koenig@amd.com>, Antonino Maniscalco <antomani103@gmail.com>, linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, linaro-mm-sig@lists.linaro.org
+Subject: Re: [PATCH 2/2] drm/msm: don't tear down shared VM mappings on handle close
+In-Reply-To: <20260822-msm-fix-export-v1-2-917b3cbedd43@oss.qualcomm.com>
+References: <20260822-msm-fix-export-v1-2-917b3cbedd43@oss.qualcomm.com>
+
+On Sat, Aug 22, 2026 at 11:48:59AM +0300, Dmitry Baryshkov wrote:
+> On targets (like A530 / MSM8996) without per-process pgtables
+> msm_gpu_create_private_vm() uses the global VM, so all DRM files share
+> one GPU address space.
+
+A306 (MSM8916) is hit by this too, from the compositor side: phoc
+(wlroots) samples a client's window buffer through a dma-buf, and when
+the client frees that buffer -- on its first resize at start-up or when
+it exits -- phoc's next composite reads the torn-down iova. On a Samsung
+Galaxy Tab A 9.7 (SM-T550) that showed up as bursts of thousands of
+
+  *** fault: iova=..., flags=0
+
+on the GPU context (1f09000.iommu-ctx), roughly once every 20-60 GTK4
+application launches. An ftrace of iommu:unmap and iommu:io_page_fault
+put the faulting range inside a 2.5 MB window buffer whose mapping the
+exiting client had just removed.
+
+With both patches of this series on top of 7.3-rc2 (msm8916-mainline
+tree), 180 launch/close cycles of six GTK4 apps gave no GPU faults;
+without them the same loop faulted after 20 and 57 launches. Given the
+reference-loop concern, I also kprobed msm_gem_free_object() over two
+camera-app sessions: every BO whose last handle and dma-buf were gone
+was freed (the objects left over all still had an open handle).
+
+The testing was done with the help of an AI assistant.
+
+Tested-by: Yaron Shahrabani <EMAIL> # SM-T550 (MSM8916, A306)

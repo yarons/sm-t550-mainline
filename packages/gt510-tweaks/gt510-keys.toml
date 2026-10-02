@@ -1,0 +1,6 @@
+# SM-T550: the Recents touch key has no Phosh binding (see /usr/bin/gt510-recents).
+[[events]]
+name = "recents"
+key_state = "released"
+keys = ["KEY_APPSELECT"]
+command = "/usr/bin/gt510-recents"

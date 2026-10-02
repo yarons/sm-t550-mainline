@@ -1,0 +1,7 @@
+# SM-T550 Back touch key (maXTouch T15 key array, scancode 1) -> Escape.
+# Phosh has no Back concept and libadwaita only binds XF86Back in navigation
+# views, while Escape closes dialogs, menus, popovers and search, and pops
+# navigation pages (pop-on-escape). Scancode 0 (Recents, KEY_APPSELECT) is
+# left alone for hkdm.
+evdev:name:Atmel maXTouch Touchscreen:*
+ KEYBOARD_KEY_1=esc

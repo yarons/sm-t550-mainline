@@ -1,0 +1,1 @@
+texture { bounds: 0 0 64 64; texture: url("file:///usr/share/icons/hicolor/48x48/apps/org.gnome.Calculator.png"); }

@@ -1,0 +1,2792 @@
+   flags       id ref  offset   kaddr            size     madv      name
+   00020000: A  0 ( 2) 00100000 00000000f45bbb33 00004096           memptrs                         
+      vmas: [gpu: vm=00000000deccf8c4, 01000000, mapped]
+   00020002: A  0 ( 2) 00100001 000000000a42ca65 00032768           ring0                           
+      vmas: [gpu: vm=00000000deccf8c4, 01001000, mapped]
+   00020000: A  0 ( 2) 00100009 000000002e463608 00004096           tx_gem                          
+      vmas: [mdp_kms: vm=0000000058a9a0fd, 00001000, mapped]
+   10020001: A  0 ( 3) 0010000a 000000003db57437 03145728           stolenfb                        
+   00020000: I  0 ( 3) 0010030a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01009000, unmapped]
+   00020000: I  0 ( 3) 0010030b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0100a000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 3) 0010030c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0100b000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 3) 0010030d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0100c000, mapped]
+	write fence:14:16454   signalled
+   00020000: I  0 ( 3) 0010030e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0100d000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 3) 0010030f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0100e000, unmapped]
+   00020000: I  0 ( 3) 00100310 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0100f000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 3) 00100311 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01010000, unmapped]
+   00020000: I  0 ( 3) 00100312 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01011000, unmapped]
+   00020000: I  0 ( 3) 00100313 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01012000, unmapped]
+   00020000: I  0 ( 3) 00100314 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01013000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 3) 00100315 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01014000, unmapped]
+   00020000: I  0 ( 2) 00100316 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01015000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 2) 00100318 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01017000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 2) 0010031a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01019000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 3) 0010031b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0101a000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 2) 0010031c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0101b000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 3) 0010031d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0101c000, unmapped]
+   00020000: I  0 ( 3) 0010031e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0101d000, unmapped]
+   00020000: I  0 ( 3) 0010031f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0101e000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 3) 00100320 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0101f000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 3) 00100321 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01020000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 3) 00100322 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01021000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 3) 00100323 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01022000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 3) 00100324 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01023000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 3) 00100325 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01024000, mapped]
+	write fence:14:16138   signalled
+   00020000: I  0 ( 3) 00100326 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01025000, mapped]
+	write fence:14:16138   signalled
+   00020000: I  0 ( 3) 00100327 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01026000, mapped]
+	write fence:14:16138   signalled
+   00020000: I  0 ( 3) 00100328 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01027000, unmapped]
+   00020000: I  0 ( 3) 00100329 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01028000, unmapped]
+   00020000: I  0 ( 3) 0010032a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01029000, unmapped]
+   00020000: I  0 ( 3) 0010032b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0102a000, unmapped]
+   00020001: A  0 ( 5) 0010032c 0000000000000000 03145728                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0102b000, mapped] [mdp_kms: vm=0000000058a9a0fd, 00302000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 2) 00100645 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01344000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 2) 00100685 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01384000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 2) 001006c5 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 013c4000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 2) 00100705 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01404000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 2) 00100745 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01444000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 2) 00100785 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01484000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 2) 001007c5 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 014c4000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 2) 00100805 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01504000, mapped]
+	write fence:14:16491   signalled
+   00020001: I  0 ( 5) 0010085f 0000000000000000 03145728                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0155e000, mapped] [mdp_kms: vm=0000000058a9a0fd, 00002000, mapped]
+	write fence:14:16490   signalled
+   00020000: I  0 ( 3) 00100d1f 0000000000000000 03145728                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01a1e000, unmapped]
+	write fence:14:539   signalled
+   00020000: I  0 ( 3) 0010131f 0000000000000000 03145728                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0201e000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 3) 001016bf 0000000000000000 03145728                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023be000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 3) 001019bf 0000000000000000 03145728                                           
+      vmas: [gpu: vm=00000000deccf8c4, 026be000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 3) 00101cbf 0000000000000000 03145728                                           
+      vmas: [gpu: vm=00000000deccf8c4, 029be000, mapped]
+	write fence:14:16489   signalled
+   00020000: I  0 ( 3) 0010084e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0154d000, mapped]
+	write fence:14:16474   signalled
+   00020000: I  0 ( 3) 0010084f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0154e000, mapped]
+	write fence:14:16474   signalled
+   00020000: I  0 ( 3) 00100850 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0154f000, mapped]
+	write fence:14:16474   signalled
+   00020000: I  0 ( 3) 001016ad 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023ac000, unmapped]
+   00020000: I  0 ( 3) 001016ac 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023ab000, unmapped]
+   00020000: I  0 ( 3) 001010c0 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01dbf000, unmapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 3) 001010c1 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01dc0000, unmapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 3) 001010c2 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01dc1000, unmapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 3) 001010c3 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01dc2000, unmapped]
+   00020000: I  0 ( 3) 001010c4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01dc3000, unmapped]
+   00020000: I  0 ( 3) 001010c5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01dc4000, unmapped]
+   00020000: I  0 ( 3) 001010c6 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01dc5000, unmapped]
+   00020000: I  0 ( 3) 001010c7 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01dc6000, unmapped]
+   00020000: I  0 ( 3) 0010062c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0132b000, unmapped]
+   00020000: I  0 ( 3) 0010062d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0132c000, unmapped]
+   00020000: I  0 ( 3) 0010062e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0132d000, mapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 3) 0010062f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0132e000, unmapped]
+   00020000: I  0 ( 3) 00100630 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0132f000, unmapped]
+   00020000: I  0 ( 2) 00100631 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01330000, unmapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 2) 0010169c 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0239b000, unmapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 2) 00100633 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01332000, unmapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 3) 0010169e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0239d000, unmapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 2) 0010169f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0239e000, unmapped]
+   00020000: I  0 ( 3) 001016a0 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0239f000, unmapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 3) 001016a1 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023a0000, unmapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 3) 001016a2 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023a1000, unmapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 3) 001023c7 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030c6000, unmapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 3) 001010d8 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01dd7000, mapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 3) 00101fbf 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02cbe000, unmapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 2) 0010101f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01d1e000, unmapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 2) 0010105f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01d5e000, mapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 2) 00102507 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03206000, mapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 2) 00102547 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03246000, mapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 2) 00102587 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03286000, mapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 2) 00100c5f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0195e000, mapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 2) 00100c9f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0199e000, mapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 2) 00100cdf 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 019de000, mapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 2) 00104303 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05002000, mapped]
+	write fence:28:142   signalled
+   00020000: I  0 ( 3) 001021ca 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02ec9000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 3) 001021cb 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02eca000, mapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 3) 001021cc 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02ecb000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 3) 001021cd 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02ecc000, unmapped]
+   00020000: I  0 ( 3) 001021ce 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02ecd000, unmapped]
+   00020000: I  0 ( 3) 001021cf 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02ece000, unmapped]
+   00020000: I  0 ( 3) 001021d0 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02ecf000, unmapped]
+   00020000: I  0 ( 3) 001021d1 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02ed0000, unmapped]
+   00020000: I  0 ( 3) 001021d2 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02ed1000, unmapped]
+   00020000: I  0 ( 3) 001021d3 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02ed2000, unmapped]
+   00020000: I  0 ( 3) 001021d4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02ed3000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 3) 001021d5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02ed4000, unmapped]
+   00020000: I  0 ( 3) 001021d6 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02ed5000, unmapped]
+   00020000: I  0 ( 2) 001021d7 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02ed6000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 2) 001021d9 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02ed8000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 2) 001021db 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02eda000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 2) 001021dc 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02edb000, unmapped]
+   00020000: I  0 ( 3) 001021dd 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02edc000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 3) 001021de 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02edd000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 3) 001021df 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02ede000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 3) 001021e0 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02edf000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 3) 00102320 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0301f000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 3) 0010373d 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0443c000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 2) 00102321 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03020000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 2) 00102361 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03060000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 2) 0010383d 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0453c000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 2) 0010387d 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0457c000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 2) 001038bd 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 045bc000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 2) 001038fd 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 045fc000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 2) 0010393d 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0463c000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 2) 0010397d 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0467c000, unmapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 2) 00103d89 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04a88000, mapped]
+	write fence:28:289   signalled
+   00020000: I  0 ( 3) 00101664 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02363000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 3) 00101665 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02364000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 3) 00101666 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02365000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 3) 00101667 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02366000, unmapped]
+   00020000: I  0 ( 3) 00101668 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02367000, unmapped]
+   00020000: I  0 ( 3) 00101669 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02368000, unmapped]
+   00020000: I  0 ( 3) 0010166a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02369000, unmapped]
+   00020000: I  0 ( 3) 0010166b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0236a000, unmapped]
+   00020000: I  0 ( 3) 0010166c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0236b000, unmapped]
+   00020000: I  0 ( 3) 0010166d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0236c000, unmapped]
+   00020000: I  0 ( 3) 0010166e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0236d000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 3) 0010166f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0236e000, unmapped]
+   00020000: I  0 ( 3) 00101670 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0236f000, unmapped]
+   00020000: I  0 ( 2) 00101671 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02370000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 2) 00101673 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02372000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 2) 00101675 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02374000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 2) 00101676 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02375000, unmapped]
+   00020000: I  0 ( 3) 00101677 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02376000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 3) 00101678 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02377000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 3) 00101679 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02378000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 3) 00104155 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04e54000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 3) 0010167a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02379000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 3) 001011d9 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01ed8000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 2) 00104295 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04f94000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 2) 001025c7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 032c6000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 2) 00102607 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03306000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 2) 00102647 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03346000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 2) 00102687 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03386000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 2) 001026c7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 033c6000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 2) 00102707 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03406000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 2) 00102747 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03446000, unmapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 2) 001059cb 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 066ca000, mapped]
+	write fence:28:440   signalled
+   00020000: I  0 ( 3) 00101182 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e81000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 3) 00101183 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e82000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 3) 00101184 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e83000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 3) 00101185 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e84000, unmapped]
+   00020000: I  0 ( 3) 00101186 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e85000, unmapped]
+   00020000: I  0 ( 3) 00101187 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e86000, unmapped]
+   00020000: I  0 ( 3) 00101188 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e87000, unmapped]
+   00020000: I  0 ( 3) 00101189 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e88000, unmapped]
+   00020000: I  0 ( 3) 0010118a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e89000, unmapped]
+   00020000: I  0 ( 3) 0010118b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e8a000, unmapped]
+   00020000: I  0 ( 3) 0010118c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e8b000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 3) 0010118d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e8c000, unmapped]
+   00020000: I  0 ( 3) 0010118e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e8d000, unmapped]
+   00020000: I  0 ( 2) 0010118f 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e8e000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 2) 00101191 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e90000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 2) 00101193 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e92000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 2) 00101194 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e93000, unmapped]
+   00020000: I  0 ( 3) 00101195 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e94000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 3) 00101196 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e95000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 3) 00101197 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e96000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 3) 00102787 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03486000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 2) 001046cf 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 053ce000, mapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 3) 00101198 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e97000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 3) 00103607 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04306000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 2) 00103cbd 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 049bc000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 2) 00103cfd 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 049fc000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 2) 00103d3d 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04a3c000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 2) 001028c7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 035c6000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 2) 00102907 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03606000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 2) 00102947 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03646000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 2) 00102987 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03686000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 2) 001029c7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 036c6000, unmapped]
+	write fence:28:593   signalled
+   00020000: I  0 ( 3) 001042ec 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04feb000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 3) 001042ed 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04fec000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 3) 001042ee 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04fed000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 3) 001042ef 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04fee000, unmapped]
+   00020000: I  0 ( 3) 001042f0 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04fef000, unmapped]
+   00020000: I  0 ( 3) 001042f1 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04ff0000, unmapped]
+   00020000: I  0 ( 3) 001042f2 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04ff1000, unmapped]
+   00020000: I  0 ( 3) 001042f3 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04ff2000, unmapped]
+   00020000: I  0 ( 3) 001042f4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04ff3000, unmapped]
+   00020000: I  0 ( 3) 001042f5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04ff4000, unmapped]
+   00020000: I  0 ( 3) 001042f6 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04ff5000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 3) 001042f7 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04ff6000, unmapped]
+   00020000: I  0 ( 3) 001042f8 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04ff7000, unmapped]
+   00020000: I  0 ( 2) 001042f9 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04ff8000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 2) 001042fb 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04ffa000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 2) 001042fd 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04ffc000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 2) 001042fe 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04ffd000, unmapped]
+   00020000: I  0 ( 3) 001042ff 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04ffe000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 3) 00104300 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04fff000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 3) 00104301 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05000000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 3) 00102d07 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03a06000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 3) 00104302 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05001000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 3) 00102e47 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03b46000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 2) 001035c7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 042c6000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 2) 00102f47 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03c46000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 2) 00102f87 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03c86000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 2) 00102fc7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03cc6000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 2) 00104e67 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b66000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 2) 00104ea7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ba6000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 2) 00104ee7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05be6000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 2) 00104f27 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05c26000, unmapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 2) 00105d97 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06a96000, mapped]
+	write fence:28:749   signalled
+   00020000: I  0 ( 3) 00104e44 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b43000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 3) 00104e45 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b44000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 3) 00104e46 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b45000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 3) 00104e47 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b46000, unmapped]
+   00020000: I  0 ( 3) 00104e48 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b47000, unmapped]
+   00020000: I  0 ( 3) 00104e49 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b48000, unmapped]
+   00020000: I  0 ( 3) 00104e4a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b49000, unmapped]
+   00020000: I  0 ( 3) 00104e4b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b4a000, unmapped]
+   00020000: I  0 ( 3) 00104e4c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b4b000, unmapped]
+   00020000: I  0 ( 3) 00104e4d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b4c000, unmapped]
+   00020000: I  0 ( 3) 00104e4e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b4d000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 3) 00104e4f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b4e000, unmapped]
+   00020000: I  0 ( 3) 00104e50 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b4f000, unmapped]
+   00020000: I  0 ( 2) 00104e51 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b50000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 2) 00104e53 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b52000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 2) 00104e55 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b54000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 2) 00104e56 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b55000, unmapped]
+   00020000: I  0 ( 3) 00104e57 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b56000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 3) 00104e58 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b57000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 3) 00104e59 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b58000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 3) 00104a9b 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0579a000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 3) 00104e5a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05b59000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 3) 001034c7 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 041c6000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 2) 001020bf 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02dbe000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 2) 001020ff 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02dfe000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 2) 0010213f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02e3e000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 2) 00104bdb 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 058da000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 2) 00104c1b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0591a000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 2) 00104c5b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0595a000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 2) 00104c9b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0599a000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 2) 00104cdb 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 059da000, unmapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 2) 001068fb 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 075fa000, mapped]
+	write fence:28:905   signalled
+   00020000: I  0 ( 3) 00104dbe 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05abd000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 3) 00104dbf 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05abe000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 3) 00104dc0 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05abf000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 3) 00104dc1 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ac0000, unmapped]
+   00020000: I  0 ( 3) 00104dc2 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ac1000, unmapped]
+   00020000: I  0 ( 3) 00104dc3 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ac2000, unmapped]
+   00020000: I  0 ( 3) 00104dc4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ac3000, unmapped]
+   00020000: I  0 ( 3) 00104dc5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ac4000, unmapped]
+   00020000: I  0 ( 3) 00104dc6 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ac5000, unmapped]
+   00020000: I  0 ( 3) 00104dc7 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ac6000, unmapped]
+   00020000: I  0 ( 3) 00104dc8 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ac7000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 3) 00104dc9 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ac8000, unmapped]
+   00020000: I  0 ( 3) 00104dca 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ac9000, unmapped]
+   00020000: I  0 ( 2) 00104dcb 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05aca000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 2) 00104dcd 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05acc000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 2) 00104dcf 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ace000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 2) 00104dd0 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05acf000, unmapped]
+   00020000: I  0 ( 3) 00104dd1 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ad0000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 3) 00104dd2 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ad1000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 3) 00104dd3 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ad2000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 3) 00103387 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04086000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 3) 00104dd4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ad3000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 3) 00102a07 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03706000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 2) 00106863 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 07562000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 2) 001068a3 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 075a2000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 2) 00104d1b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05a1a000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 2) 00104d5b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05a5a000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 2) 00102b07 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03806000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 2) 00102b47 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03846000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 2) 00102b87 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03886000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 2) 00102bc7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 038c6000, unmapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 2) 0010782b 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0852a000, mapped]
+	write fence:28:1055   signalled
+   00020000: I  0 ( 3) 00101316 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02015000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 3) 00101317 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02016000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 3) 00101318 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02017000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 3) 00101319 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02018000, unmapped]
+   00020000: I  0 ( 3) 0010131a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02019000, unmapped]
+   00020000: I  0 ( 3) 0010131b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0201a000, unmapped]
+   00020000: I  0 ( 3) 0010131c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0201b000, unmapped]
+   00020000: I  0 ( 3) 0010131d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0201c000, unmapped]
+   00020000: I  0 ( 3) 0010131e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0201d000, unmapped]
+   00020000: I  0 ( 3) 00102ca7 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 039a6000, unmapped]
+   00020000: I  0 ( 3) 00102ca8 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 039a7000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 3) 00102ca9 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 039a8000, unmapped]
+   00020000: I  0 ( 3) 00102caa 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 039a9000, unmapped]
+   00020000: I  0 ( 2) 00102cab 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 039aa000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 2) 00102cad 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 039ac000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 2) 00102caf 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 039ae000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 2) 00102cb0 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 039af000, unmapped]
+   00020000: I  0 ( 3) 00102cb1 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 039b0000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 3) 00102cb2 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 039b1000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 3) 00102cb3 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 039b2000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 3) 00103207 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03f06000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 3) 00102cb4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 039b3000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 3) 00106163 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06e62000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 2) 00103347 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04046000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 2) 00105933 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06632000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 2) 00105973 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06672000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 2) 00103007 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03d06000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 2) 00103047 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03d46000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 2) 00103087 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03d86000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 2) 00106263 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06f62000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 2) 001062a3 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06fa2000, unmapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 2) 00106cc7 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 079c6000, mapped]
+	write fence:28:1209   signalled
+   00020000: I  0 ( 3) 0010117f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e7e000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 3) 00101180 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e7f000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 3) 00102d01 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03a00000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 3) 00102d02 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03a01000, unmapped]
+   00020000: I  0 ( 3) 00102d03 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03a02000, unmapped]
+   00020000: I  0 ( 3) 00102d04 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03a03000, unmapped]
+   00020000: I  0 ( 3) 00102d05 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03a04000, unmapped]
+   00020000: I  0 ( 3) 00102d06 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03a05000, unmapped]
+   00020000: I  0 ( 3) 00104d9b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05a9a000, unmapped]
+   00020000: I  0 ( 3) 00104d9c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05a9b000, unmapped]
+   00020000: I  0 ( 3) 00104d9d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05a9c000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 3) 00104d9e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05a9d000, unmapped]
+   00020000: I  0 ( 3) 00104d9f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05a9e000, unmapped]
+   00020000: I  0 ( 2) 00104da0 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05a9f000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 2) 00104da2 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05aa1000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 2) 00104da4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05aa3000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 2) 00104da5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05aa4000, unmapped]
+   00020000: I  0 ( 3) 00104da6 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05aa5000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 3) 00104da7 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05aa6000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 3) 00104da8 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05aa7000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 3) 001063e3 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 070e2000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 3) 00104da9 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05aa8000, unmapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 3) 00105633 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06332000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 2) 00102c47 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03946000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 2) 00107793 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08492000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 2) 001077d3 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 084d2000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 2) 001030c7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03dc6000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 2) 00103107 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03e06000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 2) 00103147 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03e46000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 2) 00105733 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06432000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 2) 00105773 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06472000, unmapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 2) 0010838f 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0908e000, mapped]
+	write fence:28:1365   signalled
+   00020000: I  0 ( 3) 00101304 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02003000, unmapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 3) 00101305 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02004000, unmapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 3) 00101306 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02005000, unmapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 3) 00101307 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02006000, unmapped]
+   00020000: I  0 ( 3) 00101308 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02007000, unmapped]
+   00020000: I  0 ( 3) 00101309 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02008000, unmapped]
+   00020000: I  0 ( 3) 0010130a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02009000, unmapped]
+   00020000: I  0 ( 3) 0010130b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0200a000, unmapped]
+   00020000: I  0 ( 3) 0010130c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0200b000, unmapped]
+   00020000: I  0 ( 3) 0010130d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0200c000, unmapped]
+   00020000: I  0 ( 3) 0010130e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0200d000, mapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 3) 0010130f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0200e000, unmapped]
+   00020000: I  0 ( 3) 00101310 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0200f000, unmapped]
+   00020000: I  0 ( 2) 00101311 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02010000, mapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 2) 00101313 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02012000, mapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 2) 00101315 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02014000, mapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 2) 0010167b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0237a000, unmapped]
+   00020000: I  0 ( 3) 0010167c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0237b000, mapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 3) 0010167d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0237c000, mapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 3) 0010167e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0237d000, mapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 3) 00105367 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06066000, unmapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 3) 0010167f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0237e000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 3) 001054a7 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 061a6000, unmapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 2) 00104dd5 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ad4000, mapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 2) 001058b3 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 065b2000, mapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 2) 001058f3 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 065f2000, mapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 2) 00103187 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03e86000, mapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 2) 001031c7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03ec6000, mapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 2) 001055a7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 062a6000, mapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 2) 001055e7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 062e6000, mapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 2) 00100b5f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0185e000, mapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 2) 00108ef3 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09bf2000, mapped]
+	write fence:28:1522   signalled
+   00020000: I  0 ( 3) 00107825 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08524000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 3) 00107826 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08525000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 3) 00107827 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08526000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 3) 00107828 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08527000, unmapped]
+   00020000: I  0 ( 3) 00107829 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08528000, unmapped]
+   00020000: I  0 ( 3) 0010782a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08529000, unmapped]
+   00020000: I  0 ( 3) 00101680 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0237f000, unmapped]
+   00020000: I  0 ( 3) 00101681 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02380000, unmapped]
+   00020000: I  0 ( 3) 00101682 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02381000, unmapped]
+   00020000: I  0 ( 3) 00101683 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02382000, unmapped]
+   00020000: I  0 ( 3) 00101684 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02383000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 3) 00101685 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02384000, unmapped]
+   00020000: I  0 ( 3) 00101686 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02385000, unmapped]
+   00020000: I  0 ( 2) 00101687 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02386000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 2) 00101689 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02388000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 2) 0010168b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0238a000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 2) 0010168c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0238b000, unmapped]
+   00020000: I  0 ( 3) 0010168d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0238c000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 3) 0010168e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0238d000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 3) 0010168f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0238e000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 3) 001039bd 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 046bc000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 3) 00101690 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0238f000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 3) 001062e3 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06fe2000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 2) 00100b9f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0189e000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 2) 00100bdf 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 018de000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 2) 00100c1f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0191e000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 2) 00103afd 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 047fc000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 2) 00103b3d 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0483c000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 2) 00103b7d 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0487c000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 2) 00103bbd 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 048bc000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 2) 00103bfd 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 048fc000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 2) 001092bf 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09fbe000, mapped]
+	write fence:28:1679   signalled
+   00020000: I  0 ( 3) 001059ba 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 066b9000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 3) 001059bb 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 066ba000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 3) 001059bc 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 066bb000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 3) 001059bd 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 066bc000, unmapped]
+   00020000: I  0 ( 3) 001059be 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 066bd000, unmapped]
+   00020000: I  0 ( 3) 001059bf 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 066be000, unmapped]
+   00020000: I  0 ( 3) 001059c0 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 066bf000, unmapped]
+   00020000: I  0 ( 3) 001059c1 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 066c0000, unmapped]
+   00020000: I  0 ( 3) 001059c2 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 066c1000, unmapped]
+   00020000: I  0 ( 3) 001059c3 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 066c2000, unmapped]
+   00020000: I  0 ( 3) 001059c4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 066c3000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 3) 001059c5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 066c4000, unmapped]
+   00020000: I  0 ( 3) 001059c6 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 066c5000, unmapped]
+   00020000: I  0 ( 2) 001059c7 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 066c6000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 2) 001059c9 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 066c8000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 2) 0010109f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01d9e000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 2) 001010a0 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01d9f000, unmapped]
+   00020000: I  0 ( 3) 001010a1 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01da0000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 3) 001010a2 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01da1000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 3) 001010a3 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01da2000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 3) 001080b7 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08db6000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 3) 001081f7 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08ef6000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 2) 00103c7d 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0497c000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 2) 001082f7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08ff6000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 2) 00108337 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09036000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 2) 00107bf7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 088f6000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 2) 00107c37 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08936000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 2) 00107c77 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08976000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 2) 00104f67 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05c66000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 2) 00104fa7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ca6000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 2) 0010968b 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0a38a000, mapped]
+	write fence:28:1834   signalled
+   00020000: I  0 ( 3) 0010117e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0907e000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 3) 001068f8 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0907f000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 3) 001068f9 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09080000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 3) 001068fa 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09081000, unmapped]
+   00020000: I  0 ( 3) 001010d0 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09082000, unmapped]
+   00020000: I  0 ( 3) 001010d1 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09083000, unmapped]
+   00020000: I  0 ( 3) 001010d2 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09084000, unmapped]
+   00020000: I  0 ( 3) 001010d3 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09085000, unmapped]
+   00020000: I  0 ( 3) 001010d4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09086000, unmapped]
+   00020000: I  0 ( 3) 001010d5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09087000, unmapped]
+   00020000: I  0 ( 3) 001010d6 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09088000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 3) 001010d7 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09089000, unmapped]
+   00020000: I  0 ( 3) 00108383 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0908a000, unmapped]
+   00020000: I  0 ( 2) 00108384 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0908b000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 2) 00108386 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01da4000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 2) 00108388 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0908d000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 3) 00108389 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01da3000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 2) 0010838a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01da6000, unmapped]
+   00020000: I  0 ( 3) 0010838b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01da7000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 3) 0010838c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01da8000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 3) 0010838d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01da9000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 3) 00106523 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ce6000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 3) 00106663 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05e26000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 2) 00105327 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06026000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 2) 001010d9 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05f26000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 2) 00101119 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05f66000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 2) 00106763 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05fa6000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 2) 001067a3 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09826000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 2) 001067e3 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09866000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 2) 00104fe7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 098a6000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 2) 00105027 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 098e6000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 2) 0010a1ef 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0b2ba000, mapped]
+	write fence:28:1991   signalled
+   00020000: I  0 ( 2) 00000000 0000000000000000 00004096    purged                                 
+      vmas: [gpu: vm=00000000deccf8c4, 02ec6000, unmapped]
+	write fence:14:7523   signalled
+   00020000: I  0 ( 3) 0010085c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ab9000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 3) 0010838e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05aba000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 3) 001021bf 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05abb000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 3) 001021c0 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05abc000, unmapped]
+   00020000: I  0 ( 3) 001021c1 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04fdc000, unmapped]
+   00020000: I  0 ( 3) 001021c2 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04fdd000, unmapped]
+   00020000: I  0 ( 3) 001021c3 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04fde000, unmapped]
+   00020000: I  0 ( 3) 001021c4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04fdf000, unmapped]
+   00020000: I  0 ( 3) 001021c5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04fe0000, unmapped]
+   00020000: I  0 ( 3) 001021c6 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04fe1000, unmapped]
+   00020000: I  0 ( 3) 001016a3 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04fe2000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 3) 001016a4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04fe3000, unmapped]
+   00020000: I  0 ( 3) 001016a5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04fe4000, unmapped]
+   00020000: I  0 ( 2) 001016a6 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04fe5000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 2) 001016a8 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04fe7000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 2) 001016aa 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04fe9000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 3) 00102cf5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01daa000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 2) 00102cf6 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 04fea000, unmapped]
+   00020000: I  0 ( 3) 00102cf7 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 075e2000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 3) 00102cf8 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 075e3000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 3) 00102cf9 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 075e4000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 3) 0010a057 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09926000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 3) 00102cfa 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 075e5000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 3) 001050a7 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08392000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 2) 0010a197 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01dd8000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 2) 001051a7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e18000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 2) 001051e7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0975a000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 2) 00105227 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0979a000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 2) 00105267 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 097da000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 2) 001052a7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09a66000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 2) 001052e7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09aa6000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 2) 00107093 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09ae6000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 2) 0010a987 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba52000, mapped]
+	write fence:28:2148   signalled
+   00020000: I  0 ( 3) 0010562f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0155c000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 3) 00101691 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01dbd000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 3) 00101692 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01dbe000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 3) 00101693 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023a2000, unmapped]
+   00020000: I  0 ( 3) 00101694 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023a3000, unmapped]
+   00020000: I  0 ( 3) 00101695 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023a4000, unmapped]
+   00020000: I  0 ( 3) 00101696 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023a5000, unmapped]
+   00020000: I  0 ( 3) 00101697 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023a6000, unmapped]
+   00020000: I  0 ( 3) 00101698 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023a7000, unmapped]
+   00020000: I  0 ( 3) 00104db2 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023a8000, unmapped]
+   00020000: I  0 ( 3) 00104db3 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023a9000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 3) 00104db4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09076000, unmapped]
+   00020000: I  0 ( 3) 00104db5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09077000, unmapped]
+   00020000: I  0 ( 2) 00104db6 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09078000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 2) 00104db8 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0907a000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 2) 00100638 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0907c000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 2) 00100639 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0907d000, unmapped]
+   00020000: I  0 ( 3) 0010063a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02390000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 3) 0010063b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02391000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 3) 0010063c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02392000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 3) 001074d3 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0955a000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 3) 00107613 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08092000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 2) 00107713 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 07522000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 2) 00107753 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09b66000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 2) 00109d57 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09ba6000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 2) 00109d97 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0969a000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 2) 00109dd7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 096da000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 2) 00109e17 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0971a000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 2) 00109e57 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08192000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 2) 00109e97 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 081d2000, mapped]
+	write fence:28:2300   signalled
+   00020000: I  0 ( 2) 0010bc83 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c982000, mapped]
+	write fence:28:2300   signalled
+   00020002: I  0 ( 3) 00000000 0000000000000000 00032768    purged                                 
+      vmas: [gpu: vm=00000000deccf8c4, 04fd4000, unmapped]
+	write fence:14:8591   signalled
+   00020002: I  0 ( 3) 00000000 0000000000000000 00032768    purged                                 
+      vmas: [gpu: vm=00000000deccf8c4, 01544000, unmapped]
+	write fence:14:8592   signalled
+   00020000: I  0 ( 2) 00000000 0000000000000000 00004096    purged                                 
+      vmas: [gpu: vm=00000000deccf8c4, 0235e000, unmapped]
+	write fence:14:8591   signalled
+   00020002: I  0 ( 3) 00000000 0000000000000000 00032768    purged                                 
+      vmas: [gpu: vm=00000000deccf8c4, 039f4000, unmapped]
+	write fence:14:8591   signalled
+   00020002: I  0 ( 3) 00000000 0000000000000000 00032768    purged                                 
+      vmas: [gpu: vm=00000000deccf8c4, 01ffb000, unmapped]
+	write fence:14:8592   signalled
+   00020002: I  0 ( 3) 00000000 0000000000000000 00032768    purged                                 
+      vmas: [gpu: vm=00000000deccf8c4, 01333000, unmapped]
+	write fence:14:8592   signalled
+   00020002: I  0 ( 3) 00000000 0000000000000000 00032768    purged                                 
+      vmas: [gpu: vm=00000000deccf8c4, 075e6000, unmapped]
+	write fence:14:8591   signalled
+   00020000: I  0 ( 3) 00108382 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ab6000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 3) 0010063d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ab7000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 3) 001010b4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 05ab8000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 3) 001010b5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba2e000, unmapped]
+   00020000: I  0 ( 3) 001010bd 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba2f000, unmapped]
+   00020000: I  0 ( 3) 001010be 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba30000, unmapped]
+   00020000: I  0 ( 3) 001010bf 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba31000, unmapped]
+   00020000: I  0 ( 3) 00103d85 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba32000, unmapped]
+   00020000: I  0 ( 3) 00103d86 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba33000, unmapped]
+   00020000: I  0 ( 3) 00103d87 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba34000, unmapped]
+   00020000: I  0 ( 3) 00103d88 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba35000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 3) 00104e5f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba36000, unmapped]
+   00020000: I  0 ( 3) 00104e60 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba37000, unmapped]
+   00020000: I  0 ( 2) 00104e61 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba38000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 2) 00105627 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba3a000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 2) 00105629 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba3c000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 3) 0010562a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02393000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 2) 0010562b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba3d000, unmapped]
+   00020000: I  0 ( 3) 0010562c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba3e000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 3) 0010562d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba3f000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 3) 0010562e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba40000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 3) 00109ed7 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0b686000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 2) 00108a5b 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c11e000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 3) 001010c8 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba41000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 3) 00109a57 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0b7c6000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 2) 0010a017 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 02e7e000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 2) 00108e27 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08312000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 2) 00108e67 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08352000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 2) 00108ea7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0b8c6000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 2) 00109b57 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0b906000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 2) 00109b97 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0b946000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 2) 00109bd7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0945a000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 2) 00109c17 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0949a000, mapped]
+	write fence:28:2453   signalled
+   00020000: I  0 ( 3) 0010a964 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030bd000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 3) 0010a965 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030be000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 3) 0010a966 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030bf000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 3) 0010a967 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030c0000, unmapped]
+   00020000: I  0 ( 3) 0010a968 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030c1000, unmapped]
+   00020000: I  0 ( 3) 0010a969 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030c2000, unmapped]
+   00020000: I  0 ( 3) 0010a96a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030c3000, unmapped]
+   00020000: I  0 ( 3) 0010a96b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030c4000, unmapped]
+   00020000: I  0 ( 3) 0010a96c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030c5000, unmapped]
+   00020000: I  0 ( 3) 0010a96d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e58000, unmapped]
+   00020000: I  0 ( 3) 0010a96e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e59000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 3) 0010a96f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e5a000, unmapped]
+   00020000: I  0 ( 3) 0010a970 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e5b000, unmapped]
+   00020000: I  0 ( 2) 0010a971 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e5c000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 2) 0010a973 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e5e000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 2) 0010a975 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e60000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 2) 0010a976 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e61000, unmapped]
+   00020000: I  0 ( 3) 0010a977 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e62000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 3) 0010a978 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e63000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 3) 0010a979 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e64000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 3) 0010875b 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 07d92000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 3) 0010889b 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 07ed2000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 2) 0010161f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 094da000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 2) 0010899b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0951a000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 2) 001089db 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c8ea000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 2) 00108a1b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c92a000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 2) 00109c57 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 07fd2000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 2) 00109c97 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08012000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 2) 00109cd7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08052000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 2) 0010b41f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08212000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 2) 0010b45f 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ab22000, mapped]
+	write fence:28:2607   signalled
+   00020000: I  0 ( 3) 0010a97a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c977000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 3) 0010781b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c978000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 3) 0010781c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c979000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 3) 0010781d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c97a000, unmapped]
+   00020000: I  0 ( 3) 0010781e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c97b000, unmapped]
+   00020000: I  0 ( 3) 0010781f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c97c000, unmapped]
+   00020000: I  0 ( 3) 00107820 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c97d000, unmapped]
+   00020000: I  0 ( 3) 00107821 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c97e000, unmapped]
+   00020000: I  0 ( 3) 00107822 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c97f000, unmapped]
+   00020000: I  0 ( 3) 001010a4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c980000, unmapped]
+   00020000: I  0 ( 3) 001010a5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c981000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 3) 001010a6 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030a0000, unmapped]
+   00020000: I  0 ( 3) 001010a7 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030a1000, unmapped]
+   00020000: I  0 ( 2) 001010a8 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030a2000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 2) 001010aa 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030a4000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 2) 00100845 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030a6000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 3) 00100846 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e65000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 2) 00100847 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030a7000, unmapped]
+   00020000: I  0 ( 3) 00100848 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030a8000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 3) 00100849 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030a9000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 3) 0010084a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030aa000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 3) 00107db7 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0afee000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 2) 0010b053 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 089b6000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 3) 001010b3 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 075f1000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 3) 00107ef7 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0b12e000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 2) 00109d17 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0b9c6000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 2) 0010bc2b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0b22e000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 2) 00107ff7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0b26e000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 2) 00108037 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08252000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 2) 00108077 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08292000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 2) 001073d3 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 082d2000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 2) 00107413 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0aa56000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 2) 00107453 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0aa96000, mapped]
+	write fence:28:2760   signalled
+   00020000: I  0 ( 3) 001023ac 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fe6000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 3) 001023ad 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fe7000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 3) 001023ae 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fe8000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 3) 001023af 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fe9000, unmapped]
+   00020000: I  0 ( 3) 001023b0 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fea000, unmapped]
+   00020000: I  0 ( 3) 001023b1 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01feb000, unmapped]
+   00020000: I  0 ( 3) 001023b2 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fec000, unmapped]
+   00020000: I  0 ( 3) 001023b3 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fed000, unmapped]
+   00020000: I  0 ( 3) 001023b4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fee000, unmapped]
+   00020000: I  0 ( 3) 001023b5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fef000, unmapped]
+   00020000: I  0 ( 3) 001023b6 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01ff0000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 3) 001023b7 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01ff1000, unmapped]
+   00020000: I  0 ( 3) 001023b8 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01ff2000, unmapped]
+   00020000: I  0 ( 2) 001023b9 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01ff3000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 2) 001023bb 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01ff5000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 2) 001023bd 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01ff7000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 2) 001023be 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01ff8000, unmapped]
+   00020000: I  0 ( 3) 001016ab 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01ff9000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 3) 0010a1ed 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01ffa000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 3) 0010117b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba06000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 3) 0010a7bb 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0be1e000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 3) 0010a5bb 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0aeee000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 2) 00107493 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0b986000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 2) 0010a8fb 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0aad6000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 2) 00107cb7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 07222000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 2) 00107cf7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 07262000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 2) 00107d37 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 072a2000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 2) 001070d3 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 07422000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 2) 00107113 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 07462000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 2) 00107153 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 074a2000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 2) 0010d27f 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0df7e000, mapped]
+	write fence:28:2909   signalled
+   00020000: I  0 ( 2) 00000000 0000000000000000 00004096    purged                                 
+      vmas: [gpu: vm=00000000deccf8c4, 02ec4000, unmapped]
+	write fence:14:10709   signalled
+   00020000: I  0 ( 3) 00100855 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e6a000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 3) 0010117c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e6b000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 3) 00103d7d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e6c000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 3) 00103d7e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e6d000, unmapped]
+   00020000: I  0 ( 3) 00103d7f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e6e000, unmapped]
+   00020000: I  0 ( 3) 00103d80 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e6f000, unmapped]
+   00020000: I  0 ( 3) 00103d81 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e70000, unmapped]
+   00020000: I  0 ( 3) 00103d82 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e71000, unmapped]
+   00020000: I  0 ( 3) 00103d83 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e72000, unmapped]
+   00020000: I  0 ( 3) 00103d84 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e73000, unmapped]
+   00020000: I  0 ( 3) 001023bf 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e74000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 3) 001023c0 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e75000, unmapped]
+   00020000: I  0 ( 3) 001023c1 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e76000, unmapped]
+   00020000: I  0 ( 2) 001023c2 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e77000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 2) 001023c4 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e79000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 2) 001023c6 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e7b000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 3) 00108377 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e7c000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 2) 00108378 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01e7d000, unmapped]
+   00020000: I  0 ( 3) 00108379 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06552000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 3) 0010837a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06553000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 3) 0010837b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06554000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 3) 00107293 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c4ea000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 3) 0010837c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06555000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 3) 0010ad53 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c62a000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 2) 00107d77 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0231e000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 2) 001057b3 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 039b4000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 2) 001057f3 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c05e000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 2) 0010ae53 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c09e000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 2) 0010ae93 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c0de000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 2) 0010aed3 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c72a000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 2) 0010af13 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c76a000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 2) 0010af53 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c7aa000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 2) 0010ca4f 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0db1a000, mapped]
+	write fence:28:3063   signalled
+   00020000: I  0 ( 3) 0010a943 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08522000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 3) 0010a944 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08523000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 3) 0010a945 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba07000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 3) 0010a946 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba08000, unmapped]
+   00020000: I  0 ( 3) 0010a947 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba09000, unmapped]
+   00020000: I  0 ( 3) 0010a948 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba0a000, unmapped]
+   00020000: I  0 ( 3) 0010a949 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba0b000, unmapped]
+   00020000: I  0 ( 3) 0010a94a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba0c000, unmapped]
+   00020000: I  0 ( 3) 0010a94b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba0d000, unmapped]
+   00020000: I  0 ( 3) 0010a94c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba0e000, unmapped]
+   00020000: I  0 ( 3) 0010a94d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba0f000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 3) 0010a94e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba10000, unmapped]
+   00020000: I  0 ( 3) 0010a94f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba11000, unmapped]
+   00020000: I  0 ( 2) 0010a950 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba12000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 2) 0010a952 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba14000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 2) 0010a954 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba16000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 2) 0010a955 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba17000, unmapped]
+   00020000: I  0 ( 3) 0010a956 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba18000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 3) 0010a957 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba19000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 3) 0010a958 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba1a000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 3) 0010ce1b 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0cd4e000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 3) 0010a959 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba1b000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 3) 0010bb2b 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0bf5e000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 2) 00105833 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06556000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 2) 00105873 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0dee6000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 2) 00107193 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0df26000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 2) 001071d3 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 064b2000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 2) 00107213 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 064f2000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 2) 0010af93 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c7ea000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 2) 0010afd3 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c82a000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 2) 0010b013 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c86a000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 2) 0010e947 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f646000, mapped]
+	write fence:28:3213   signalled
+   00020000: I  0 ( 3) 0010a1e4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030bc000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 3) 0010a1e5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba1c000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 3) 0010a1e6 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba1d000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 3) 001012dd 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba1e000, unmapped]
+   00020000: I  0 ( 3) 001012de 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba1f000, unmapped]
+   00020000: I  0 ( 3) 001012df 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba20000, unmapped]
+   00020000: I  0 ( 3) 001012e0 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba21000, unmapped]
+   00020000: I  0 ( 3) 001012e1 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba22000, unmapped]
+   00020000: I  0 ( 3) 001012e2 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba23000, unmapped]
+   00020000: I  0 ( 3) 001012e3 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba24000, unmapped]
+   00020000: I  0 ( 3) 001012e4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba25000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 3) 001012e5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba26000, unmapped]
+   00020000: I  0 ( 3) 001012e6 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba27000, unmapped]
+   00020000: I  0 ( 2) 001012e7 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba28000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 2) 001012e9 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba2a000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 2) 001012eb 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba2c000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 2) 001012ec 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba2d000, unmapped]
+   00020000: I  0 ( 3) 001012ed 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0df66000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 3) 001012ee 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0df67000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 3) 001012ef 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0df68000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 3) 0010c04f 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d98e000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 3) 0010d15b 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ce8e000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 2) 00106823 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0dace000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 2) 0010cf5b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0cf8e000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 2) 0010cf9b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0cfce000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 2) 0010cfdb 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d00e000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 2) 0010c18f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d04e000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 2) 0010c1cf 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d08e000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 2) 0010c20f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d0ce000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 2) 0010c24f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d10e000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 2) 0010e4af 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f1ae000, mapped]
+	write fence:28:3369   signalled
+   00020000: I  0 ( 3) 001042ea 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01db1000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 3) 00101181 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01db2000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 3) 0010117d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01db3000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 3) 001010cd 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01db4000, unmapped]
+   00020000: I  0 ( 3) 001010ce 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01db5000, unmapped]
+   00020000: I  0 ( 3) 001010cf 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01db6000, unmapped]
+   00020000: I  0 ( 3) 0010a95a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01db7000, unmapped]
+   00020000: I  0 ( 3) 0010a95b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01db8000, unmapped]
+   00020000: I  0 ( 3) 0010a95c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01db9000, unmapped]
+   00020000: I  0 ( 3) 0010a95d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01dba000, unmapped]
+   00020000: I  0 ( 3) 0010a95e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01dbb000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 3) 0010a95f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01dbc000, unmapped]
+   00020000: I  0 ( 3) 0010a960 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0df6a000, unmapped]
+   00020000: I  0 ( 2) 001023a1 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0df6b000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 2) 001023a3 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0df6d000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 2) 0010a961 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0df6f000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 3) 001023a5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0df69000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 2) 001023a6 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0df70000, unmapped]
+   00020000: I  0 ( 3) 001023a7 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0df71000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 3) 001023a8 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0df72000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 3) 00108ee7 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0df73000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 3) 0010c38f 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d2ee000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 3) 0010b82b 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ed16000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 2) 0010d11b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d90e000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 2) 0010c4cf 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d94e000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 2) 0010c50f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f57a000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 2) 0010c54f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f5ba000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 2) 0010d01b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f5fa000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 2) 0010d05b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d42e000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 2) 0010d09b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d46e000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 2) 0010c98f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d4ae000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 2) 0011000f 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 110da000, mapped]
+	write fence:28:3521   signalled
+   00020000: I  0 ( 3) 00108ee8 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023b5000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 3) 00107813 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023b6000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 3) 00107814 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023b7000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 3) 00107815 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023b8000, unmapped]
+   00020000: I  0 ( 3) 00107816 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023b9000, unmapped]
+   00020000: I  0 ( 3) 00107817 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023ba000, unmapped]
+   00020000: I  0 ( 3) 00107818 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023bb000, unmapped]
+   00020000: I  0 ( 3) 00107819 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023bc000, unmapped]
+   00020000: I  0 ( 3) 0010781a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 023bd000, unmapped]
+   00020000: I  0 ( 3) 0010a1d7 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06596000, unmapped]
+   00020000: I  0 ( 3) 0010a1d8 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06597000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 3) 0010a1d9 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06598000, unmapped]
+   00020000: I  0 ( 3) 0010a1da 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 06599000, unmapped]
+   00020000: I  0 ( 2) 0010a1db 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0659a000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 2) 0010a1dd 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0659c000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 2) 0010a93b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0659e000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 3) 0010a93c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0df74000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 2) 0010a93d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0659f000, unmapped]
+   00020000: I  0 ( 3) 0010a93e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 065a0000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 3) 0010a93f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 065a1000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 3) 0010a940 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 065a2000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 3) 0010e34b 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0a756000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 3) 0010b92b 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0a896000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 2) 0010c9cf 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f116000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 2) 0010ca0f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f156000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 2) 0010e87b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0a996000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 2) 0010e8bb 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0a9d6000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 2) 0010e8fb 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0aa16000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 2) 0010ba2b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0fa12000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 2) 0010ba6b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0fa52000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 2) 0010baab 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0fa92000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 2) 0010fc43 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 10a02000, mapped]
+	write fence:28:3671   signalled
+   00020000: I  0 ( 3) 001010b6 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01342000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 3) 001059b9 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba4a000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 3) 0010a941 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba4b000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 3) 00102cfb 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba4c000, unmapped]
+   00020000: I  0 ( 3) 00102cfc 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba4d000, unmapped]
+   00020000: I  0 ( 3) 00102cfd 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba4e000, unmapped]
+   00020000: I  0 ( 3) 00102cfe 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba4f000, unmapped]
+   00020000: I  0 ( 3) 00100856 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba50000, unmapped]
+   00020000: I  0 ( 3) 00100857 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ba51000, unmapped]
+   00020000: I  0 ( 3) 00100858 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030ab000, unmapped]
+   00020000: I  0 ( 3) 00100859 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030ac000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 3) 0010a97b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030ad000, unmapped]
+   00020000: I  0 ( 3) 0010a97c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030ae000, unmapped]
+   00020000: I  0 ( 2) 0010a97d 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030af000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 2) 0010a97f 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030b1000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 2) 0010a981 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030b3000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 3) 0010a982 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 065a3000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 2) 0010e93b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030b4000, unmapped]
+   00020000: I  0 ( 3) 0010e93c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030b5000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 3) 0010e93d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030b6000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 3) 0010e93e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030b7000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 3) 0010d64b 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 10dce000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 3) 0010e93f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 030b8000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 3) 0010d78b 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 10f0e000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 2) 00102cb5 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 1100e000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 2) 00102c07 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 1104e000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 2) 0010d88b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 1108e000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 2) 0010d8cb 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0fad2000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 2) 0010d90b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0fb12000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 2) 0010c58f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0fb52000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 2) 0010c5cf 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0fb92000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 2) 0010c60f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0fbd2000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 2) 0010f0df 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0fc12000, mapped]
+	write fence:28:3825   signalled
+   00020000: I  0 ( 3) 001016b4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ab1b000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 3) 001016b5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ab1c000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 3) 001068e3 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ab1d000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 3) 001068e4 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0851a000, unmapped]
+   00020000: I  0 ( 3) 001068e5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0851b000, unmapped]
+   00020000: I  0 ( 3) 001068e6 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0851c000, unmapped]
+   00020000: I  0 ( 3) 001068e7 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0851d000, unmapped]
+   00020000: I  0 ( 3) 001068e8 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0851e000, unmapped]
+   00020000: I  0 ( 3) 001068e9 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0851f000, unmapped]
+   00020000: I  0 ( 3) 001068ea 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08520000, unmapped]
+   00020000: I  0 ( 3) 001068eb 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 08521000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 3) 001068ec 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f196000, unmapped]
+   00020000: I  0 ( 3) 001068ed 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f197000, unmapped]
+   00020000: I  0 ( 2) 001068ee 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f198000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 2) 001068f0 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f19a000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 2) 001068f2 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f19c000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 2) 0010c32f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f19d000, unmapped]
+   00020000: I  0 ( 3) 0010c330 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f19e000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 3) 0010c331 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f19f000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 3) 0010c332 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f1a0000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 3) 0010ee13 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ea4a000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 3) 0010ef53 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0eb8a000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 2) 0010baeb 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d24e000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 2) 0010f053 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d28e000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 2) 0010f093 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d88e000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 2) 0010fbab 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d8ce000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 2) 0010fbeb 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ec8a000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 2) 0010e017 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ecca000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 2) 0010e057 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d4ee000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 2) 0010e097 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d52e000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 2) 001103db 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 114a6000, mapped]
+	write fence:28:3979   signalled
+   00020000: I  0 ( 3) 001016b1 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09beb000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 3) 001010af 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09bec000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 3) 001010b0 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09bed000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 3) 001010b1 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09bee000, unmapped]
+   00020000: I  0 ( 3) 00101159 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fe0000, unmapped]
+   00020000: I  0 ( 3) 0010115a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fe1000, unmapped]
+   00020000: I  0 ( 3) 0010115b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fe2000, unmapped]
+   00020000: I  0 ( 3) 0010115c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fe3000, unmapped]
+   00020000: I  0 ( 3) 0010115d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fe4000, unmapped]
+   00020000: I  0 ( 3) 0010115e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fe5000, unmapped]
+   00020000: I  0 ( 3) 0010115f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 065a4000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 3) 00101160 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 065a5000, unmapped]
+   00020000: I  0 ( 3) 0010f0d3 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 065a6000, unmapped]
+   00020000: I  0 ( 2) 0010f0d4 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 065a7000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 2) 0010f0d6 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 065a9000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 2) 0010f0d8 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 065ab000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 3) 0010f0d9 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f1a1000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 2) 0010f0da 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 065ac000, unmapped]
+   00020000: I  0 ( 3) 00104daa 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 065ad000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 3) 00104dab 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 065ae000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 3) 00104dac 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 065af000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 3) 0010e0d7 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d66e000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 3) 0010e217 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 106aa000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 2) 0010c333 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c8aa000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 2) 0010c28f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d7ae000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 2) 0010c2cf 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d7ee000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 2) 0010ed13 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d82e000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 2) 0010ed53 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 107aa000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 2) 0010ed93 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 107ea000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 2) 0010dd4b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 1082a000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 2) 0010dd8b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 1086a000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 2) 001119d7 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 123d6000, mapped]
+	write fence:28:4136   signalled
+   00020000: I  0 ( 3) 0010ddcb 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ee16000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 3) 0010a1ee 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 09821000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 3) 001010b7 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f1a2000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 3) 0010063f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f1a3000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 3) 00100640 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f1a4000, unmapped]
+   00020000: I  0 ( 3) 00100641 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f1a5000, unmapped]
+   00020000: I  0 ( 3) 00108ee9 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f1a6000, unmapped]
+   00020000: I  0 ( 3) 00108eea 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f1a7000, unmapped]
+   00020000: I  0 ( 3) 00108eeb 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f1a8000, unmapped]
+   00020000: I  0 ( 3) 00108eec 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f1a9000, unmapped]
+   00020000: I  0 ( 3) 00108eed 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0398e000, unmapped]
+   00020000: I  0 ( 3) 00108eee 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0398f000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 3) 00108eef 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03990000, unmapped]
+   00020000: I  0 ( 3) 00108ef0 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03991000, unmapped]
+   00020000: I  0 ( 2) 001016b6 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03992000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 2) 001016b8 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03994000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 2) 001016ba 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03996000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 3) 001016bb 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 065b0000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 2) 001016bc 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03997000, unmapped]
+   00020000: I  0 ( 3) 001016bd 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03998000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 3) 001016be 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 03999000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 3) 001012f0 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0399a000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 3) 0010c64f 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 108aa000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 3) 0010c78f 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0ef16000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 2) 00101199 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 073e2000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 2) 0010dfcb 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d14e000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 2) 0010c88f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d18e000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 2) 0010c8cf 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d1ce000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 2) 0010c90f 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f016000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 2) 0010a6bb 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f056000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 2) 0010a6fb 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f096000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 2) 0010a73b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0f0d6000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 2) 0011160b 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 12b6e000, mapped]
+	write fence:28:4285   signalled
+   00020000: I  0 ( 3) 001042e7 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c975000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 3) 001010b2 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0c976000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 3) 0010e944 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109ea000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 3) 0010e945 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109eb000, unmapped]
+   00020000: I  0 ( 3) 0010e946 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109ec000, unmapped]
+   00020000: I  0 ( 3) 0010e00b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109ed000, unmapped]
+   00020000: I  0 ( 3) 0010e00c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109ee000, unmapped]
+   00020000: I  0 ( 3) 0010e00d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109ef000, unmapped]
+   00020000: I  0 ( 3) 0010e00e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109f0000, unmapped]
+   00020000: I  0 ( 3) 0010e00f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109f1000, unmapped]
+   00020000: I  0 ( 3) 0010e010 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109f2000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 3) 0010e011 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109f3000, unmapped]
+   00020000: I  0 ( 3) 0010e012 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109f4000, unmapped]
+   00020000: I  0 ( 2) 0010c322 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109f5000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 2) 0010c324 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109f7000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 2) 0010c326 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109f9000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 3) 0010c327 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0399b000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 2) 0010c328 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109fa000, unmapped]
+   00020000: I  0 ( 3) 0010c329 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109fb000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 3) 0010c32a 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109fc000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 3) 0010c32b 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109fd000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 3) 001107a7 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 103de000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 3) 001108e7 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 0d56e000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 2) 001109e7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 12ae2000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 2) 00110a27 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 12b22000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 2) 00110a67 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 072e2000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 2) 00110da7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 07322000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 2) 00110de7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 07362000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 2) 00110e27 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 073a2000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 2) 00110e67 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 1051e000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 2) 00110ea7 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 1055e000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 2) 00112cd3 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 13e6a000, mapped]
+	write fence:28:4436   signalled
+   00020000: I  0 ( 3) 0010c32c 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01dcd000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 3) 001042d5 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01dce000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 3) 001042d6 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fd8000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 3) 001042d7 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fd9000, unmapped]
+   00020000: I  0 ( 3) 001042d8 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fda000, unmapped]
+   00020000: I  0 ( 3) 001042d9 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fdb000, unmapped]
+   00020000: I  0 ( 3) 001042da 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fdc000, unmapped]
+   00020000: I  0 ( 3) 001042db 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fdd000, unmapped]
+   00020000: I  0 ( 3) 001042dc 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fde000, unmapped]
+   00020000: I  0 ( 3) 0010d275 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 01fdf000, unmapped]
+   00020000: I  0 ( 3) 0010d276 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 1069e000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 3) 0010d277 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 1069f000, unmapped]
+   00020000: I  0 ( 3) 0010d278 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 106a0000, unmapped]
+   00020000: I  0 ( 2) 0010d279 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 106a1000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 2) 0010d27b 0000000000000000 00008192                                           
+      vmas: [gpu: vm=00000000deccf8c4, 106a3000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 2) 0010d27d 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 106a5000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 3) 0010d27e 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 109fe000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 2) 0010c30f 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 106a6000, unmapped]
+   00020000: I  0 ( 3) 0010c310 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 106a7000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 3) 0010c311 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 106a8000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 3) 0010c312 0000000000000000 00004096                                           
+      vmas: [gpu: vm=00000000deccf8c4, 106a9000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 3) 0010d94b 0000000000000000 01310720                                           
+      vmas: [gpu: vm=00000000deccf8c4, 1007e000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 2) 001111e7 0000000000000000 03981312                                           
+      vmas: [gpu: vm=00000000deccf8c4, 11b72000, mapped]
+	write fence:28:4589   signalled
+   00020002: I  0 ( 3) 0010c313 0000000000000000 00032768  purgeable                                 
+      vmas: [gpu: vm=00000000deccf8c4, 06326000, mapped]
+	write fence:28:4589   signalled
+   00020002: I  0 ( 3) 001012f1 0000000000000000 00032768  purgeable                                 
+      vmas: [gpu: vm=00000000deccf8c4, 04a7c000, mapped]
+	write fence:28:4589   signalled
+   00020002: I  0 ( 3) 001012f9 0000000000000000 00032768  purgeable                                 
+      vmas: [gpu: vm=00000000deccf8c4, 01dcf000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 2) 0010c31b 0000000000000000 00004096  purgeable                                 
+      vmas: [gpu: vm=00000000deccf8c4, 05aa9000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 3) 0010da8b 0000000000000000 01048576                                           
+      vmas: [gpu: vm=00000000deccf8c4, 101be000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 2) 0010a77b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 074e2000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 2) 001115b3 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 102be000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 2) 0010db8b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 102fe000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 2) 0010dbcb 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 1033e000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 2) 0010dc0b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 11f3e000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 2) 0010dc4b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 11f7e000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 2) 0010dc8b 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 11fbe000, mapped]
+	write fence:28:4589   signalled
+   00020000: I  0 ( 2) 0010dccb 0000000000000000 00262144                                           
+      vmas: [gpu: vm=00000000deccf8c4, 11ffe000, mapped]
+	write fence:28:4589   signalled
+   00020002: I  0 ( 3) 0010bc73 0000000000000000 00032768  purgeable                                 
+      vmas: [gpu: vm=00000000deccf8c4, 0c96a000, mapped]
+	write fence:14:16491   signalled
+   00020002: I  0 ( 3) 0010fc33 0000000000000000 00032768  purgeable                                 
+      vmas: [gpu: vm=00000000deccf8c4, 03986000, mapped]
+	write fence:14:16491   signalled
+   00020002: I  0 ( 3) 0010fc3b 0000000000000000 00032768  purgeable                                 
+      vmas: [gpu: vm=00000000deccf8c4, 023ad000, mapped]
+	write fence:14:16491   signalled
+   00020002: I  0 ( 3) 001042dd 0000000000000000 00032768  purgeable                                 
+      vmas: [gpu: vm=00000000deccf8c4, 08512000, mapped]
+	write fence:14:16491   signalled
+   00020000: I  0 ( 2) 001042eb 0000000000000000 00004096  purgeable                                 
+      vmas: [gpu: vm=00000000deccf8c4, 065b1000, mapped]
+	write fence:14:16491   signalled
+Total:     1035 objects, 284917760 bytes
+Active:       5 objects,   6332416 bytes
+Resident:   694 objects, 239849472 bytes
+Purgeable:    9 objects,    237568 bytes
+Purged:       9 objects,    208896 bytes

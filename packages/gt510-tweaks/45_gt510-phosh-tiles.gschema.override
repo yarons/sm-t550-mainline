@@ -1,0 +1,4 @@
+# SM-T550 is Wi-Fi only: no hotspot (Wi-Fi is the only uplink) or mobile-data tiles.
+# The built-in cellular tile is hidden by the patched phosh when no modem is present.
+[sm.puri.phosh.plugins:Phosh]
+quick-settings=[]

@@ -1,0 +1,21 @@
+From: gt510 <gt510@localhost>
+Subject: qr_screen_bin: snapshot the child once
+
+QrScreenBin::snapshot() called parent_snapshot() twice, so the viewfinder
+was rendered twice every frame. Besides the doubled GPU work, the second
+copy put a second render node referring to the viewfinder's
+GtkGraphicsOffload subsurface into the tree ("Multiple nodes referring to
+subsurface" with GDK_DEBUG=offload), which disables offloading the camera
+frames to the compositor altogether.
+---
+--- a/src/widgets/qr_screen_bin.rs
++++ b/src/widgets/qr_screen_bin.rs
+@@ -119,8 +119,6 @@
+             // compute it's actual size.
+             let (inner_w, inner_h) = self.calculate_aspect_ratio(aspect as f32);
+ 
+-            self.parent_snapshot(snapshot);
+-
+             let Some(animation) = self.dim_ani.get() else {
+                 return;
+             };

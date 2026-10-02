@@ -1,0 +1,44 @@
+#!/bin/sh
+# pmOS images may be systemd or OpenRC; enable the same services on either.
+if [ -d /run/systemd/system ] || [ -e /usr/lib/systemd/systemd ]; then
+	# rmtfs (modem DSP -> audio) and iio-sensor-proxy come enabled via pmOS presets.
+	systemctl enable rmtfs.service hkdm.service gpsd-pds.service >/dev/null 2>&1
+	# Wi-Fi tablet: no modem, no printing, no mDNS, no firmware-update daemon.
+	for u in ModemManager.service q6voiced.service cups.service cups.socket cups.path \
+		avahi-daemon.service avahi-daemon.socket fwupd.service; do
+		systemctl disable "$u" >/dev/null 2>&1
+		systemctl mask "$u" >/dev/null 2>&1
+	done
+	# Per-user background services with nothing to do on this device.
+	systemctl --global mask cellbroadcastd.service gvfs-afc-volume-monitor.service \
+		gvfs-gphoto2-volume-monitor.service gvfs-goa-volume-monitor.service \
+		udiskie.service localsearch-3.service >/dev/null 2>&1
+	# Camera monitor instance (see 90-gt510-split-video.conf).
+	systemctl --global enable wireplumber@video-capture.service >/dev/null 2>&1
+	# pipewire is socket-activated, so the camera service (WantedBy=pipewire.service) only started with the
+	# first camera client: the first Snapshot after boot raced the camera enumeration (~3 s) and opened the
+	# default (front) camera. Start pipewire, and with it the cameras, at login.
+	systemctl --global enable pipewire.service >/dev/null 2>&1
+	# Settings kept on the SD card (gt510-persist).
+	systemctl --global enable gt510-persist.service >/dev/null 2>&1
+	# Snapshot camera permission granted once at login (gt510-camera-permission).
+	systemctl --global enable gt510-camera-permission.service >/dev/null 2>&1
+	# greetd.service.d/zz-gt510-autologin.conf (takes effect at the next greetd start).
+	systemctl daemon-reload >/dev/null 2>&1
+else
+	rc-update add rmtfs default
+	rc-update add iio-sensor-proxy default
+	rc-update add hkdm default
+	rc-update add gpsd default
+fi
+# r16-r24 created /var/lib/greetd/.config as root (greeter udiskie hider, obsolete: phrog only
+# autostarts from its own dirs); give the greeter its config dir back.
+if [ -d /var/lib/greetd/.config ] && [ "$(stat -c %u /var/lib/greetd/.config)" = 0 ]; then
+	chown -R greetd:greetd /var/lib/greetd/.config
+fi
+# RetroArch defaults for new users (see /usr/libexec/gt510-retroarch-defaults).
+/usr/libexec/gt510-retroarch-defaults
+# Back touch key -> Escape (61-gt510-back-escape.hwdb): rebuild hwdb, re-apply the keymap now.
+systemd-hwdb update >/dev/null 2>&1 || udevadm hwdb --update >/dev/null 2>&1
+udevadm trigger --action=change --subsystem-match=input >/dev/null 2>&1
+exit 0

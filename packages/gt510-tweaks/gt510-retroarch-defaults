@@ -1,0 +1,24 @@
+#!/bin/sh
+# RetroArch on Phosh (SM-T550), measured with gl-hang/raspeed.sh (900 frames of a GBA game):
+# - taps are Wayland touch events, which RetroArch's menus ignore unless menu_pointer_enable is on;
+#   input comes from the Wayland context.
+# - fullscreen: in a window phoc misses every other vblank compositing it with Phosh's panels
+#   (~30 fps, choppy sound); fullscreen runs at full speed (~59 fps).
+# - the GTK4-on-a306 Mesa workarounds (FD_MESA_DEBUG=inorder, IR3_SHADER_DEBUG=nouboopt from
+#   environment.d) cost RetroArch ~37 fps instead of ~59: its launcher drops them.
+# - RetroArch never answers Phosh's startup notification: without StartupNotify=false Phosh keeps
+#   its launch splash up for the full ~27 s timeout.
+# /etc/retroarch.cfg is the skeleton a new user's retroarch.cfg starts from. The .desktop file
+# belongs to retroarch: the gt510-tweaks trigger on /usr/share/applications re-applies after upgrades.
+f=/etc/retroarch.cfg
+if [ -f "$f" ]; then
+	sed -i -e 's/^# *menu_pointer_enable = .*/menu_pointer_enable = "true"/' \
+		-e 's/^# *input_driver = .*/input_driver = "wayland"/' \
+		-e 's/^# *video_fullscreen = .*/video_fullscreen = "true"/' "$f"
+fi
+f=/usr/share/applications/com.libretro.RetroArch.desktop
+if [ -f "$f" ]; then
+	sed -i -e 's/^Exec=retroarch /Exec=env -u FD_MESA_DEBUG -u IR3_SHADER_DEBUG -u GSK_RENDERER retroarch /' \
+		-e 's/^StartupNotify=true$/StartupNotify=false/' "$f"
+fi
+exit 0

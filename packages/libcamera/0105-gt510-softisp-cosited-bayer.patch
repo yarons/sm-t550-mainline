@@ -1,0 +1,217 @@
+From: gt510 <gt510@localhost>
+Subject: [PATCH] software_isp: debayer co-sited Bayer cells from one filtered texel
+
+The SR544 (SM-T550 rear camera) binned modes (1296x972, 1280x720) emit
+Bayer frames whose four 2x2-cell samples were taken at one spot: the raw
+planes are offset by ~0 instead of the Bayer half-cell, measured on raw
+frames (B/Gb/Gr/R plane cross-correlation). Standard demosaicing then
+places red ~1 px down-right and blue ~1 px up-left of green: purple and
+yellow fringes on every sharp edge.
+
+With software_isp: cosited_max_width set, RAW10 CSI-2 inputs up to that
+width are unpacked on the CPU into one (R, G, B, G) RGBA texel per cell and
+the GPU debayer becomes a single bilinear texture lookup per pixel (was
+nine packed-byte fetches), which also makes it much cheaper.
+---
+diff --git a/src/libcamera/shaders/bayer_1x_packed.frag b/src/libcamera/shaders/bayer_1x_packed.frag
+index e2d8753..9563eaf 100644
+--- a/src/libcamera/shaders/bayer_1x_packed.frag
++++ b/src/libcamera/shaders/bayer_1x_packed.frag
+@@ -104,6 +104,14 @@ void main(void)
+ {
+ 	vec3 rgb;
+ 
++#if defined (COSITED)
++	/*
++	 * The texture holds one (R, G, B, G) texel per co-sited 2x2 Bayer
++	 * cell; its bilinear filter does the interpolation.
++	 */
++	vec4 cell = texture2D(tex_y, textureOut);
++	rgb = vec3(cell.r, (cell.g + cell.a) * 0.5, cell.b);
++#else
+ 	/*
+ 	 * center_bytes holds the coordinates of the MS byte of the pixel
+ 	 * being sampled on the [0, stride-1/height-1] range.
+@@ -271,6 +279,8 @@ void main(void)
+ 			vec3(patterns.y, C, patterns.x) :
+ 			vec3(patterns.wz, C));
+ 
++#endif
++
+ 	/*
+ 	 * \todo: Black level normalising, AWB and digital gain could be
+ 	 * reworked into a single multiplication.
+diff --git a/src/libcamera/software_isp/debayer_egl.cpp b/src/libcamera/software_isp/debayer_egl.cpp
+index f8cf81d..9bfe5e6 100644
+--- a/src/libcamera/software_isp/debayer_egl.cpp
++++ b/src/libcamera/software_isp/debayer_egl.cpp
+@@ -42,10 +42,12 @@ namespace libcamera {
+  * \param[in] stats Statistics processing object
+  * \param[in] cm The camera manager
+  * \param[in] quadBayer Whether the sensor uses 2x2 same-colour cells
++ * \param[in] cositedMaxWidth Largest RAW10 CSI-2 input width whose 2x2 cells
++ * hold co-sited samples (0: none)
+  */
+ DebayerEGL::DebayerEGL(std::unique_ptr<SwStatsCpu> stats, const CameraManager &cm,
+-		       bool quadBayer)
+-	: Debayer(cm, quadBayer), stats_(std::move(stats))
++		       bool quadBayer, unsigned int cositedMaxWidth)
++	: Debayer(cm, quadBayer), cositedMaxWidth_(cositedMaxWidth), stats_(std::move(stats))
+ {
+ }
+ 
+@@ -157,6 +159,8 @@ int DebayerEGL::initBayerShaders(PixelFormat inputFormat, PixelFormat outputForm
+ 	egl_.pushEnv(shaderEnv, "#version 100");
+ 	if (quadBayer_)
+ 		egl_.pushEnv(shaderEnv, "#define QUAD_BAYER");
++	if (cosited_)
++		egl_.pushEnv(shaderEnv, "#define COSITED");
+ 
+ 	/* Specify GL_OES_EGL_image_external */
+ 	egl_.pushEnv(shaderEnv, "#extension GL_OES_EGL_image_external: enable");
+@@ -315,6 +319,14 @@ int DebayerEGL::configure(const StreamConfiguration &inputCfg,
+ 	width_ = inputCfg.size.width;
+ 	height_ = inputCfg.size.height;
+ 
++	BayerFormat cositedBayer = BayerFormat::fromPixelFormat(inputCfg.pixelFormat);
++	cosited_ = !quadBayer_ && width_ <= cositedMaxWidth_ &&
++		   width_ % 4 == 0 && height_ % 2 == 0 &&
++		   cositedBayer.bitDepth == 10 &&
++		   cositedBayer.packing == BayerFormat::Packing::CSI2;
++	if (cosited_)
++		LOG(Debayer, Info) << "Co-sited Bayer cells: " << width_ / 2 << "x" << height_ / 2;
++
+ 	if (outputCfgs.size() != 1) {
+ 		LOG(Debayer, Error)
+ 			<< "Unsupported number of output streams: "
+@@ -532,12 +544,70 @@ void DebayerEGL::setShaderVariableValues(eGLImage &eglImageIn, const DebayerPara
+ 	return;
+ }
+ 
++/*
++ * Pack every 2x2 cell of a RAW10 CSI-2 frame (8 MSBs) into one RGBA texel
++ * (R, G, B, G). The sensor took the four samples at one spot, so a bilinear
++ * lookup of this texture is the demosaic.
++ */
++void DebayerEGL::unpackCosited(const uint8_t *src)
++{
++	const unsigned int rx = firstRed_x_ != 0.0f, ry = firstRed_y_ != 0.0f;
++	const unsigned int stride = inputConfig_.stride;
++	uint8_t *out = cositedCells_.data();
++
++	for (unsigned int y = 0; y < height_; y += 2) {
++		const uint8_t *row[2] = { src + y * stride, src + (y + 1) * stride };
++		const uint8_t *r = row[ry], *b = row[ry ^ 1];
++
++		/* 5 bytes per 4 pixels: two cells, MSBs in bytes 0..3 */
++		for (unsigned int g = 0; g < width_ / 4; g++, r += 5, b += 5) {
++			out[0] = r[rx];
++			out[1] = r[rx ^ 1];
++			out[2] = b[rx ^ 1];
++			out[3] = b[rx];
++			out[4] = r[2 + rx];
++			out[5] = r[2 + (rx ^ 1)];
++			out[6] = b[2 + (rx ^ 1)];
++			out[7] = b[2 + rx];
++			out += 8;
++		}
++	}
++}
++
+ eGLImage *DebayerEGL::getCachedInputFrameBuffer(FrameBuffer *input, std::optional<MappedFrameBuffer> *inMapped, std::optional<DmaSyncer> *inDmaSyncer)
+ {
+ 	const SharedFD &fd = input->planes()[0].fd;
+ 	bool cache_miss = true;
+ 	eGLImage *eglImageIn;
+ 
++	if (cosited_) {
++		if (!cositedImage_) {
++			cositedImage_ = std::make_unique<eGLImage>(GL_RGBA, width_ / 2, height_ / 2,
++								   width_ * 2, GL_TEXTURE0, 0);
++			cositedCells_.resize(width_ / 2 * height_ / 2 * 4);
++			cositedTextureCreated_ = false;
++		}
++
++		inDmaSyncer->emplace(input->planes()[0].fd, DmaSyncer::SyncType::Read);
++		inMapped->emplace(input, MappedFrameBuffer::MapFlag::Read);
++		if (!inMapped->value().isValid()) {
++			LOG(Debayer, Error) << "mmap-ing buffer(s) failed";
++			return nullptr;
++		}
++		unpackCosited(inMapped->value().planes()[0].data());
++
++		if (!cositedTextureCreated_) {
++			egl_.createTexture2D(*cositedImage_, cositedCells_.data());
++			/* The bilinear filter interpolates the co-sited cells */
++			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
++			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
++			cositedTextureCreated_ = true;
++		} else {
++			egl_.updateTexture2D(*cositedImage_, cositedCells_.data());
++		}
++		return cositedImage_.get();
++	}
++
+ 	for (auto &[ifd, img] : eglImageInCache_) {
+ 		if (ifd == fd) {
+ 			eglImageIn = img.get();
+@@ -725,6 +795,7 @@ void DebayerEGL::stop()
+ {
+ 	eglImageOutCache_.clear();
+ 	eglImageInCache_.clear();
++	cositedImage_.reset();
+ 
+ 	if (programId_)
+ 		glDeleteProgram(programId_);
+diff --git a/src/libcamera/software_isp/debayer_egl.h b/src/libcamera/software_isp/debayer_egl.h
+index 8e6b4af..96c53e5 100644
+--- a/src/libcamera/software_isp/debayer_egl.h
++++ b/src/libcamera/software_isp/debayer_egl.h
+@@ -42,7 +42,7 @@ class DebayerEGL : public Debayer
+ {
+ public:
+ 	DebayerEGL(std::unique_ptr<SwStatsCpu> stats, const CameraManager &cm,
+-		   bool quadBayer = false);
++		   bool quadBayer = false, unsigned int cositedMaxWidth = 0);
+ 	~DebayerEGL();
+ 
+ 	int configure(const StreamConfiguration &inputCfg,
+@@ -116,6 +116,14 @@ private:
+ 
+ 	Size nativeOutputSize_;
+ 	Rectangle window_;
++
++	/* Co-sited Bayer cells: one RGBA texel (R, G, B, G) per 2x2 cell */
++	void unpackCosited(const uint8_t *src);
++	unsigned int cositedMaxWidth_;
++	bool cosited_ = false;
++	bool cositedTextureCreated_ = false;
++	std::unique_ptr<eGLImage> cositedImage_;
++	std::vector<uint8_t> cositedCells_;
+ 	std::unique_ptr<SwStatsCpu> stats_;
+ 	eGL egl_;
+ 	uint32_t width_;
+diff --git a/src/libcamera/software_isp/software_isp.cpp b/src/libcamera/software_isp/software_isp.cpp
+index c80e2a6..d708955 100644
+--- a/src/libcamera/software_isp/software_isp.cpp
++++ b/src/libcamera/software_isp/software_isp.cpp
+@@ -121,9 +121,18 @@ SoftwareIsp::SoftwareIsp(PipelineHandler *pipe, const CameraSensor *sensor,
+ 		}
+ 	}
+ 
++	/*
++	 * Sensors whose binned modes emit co-sited Bayer cells (all four
++	 * samples of a 2x2 cell taken at one spot) debayer those modes, up to
++	 * this input width, from one filtered RGBA texel per cell.
++	 */
++	unsigned int cositedMaxWidth =
++		configuration.option<unsigned int>({ "software_isp", "cosited_max_width" }).value_or(0);
++
+ 	if (!softISPMode || softISPMode == "gpu") {
+ 		if (eGL::isAvailable()) {
+-			debayer_ = std::make_unique<DebayerEGL>(std::move(stats), cm, quadBayer);
++			debayer_ = std::make_unique<DebayerEGL>(std::move(stats), cm, quadBayer,
++								cositedMaxWidth);
+ 		} else {
+ 			LOG(SoftwareIsp, Info)
+ 				<< "EGL not available, falling back to CPU debayer";

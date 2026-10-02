@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: CC0-1.0
+# SM-T550 rear camera (SiliconFile SR544), libcamera simple IPA.
+# Fitted 2026-09-25 from a screen test chart (camera/rear/chartfit.py): white balance
+# gains R 1.60 / B 1.59 under a ~6500 K display, CCM from a chromaticity-only fit
+# (per-patch scales absorb lens shading), RMS 0.037 in linear sRGB. Af: contrast autofocus.
+%YAML 1.1
+---
+version: 1
+algorithms:
+  - BlackLevel:
+      blackLevel: 4096
+  - Awb:
+  - Ccm:
+      ccms:
+        - ct: 6500
+          ccm: [  2.122, -1.233,  0.111,
+                 -0.141,  1.622, -0.481,
+                 -0.098, -1.041,  2.138 ]
+  - Adjust:
+  - Agc:
+  # Contrast autofocus with the DW9804 actuator (libcamera patches 0101, 0107).
+  # 0..1023 lens range: coarse sweep in 93-steps from 0 until the focus measure has
+  # clearly fallen past a peak, parabola + three 24-steps around it. settle = frames
+  # skipped after each lens move (the focus measure is computed every frame).
+  - Af:
+      min: 0
+      max: 1023
+      coarseStep: 93
+      fineStep: 24
+      settle: 2
+...
