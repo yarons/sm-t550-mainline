@@ -55,8 +55,8 @@ Boot chain after installation: Samsung bootloader → **lk2nd** (on the BOOT par
 - Phosh starts logged in as `user`. Password: **147147** — change it right away with `passwd` in the terminal.
 - Wi-Fi: Settings → Wi-Fi. Time zone: Settings → Date & Time (the image ships with UTC).
 - SSH is installed but disabled. Enable it with `sudo systemctl enable --now sshd` only after changing the
-  password: the kernel is built without nftables, so postmarketOS's firewall is inactive and sshd would be
-  reachable from your whole Wi-Fi network.
+  password: the nftables firewall is active, but its default rule (`/etc/nftables.d/50_sshd.nft`) accepts SSH on
+  every interface, Wi-Fi included.
 - USB networking: connecting to a computer gives the tablet 172.16.42.1 (postmarketOS default).
 
 ## Updating later
