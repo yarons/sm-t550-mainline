@@ -11,7 +11,7 @@ Paste this into a new session to continue. Everything lives in `~/workspace/gt51
 ## State (2026-10-01 evening) — everything below is INSTALLED and verified on the tablet
 
 2026-10-02: the tablet runs the PUBLIC release image (rebranded, gt510-tweaks r35 + kernel r32), boot-tested OK, then
-restored to the personal setup by hand: password 1234, timezone UTC, SSH key, sshd enabled, Pictures/
+restored to the personal setup by hand: password <password>, timezone UTC, SSH key, sshd enabled, Pictures/
 Videos + test scripts from backup-2026-10-02/ (Wi-Fi + RetroArch were already back via the user / the SD card).
 Release assets (flashable): `dist/release-20261002/` (userdata.simg.xz sha256 05714cdc…, lk2nd, MANIFEST, SHA256SUMS,
 RELEASE-NOTES.md for GitHub). Personal baseline image `dist/qcom-msm8916-2026-10-01-r34-k32.simg` lacks tweaks r35.
