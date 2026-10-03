@@ -5,7 +5,7 @@ maintainer="Robert Mader <robert.mader@collabora.com>"
 pkgname=libcamera
 _pkgver=0.7.2
 pkgver=9999$_pkgver
-pkgrel=110
+pkgrel=111
 pkgdesc="Linux camera framework"
 url="https://libcamera.org/"
 arch="all"
@@ -77,6 +77,7 @@ source="https://gitlab.freedesktop.org/camera/libcamera/-/archive/v$_pkgver/libc
 	0106-gt510-debayer-fold-blacklevel-awb.patch
 	0107-gt510-softisp-faster-autofocus.patch
 	0108-egl-avoid-context-leaks.patch
+	0109-gt510-simple-park-lens-on-stop.patch
 	qcam.desktop
 	$_tuning_files
 	"

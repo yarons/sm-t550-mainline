@@ -79,3 +79,14 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    (device-mapper-libs r7→r8, util-linux libs, ffmpeg-libavutil) and PURGED device-mapper-udev → mkinitfs aborted
    ("failed to stat /usr/lib/udev/rules.d/10-dm.rules", /boot/initramfs left untouched). `apk add device-mapper-udev`
    (r8) + `apk fix` → OK, initramfs rebuilt. Use plain `apk add <file>` for local packages from now on.
+13. ACTIVE (2026-10-03 15:40) — **Idle battery drain** (Yaron: "did you test discharge?"). Logged discharge on the public
+   image (upower history): 98 → 66 % in 20 h with the screen off = 1.6 %/h (~62 h from full). power/powertest.sh
+   (root, self-running on battery, gauge current_now, screen off): baseline 177 mA, Wi-Fi radio off 161 (Wi-Fi
+   ~16 mA), modem DSP stopped 169 (~8 mA), baseline again 179, screen on 849 mA (power/powertest-2026-10-03.txt).
+   BIGGEST FIND: after camera use the rear lens actuator (DW9804, /dev/v4l-subdev11) stayed powered at
+   focus_absolute 1023 (AF sweep end) because libcamera keeps the lens subdevice open: 210 mA idle → 84 mA after
+   `v4l2-ctl -c focus_absolute=0`. FIX libcamera 0109 (r111): SimplePipelineHandler::stopDevice() parks the lens at
+   the control minimum. Verified: AF moves the lens during streams (493, 837), parked at 0 after every close, idle
+   75 mA (SSH session open), rear camera 27-28/s. Next levers: Wi-Fi BMPS (5 "Can not enter BMPS" errors per boot,
+   ~16 mA total for the radio), modem DSP (~8 mA, needed for audio), system suspend (none; biggest remaining).
+   Remember: install local APKs with plain `apk add` (item 12 trap). Tablet Wi-Fi IP is T290-WIFI-IP now (gssh).

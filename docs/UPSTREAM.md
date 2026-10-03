@@ -16,6 +16,7 @@ for AI-assisted contributions; the column "Rules" summarizes what applies (check
 | Mesa 0100 | freedreno a3xx: FS-stage CP_LOAD_STATE SS_INDIRECT hang, staging-upload race without a hw blitter, UBO offset alignment | candidate | Mesa: the human writes all prose; `Assisted-by:` |
 | GTK 0102 | import LINEAR dmabufs without an explicit modifier | candidate (narrow MR) | GTK: disclose in the MR text, no AI trailers |
 | libcamera 0108 | debayer_egl: a new EGL context per stream start, never destroyed → ~8 MB GPU memory leaked per camera session | already fixed upstream (a00a4ca2 + 4501b8a1, Aug 2026); 0108 ports it to v0.7.2 | - |
+| libcamera 0109 | simple pipeline: the lens stays powered at its last position after stop (VCM coil current; ~125 mA idle at the AF sweep end) → park it at the minimum in stopDevice() | candidate (libcamera-devel) | no project policy; disclose, DCO |
 | libcamera 0103/0105/0106/0107 | YUV sensors via CAMSS PIX, co-sited Bayer cells, folded black level + AWB, faster contrast AF | candidates (libcamera-devel) | no project policy; disclose, DCO |
 | Snapshot 0102 | QrScreenBin snapshots its child twice (breaks GtkGraphicsOffload) | open an issue first | GNOME: disclose; policy under discussion |
 | phrog 0100 | no greetd session for an empty username ("password twice") | candidate (GitHub PR) | no ban; disclose |

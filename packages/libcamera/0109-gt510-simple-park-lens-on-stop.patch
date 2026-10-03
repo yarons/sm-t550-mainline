@@ -1,0 +1,44 @@
+From: gt510 <gt510@localhost>
+Subject: libcamera: pipeline: simple: park the lens when the camera stops
+
+A voice coil lens actuator draws current in proportion to its position and
+stays powered while its subdevice is open, which libcamera keeps for the life
+of the camera manager (in WirePlumber: for as long as the session runs). The
+lens stayed where the last session left it; after an autofocus sweep that ran
+to the far end (no peak in a dark or flat scene) the DW9804 on the SM-T550 sat
+at 1023 and drew ~125 mA with the camera idle, more than the rest of the idle
+tablet (210 mA vs 84 mA measured with the battery gauge).
+
+Move the lens to the minimum of V4L2_CID_FOCUS_ABSOLUTE in stopDevice().
+---
+diff -ru a/src/libcamera/pipeline/simple/simple.cpp b/src/libcamera/pipeline/simple/simple.cpp
+--- a/src/libcamera/pipeline/simple/simple.cpp
++++ b/src/libcamera/pipeline/simple/simple.cpp
+@@ -22,6 +22,7 @@
+ #include <vector>
+ 
+ #include <linux/media-bus-format.h>
++#include <linux/v4l2-controls.h>
+ 
+ #include <libcamera/base/log.h>
+ 
+@@ -1837,6 +1838,19 @@
+ 
+ 	video->streamOff();
+ 	video->releaseBuffers();
++
++	/*
++	 * Park the lens at its lowest position. A voice coil actuator draws current in
++	 * proportion to its position and stays powered while the lens subdevice is open,
++	 * which it is for as long as the camera manager lives: a lens left at the far end
++	 * of an autofocus sweep kept drawing ~125 mA with the camera idle (DW9804).
++	 */
++	CameraLens *lens = data->sensor_->focusLens();
++	if (lens) {
++		const ControlInfoMap &lensCtrls = lens->controls();
++		const auto it = lensCtrls.find(V4L2_CID_FOCUS_ABSOLUTE);
++		lens->setFocusPosition(it != lensCtrls.end() ? it->second.min().get<int32_t>() : 0);
++	}
+ 
+ 	video->bufferReady.disconnect(data, &SimpleCameraData::imageBufferReady);
+ 

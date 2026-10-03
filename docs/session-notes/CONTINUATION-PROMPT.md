@@ -28,7 +28,7 @@ Dmitry Baryshkov's shared-VM series).
 |---|---|---|
 | linux-postmarketos-qcom-msm8916 | 7.3_rc2-**r32** (#33) | msm8916-mainline 7.3-rc2 @717e5e2 + `kernel/0100`–`0107`, `0109`–`0118`, **`0120`–`0124`** + `kernel/gt510.config` |
 | gt510-tweaks | **r34** | see "gt510-tweaks" (r34: GPU runtime-PM udev rule gone, depends kernel>=r30) |
-| libcamera | 99990.7.2-**r110** | pmOS fork + 0100 YUV passthrough/SR544 helper · 0101 soft-ISP contrast AF · 0102 cap only scalable outputs · 0103 YUV sensors via CAMSS PIX as NV12 · 0104 skip the neutral contrast curve · **0105 co-sited Bayer cells** · **0106 black level+AWB as one multiply-add** · **0107 faster AF** |
+| libcamera | 99990.7.2-**r111** | pmOS fork + 0100 YUV passthrough/SR544 helper · 0101 soft-ISP contrast AF · 0102 cap only scalable outputs · 0103 YUV sensors via CAMSS PIX as NV12 · 0104 skip the neutral contrast curve · **0105 co-sited Bayer cells** · **0106 black level+AWB as one multiply-add** · **0107 faster AF** |
 | mesa (+dri-gallium, egl, gbm, gl, gles) | 26.2.3-**r101** | LOCAL slim build (freedreno + llvmpipe; GL/GLES/EGL/GBM only) + **0100 freedreno a3xx fixes** |
 | snapshot | 51.0-**r112** | 0100 aperture paintable orientation (+EXIF/mp4 tags) · 0101 viewfinder sink sync=false · **0102 QrScreenBin snapshots its child once** (enables offload); Exec env `GSK_RENDERER=gl` only |
 | gtk4.0 | 4.24.0-**r103** | 0100 no powf sRGB round trip (YUV, cairo) · 0101 cairo quarter-turn textures · 0102 import LINEAR dmabufs without explicit modifier |
