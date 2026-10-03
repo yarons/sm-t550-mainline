@@ -67,10 +67,15 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    no shared-VM teardown on handle close (teardown at the last vma_ref drop). Kernel r32 INSTALLED: gtk-fault/
    faultcatch2.sh 180 launches → 0 faults (r31: caught after 20 and 57). kprobe GEM lifetime check (gtk-fault/
    kprobe-leak.sh): no BO kept alive by the patch. Upstream: Tested-by draft upstream/tested-by-172617.txt.
-12. OPEN (2026-10-01 23:10, found during 11) — **camera service leaks ~8.1 MB GPU memory per Snapshot session**:
-   wireplumber@video-capture drm-total-memory 8436 → 16768 → 25100 → 33432 KiB after 4 sessions (gtk-fault/
-   camleak.sh), +1-2 MB RSS each; it had reached 308 MB (227 MB resident) after ~40 sessions; a restart frees it all.
-   User space (the BOs keep open handles in that process — kprobe), so independent of the kernel. Suspects: libcamera
-   soft-ISP GPU path (EGL context/shaders/textures re-created per stream start without teardown — note
-   `wireplum:ir3q0` = its Mesa shader-compile thread allocating 25 new BOs in 2 sessions, SWIspWorker 28).
-   Interim mitigation if needed: restart the service when Snapshot is closed (NEVER while it is open).
+12. DONE (2026-10-03 14:45, libcamera r110) — **camera service leaked ~8.1 MB GPU memory per Snapshot session**.
+   Cause (libcamera, fixed upstream 2026-08-17 by a00a4ca2 + 4501b8a1, after our v0.7.2): DebayerEGL::start() calls
+   eGL::initEGLContext() on every stream start, which created a NEW EGL context and overwrote the old one; only the
+   last was ever destroyed → one leaked context (Mesa per-context BOs, shader variants from the ir3q0 thread) per
+   session in the long-lived wireplumber@video-capture. FIX packages/libcamera/0108-egl-avoid-context-leaks.patch:
+   eGL::resetEGLContext() called from DebayerEGL::stop(), double init refused (upstream's substance, ported without
+   their EGL refactor series). gtk-fault/camleak.sh: r109 +8332 KiB/session (8436 → 16768 → 25100), r110 flat 4548 KiB
+   over 4 sessions, RSS steady; rear camera 28/s in back-to-back sessions, new context logged each start, no errors.
+   SIDE EFFECT while installing (fixed): `apk add -u <local apks>` upgraded libcamera's edge dependencies
+   (device-mapper-libs r7→r8, util-linux libs, ffmpeg-libavutil) and PURGED device-mapper-udev → mkinitfs aborted
+   ("failed to stat /usr/lib/udev/rules.d/10-dm.rules", /boot/initramfs left untouched). `apk add device-mapper-udev`
+   (r8) + `apk fix` → OK, initramfs rebuilt. Use plain `apk add <file>` for local packages from now on.

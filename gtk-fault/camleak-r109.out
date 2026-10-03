@@ -1,0 +1,6 @@
+before restart: rss=6492kB
+after restart:  rss=58304kB
+after session 1: drm-total-memory: 8436KiB drm-resident-memory: 8428KiB rss=75756kB
+after session 2: drm-total-memory: 16768KiB drm-resident-memory: 16752KiB rss=77928kB
+after session 3: drm-total-memory: 25100KiB drm-resident-memory: 25076KiB rss=80076kB
+done

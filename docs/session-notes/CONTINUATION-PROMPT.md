@@ -10,10 +10,15 @@ Paste this into a new session to continue. Everything lives in `~/workspace/gt51
 
 ## State (2026-10-01 evening) — everything below is INSTALLED and verified on the tablet
 
-Fresh image flashed 2026-10-01 17:36, then kernel r29→r32 + gt510-tweaks r32→r34 on top. Baseline image for the next
-flash: `dist/qcom-msm8916-2026-10-01-r34-k32.simg` (3163329880 B, sha256 f33ca48f…a6abb6d2; built 22:53 on the laptop
-= exactly the installed set: kernel r32, tweaks r34, libcamera r109, mesa r101, snapshot r112, gtk4.0 r103, phosh
-r100, gpsd r101, greetd-phrog r100). Older r33 / r34 (kernel r31) simgs are superseded.
+2026-10-02: the tablet runs the PUBLIC release image (rebranded, gt510-tweaks r35 + kernel r32), boot-tested OK, then
+restored to the personal setup by hand: password 1234, timezone UTC, SSH key, sshd enabled, Pictures/
+Videos + test scripts from backup-2026-10-02/ (Wi-Fi + RetroArch were already back via the user / the SD card).
+Release assets (flashable): `dist/release-20261002/` (userdata.simg.xz sha256 05714cdc…, lk2nd, MANIFEST, SHA256SUMS,
+RELEASE-NOTES.md for GitHub). Personal baseline image `dist/qcom-msm8916-2026-10-01-r34-k32.simg` lacks tweaks r35.
+PUBLIC REPO: github.com/yarons/sm-t550-mainline (push with `core.sshCommand` = ~/.ssh/old_id_rsa, the personal
+key; ~/.ssh/id_ed25519 and gh are the WORK account). Built from gt510-pmos by review/assemble-public.sh (local only:
+curated copy + scrub map review/scrub-map.tsv + leftover scan); commits e492aca, 4ca122b (rebrand).
+Release images: `pmos-gt510.sh install-public` (no keys, sshd off, UTC, password 147147) + `release`.
 `ISSUES.md`: everything DONE except item 5 (front-camera "no more input formats" — WATCH, cleared by a reboot).
 `/lib/modules/7.3.0-rc2-msm8916/updates/` is EMPTY (keep it that way; test modules shadow the package).
 OPEN: ISSUES 12 (camera service leaks ~8.1 MB GPU memory per Snapshot session; user space). Upstream hand-off for
@@ -23,7 +28,7 @@ Dmitry Baryshkov's shared-VM series).
 |---|---|---|
 | linux-postmarketos-qcom-msm8916 | 7.3_rc2-**r32** (#33) | msm8916-mainline 7.3-rc2 @717e5e2 + `kernel/0100`–`0107`, `0109`–`0118`, **`0120`–`0124`** + `kernel/gt510.config` |
 | gt510-tweaks | **r34** | see "gt510-tweaks" (r34: GPU runtime-PM udev rule gone, depends kernel>=r30) |
-| libcamera | 99990.7.2-**r109** | pmOS fork + 0100 YUV passthrough/SR544 helper · 0101 soft-ISP contrast AF · 0102 cap only scalable outputs · 0103 YUV sensors via CAMSS PIX as NV12 · 0104 skip the neutral contrast curve · **0105 co-sited Bayer cells** · **0106 black level+AWB as one multiply-add** · **0107 faster AF** |
+| libcamera | 99990.7.2-**r110** | pmOS fork + 0100 YUV passthrough/SR544 helper · 0101 soft-ISP contrast AF · 0102 cap only scalable outputs · 0103 YUV sensors via CAMSS PIX as NV12 · 0104 skip the neutral contrast curve · **0105 co-sited Bayer cells** · **0106 black level+AWB as one multiply-add** · **0107 faster AF** |
 | mesa (+dri-gallium, egl, gbm, gl, gles) | 26.2.3-**r101** | LOCAL slim build (freedreno + llvmpipe; GL/GLES/EGL/GBM only) + **0100 freedreno a3xx fixes** |
 | snapshot | 51.0-**r112** | 0100 aperture paintable orientation (+EXIF/mp4 tags) · 0101 viewfinder sink sync=false · **0102 QrScreenBin snapshots its child once** (enables offload); Exec env `GSK_RENDERER=gl` only |
 | gtk4.0 | 4.24.0-**r103** | 0100 no powf sRGB round trip (YUV, cairo) · 0101 cairo quarter-turn textures · 0102 import LINEAR dmabufs without explicit modifier |
@@ -208,6 +213,9 @@ snapenv and gltest are back on the device).
   Packages/images still on the laptop; colima only for the kdev73.sh module fast path.
 
 ## Traps (don't repeat)
+- `apk add -u <local .apk>` also UPGRADES the package's edge dependencies from the repos (partial upgrade): on
+  2026-10-03 it purged device-mapper-udev and mkinitfs then failed (`10-dm.rules` missing; the old initramfs stays).
+  Install local APKs with plain `apk add <file>`; if mkinitfs breaks: `apk add device-mapper-udev && apk fix`.
 - pmOS presets every NEW unit AFTER post-install (99-default: disable *) → `systemctl [--global] enable` in post-install
   is undone on a fresh image. Ship presets: user `/usr/lib/systemd/user-preset/80-gt510.preset` (template syntax
   `enable wireplumber@.service video-capture`), system `/usr/lib/systemd/system-preset/80-gt510.preset`. Check with

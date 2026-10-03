@@ -44,8 +44,9 @@ Flashing replaces Android and erases the tablet's data.
 | GPS (Qualcomm PDS via gpsd) | service runs; no outdoor fix tested |
 | Suspend, hall sensor, headphone jack, A2DP, 5 MP stills | not working / untested |
 
-Known open problems are tracked in [ISSUES.md](ISSUES.md) (for example the camera service leaking ~8 MB of GPU
-memory per Snapshot session).
+Known open problems are tracked in [ISSUES.md](ISSUES.md). The camera service's GPU memory leak (~8 MB per
+Snapshot session, item 12) is fixed in this repository (libcamera r110); release images built before that fix still
+have it.
 
 ## Build it yourself
 

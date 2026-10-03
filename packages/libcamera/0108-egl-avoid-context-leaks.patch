@@ -1,0 +1,78 @@
+From: gt510 <gt510@localhost>
+Subject: libcamera: software_isp: debayer_egl: avoid EGL context leaks (backport)
+
+Every DebayerEGL::start() called eGL::initEGLContext(), which created a new
+EGL context and overwrote the previous one; only the last was ever destroyed.
+A long-lived camera service (WirePlumber) leaked one context, with all the GPU
+memory the driver keeps for it, per stream: ~8.1 MB per Snapshot session on
+SM-T550 (Adreno 306), 308 MB after ~40 sessions.
+
+Destroy the context in stop() through a new eGL::resetEGLContext(), and refuse
+a second initEGLContext() while a context exists. This is the substance of
+upstream a00a4ca2 ("software_isp: debayer_egl: Avoid EGL context leaks") and
+4501b8a1 ("egl: initEGLContext(): Avoid double init") by Barnabás Pőcze, ported
+to v0.7.2 without the EGL refactors they build on.
+---
+diff -ru a/include/libcamera/internal/egl.h b/include/libcamera/internal/egl.h
+--- a/include/libcamera/internal/egl.h
++++ b/include/libcamera/internal/egl.h
+@@ -103,6 +103,7 @@
+ 	~eGL();
+ 
+ 	int initEGLContext();
++	void resetEGLContext();
+ 	static bool isAvailable();
+ 
+ 	int createInputDMABufTexture2D(eGLImage &eglImage, int fd);
+diff -ru a/src/libcamera/egl.cpp b/src/libcamera/egl.cpp
+--- a/src/libcamera/egl.cpp
++++ b/src/libcamera/egl.cpp
+@@ -403,6 +403,10 @@
+ 	EGLint numConfigs;
+ 	EGLConfig config;
+ 
++	/* Already initialised: a second context would leak (see resetEGLContext()) */
++	if (context_ != EGL_NO_CONTEXT)
++		return -EEXIST;
++
+ 	display_ = probeDisplay();
+ 	if (display_ == EGL_NO_DISPLAY) {
+ 		LOG(eGL, Error) << "Unable to probe display";
+@@ -460,6 +464,23 @@
+ fail:
+ 
+ 	return -ENODEV;
++}
++
++/**
++ * \brief Destroy the EGL context
++ *
++ * Destroys the EGL context created by initEGLContext(), so that the next
++ * initEGLContext() starts from scratch instead of leaking the old context and
++ * all GPU memory the driver keeps for it. Has no effect without a context.
++ */
++void eGL::resetEGLContext()
++{
++	if (context_ == EGL_NO_CONTEXT)
++		return;
++
++	eglMakeCurrent(display_, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
++	eglDestroyContext(display_, context_);
++	context_ = EGL_NO_CONTEXT;
+ }
+ 
+ /**
+diff -ru a/src/libcamera/software_isp/debayer_egl.cpp b/src/libcamera/software_isp/debayer_egl.cpp
+--- a/src/libcamera/software_isp/debayer_egl.cpp
++++ b/src/libcamera/software_isp/debayer_egl.cpp
+@@ -809,6 +809,10 @@
+ 
+ 	if (programId_)
+ 		glDeleteProgram(programId_);
++	programId_ = 0;
++
++	/* start() creates a new context every time: drop this one */
++	egl_.resetEGLContext();
+ }
+ 
+ SizeRange DebayerEGL::sizes(PixelFormat inputFormat, const Size &inputSize)
