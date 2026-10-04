@@ -8,52 +8,75 @@ Paste this into a new session to continue. Everything lives in `~/workspace/gt51
   this file verbatim (the last one = "as of 2026-10-01 18:10"). Read the relevant part before re-investigating.
 - Memory: `samsung-t550-gt510.md`, `upstream-ai-policies.md`, `check-ai-policy-before-upstreaming.md`.
 
-## State (2026-10-01 evening) — everything below is INSTALLED and verified on the tablet
+## STATE (2026-10-04 13:15) — nothing in flight
+- Kernel **r35** (#36) INSTALLED = CONFIG_SUSPEND (kept, Yaron 2026-10-04: s2idle 63 vs idle 78 mA) + 0125 (mdp5 stale
+  hwpipe after a screen-on suspend) + 0126 (wcn36xx HT20 only in 2.4 GHz: the router's 2.4 GHz AP is HT40+ on ch 9 →
+  firmware rejected JOIN → "wrong password" prompts). ISSUES 13/14/15 DONE.
+- Wi-Fi profile "HOME-WIFI" locked to 5 GHz (both bands work now; lock kept). Stock NV (from the stock system
+  partition) HAND-INSTALLED at /lib/firmware/updates/wlan/prima/ — makes BMPS (Wi-Fi power save) work; packaging
+  undecided (proprietary: extract on-device, never ship). Local copy wifi/stock-T550XXU1CQL5/ (never publish).
+- NOT PUSHED to the public repo: gt510.config (CONFIG_SUSPEND), apply-7.3.sh (pkgrel 35), pmos-gt510.sh, 0125, 0126,
+  kdev73.sh (KCONFIG). Public push only via review/assemble-public.sh, and only when Yaron says so.
+- Open risk: one unexplained reset during a screen-on s2idle on r33 (ISSUES 14); none on r34/r35 in 26 cycles.
+- Debug helpers: `./gw` Wi-Fi ssh, `./gu` USB ssh with hostname check; wifi/{nvtest,ht20test,modtest}.sh (all
+  self-reverting); power/{suspendab,s2wake,stalepipe}.sh; kernel/kdev-wcn36xx.sh (module build in colima t290 with
+  kernel/running-config-r34).
 
-2026-10-02: the tablet runs the PUBLIC release image (rebranded, gt510-tweaks r35 + kernel r32), boot-tested OK, then
-restored to the personal setup by hand: password <password>, timezone UTC, SSH key, sshd enabled, Pictures/
-Videos + test scripts from backup-2026-10-02/ (Wi-Fi + RetroArch were already back via the user / the SD card).
-Release assets (flashable): `dist/release-20261002/` (userdata.simg.xz sha256 05714cdc…, lk2nd, MANIFEST, SHA256SUMS,
-RELEASE-NOTES.md for GitHub). Personal baseline image `dist/qcom-msm8916-2026-10-01-r34-k32.simg` lacks tweaks r35.
-PUBLIC REPO: github.com/yarons/sm-t550-mainline (push with `core.sshCommand` = ~/.ssh/old_id_rsa, the personal
-key; ~/.ssh/id_ed25519 and gh are the WORK account). Built from gt510-pmos by review/assemble-public.sh (local only:
-curated copy + scrub map review/scrub-map.tsv + leftover scan); commits e492aca, 4ca122b (rebrand).
-Release images: `pmos-gt510.sh install-public` (no keys, sshd off, UTC, password 147147) + `release`.
-`ISSUES.md`: everything DONE except item 5 (front-camera "no more input formats" — WATCH, cleared by a reboot).
-`/lib/modules/7.3.0-rc2-msm8916/updates/` is EMPTY (keep it that way; test modules shadow the package).
-OPEN: ISSUES 12 (camera service leaks ~8.1 MB GPU memory per Snapshot session; user space). Upstream hand-off for
-Yaron: `upstream/README.md` (mdp5 0120 patch ready to sign+send; Tested-by replies for Sam Day's a306 patch and
-Dmitry Baryshkov's shared-VM series). 
+Why only s2idle helps a little: RPM stats `/sys/kernel/debug/qcom_stats/{vmin,xosd}` Count 0 since boot — the cpuidle
+driver is `qcom_spm` (per-core WFI + standalone power collapse only); cluster/SoC states (DT has cluster-retention,
+cluster-gdhs) need PSCI firmware (Samsung's signed TZ has none; tz-psci needs unsigned TZ). Idle floor ~75 mA.
+
+## State (2026-10-03 evening) — INSTALLED on the tablet
+The tablet was reflashed with the PUBLIC release image 20261003 (boot-tested: 29.8 s, 0 faults, camera 28/s, lens
+parks, no camera-service leak), then restored by hand: password <password>, timezone UTC, SSH key, sshd
+enabled + Wi-Fi connected (Yaron), Pictures/Videos + test scripts from `backup-2026-10-03/`. Since then: kernel r33.
 | Package | Version | Local patches |
 |---|---|---|
-| linux-postmarketos-qcom-msm8916 | 7.3_rc2-**r32** (#33) | msm8916-mainline 7.3-rc2 @717e5e2 + `kernel/0100`–`0107`, `0109`–`0118`, **`0120`–`0124`** + `kernel/gt510.config` |
-| gt510-tweaks | **r34** | see "gt510-tweaks" (r34: GPU runtime-PM udev rule gone, depends kernel>=r30) |
-| libcamera | 99990.7.2-**r111** | pmOS fork + 0100 YUV passthrough/SR544 helper · 0101 soft-ISP contrast AF · 0102 cap only scalable outputs · 0103 YUV sensors via CAMSS PIX as NV12 · 0104 skip the neutral contrast curve · **0105 co-sited Bayer cells** · **0106 black level+AWB as one multiply-add** · **0107 faster AF** |
+| linux-postmarketos-qcom-msm8916 | 7.3_rc2-**r35** (#36) | msm8916-mainline 7.3-rc2 @717e5e2 + `kernel/0100`–`0107`, `0109`–`0118`, `0120`–`0126` + `kernel/gt510.config` (r33: + CONFIG_SUSPEND; r34: + 0125; r35: + 0126) |
+| gt510-tweaks | **r35** | see "gt510-tweaks" (r35: rebrand) |
+| libcamera | 99990.7.2-**r111** | pmOS fork + 0100–0107 (see below) + **0108 EGL context leak (upstream backport)** + **0109 park the lens on stop** |
 | mesa (+dri-gallium, egl, gbm, gl, gles) | 26.2.3-**r101** | LOCAL slim build (freedreno + llvmpipe; GL/GLES/EGL/GBM only) + **0100 freedreno a3xx fixes** |
 | snapshot | 51.0-**r112** | 0100 aperture paintable orientation (+EXIF/mp4 tags) · 0101 viewfinder sink sync=false · **0102 QrScreenBin snapshots its child once** (enables offload); Exec env `GSK_RENDERER=gl` only |
 | gtk4.0 | 4.24.0-**r103** | 0100 no powf sRGB round trip (YUV, cairo) · 0101 cairo quarter-turn textures · 0102 import LINEAR dmabufs without explicit modifier |
 | phosh | 99990.57.0-**r100** | 0100 cellular tile hidden without a modem |
 | gpsd | 3.27.3-**r101** | Qualcomm PDS (`pds://any`) |
 | greetd-phrog | 0.53.0-**r100** | 0100 no greetd session for an empty username ("password twice") |
+libcamera 0100–0107: YUV passthrough/SR544 helper · soft-ISP contrast AF · cap only scalable outputs · YUV sensors via
+CAMSS PIX as NV12 · skip the neutral contrast curve · co-sited Bayer cells · black level+AWB as one multiply-add ·
+faster AF. 0108 = upstream a00a4ca2/4501b8a1 substance (one EGL context per stream start was never destroyed:
++8.1 MB GPU memory per Snapshot session). 0109 = SimplePipelineHandler::stopDevice() parks the lens at the
+V4L2_CID_FOCUS_ABSOLUTE minimum (the DW9804 sat at 1023 after AF sweeps: ~125 mA idle).
+Also installed (from `apk add -u`, see traps): device-mapper-libs/-udev r8, util-linux libs r2, ffmpeg-libavutil r2.
 
 Kernel patches: 0100 MAX77849 charger/MUIC · 0101 charger = USB supply of the gauge · 0102 front camera SR200PC20 +
 DT + camss CSID1 fix · 0103 s6d7aa0 1-byte brightness · 0104 msm DSI no link-clock re-set per command · 0105 rear
-SR544 + DT · 0106 DW9804 lens · 0107/0109/0110/0111 venus encoder on HFI 1.x · 0112 USB OTG host (dual-role DT,
-MAX77849 boost regulator + shutdown hook, MUIC ADCLow/CHGDETEN fixes) · 0113 CPR + cpufreq to 1209.6 MHz · 0114 camss:
-restore the MSM8916 VFE PIX line (line_num 3→4) · 0115 SR200PC20 640x480 preview mode · 0116 MUIC: CDP is USB data too
-(USB networking on the Mac's port) · 0117 sr544 + sr200pc20 probe retries the chip-id read · 0118 extcon-max77693
-per-group pending bits (OTG unplug was lost → boost stayed on). REVERTED: 0119 (RDI bpl 32; attic/kernel/).
-r32 adds **0123/0124** = Dmitry Baryshkov's upstream series 172617 "drm/msm: fix dma-buf sharing on targets without
-per-process pgtables" (verbatim): msm_gem_close() no longer tears down mappings in a2xx-a5xx's single global GPU VM →
-the GTK4 app-start/exit GPU fault storms are gone (ISSUES 11).
-r31 also carries **0122** = Sam Day's upstream "drm/msm/a3xx: fix VBIF halt mask for A306/A306A" (patchwork 756513,
-verbatim; a306 has 3 VBIF XIN clients, be0e82b8e0c9 waited for 6 → runtime suspend never worked).
-r29 (2026-10-01): **0120** mdp5: flush the CTL
-BEFORE enabling the video timing engine (the first frame after every CRTC enable scanned the pre-disable pipe state →
-iommu faults at a freed phoc buffer, INTF1 underrun, vblank timeout, boot-time underrun) · **0121** s6d7aa0: no
-backlight DCS write while the panel is disabled (logind/Phosh brightness writes during blank → -22/EPROTO).
+SR544 + DT · 0106 DW9804 lens · 0107/0109/0110/0111 venus encoder on HFI 1.x · 0112 USB OTG host · 0113 CPR + cpufreq
+to 1209.6 MHz · 0114 camss VFE PIX line · 0115 SR200PC20 640x480 · 0116 MUIC CDP is USB data · 0117 sensor probe
+retries · 0118 extcon-max77693 per-group pending bits · 0120 mdp5 flush the CTL before the timing engine (DPMS-on
+faults) · 0121 s6d7aa0 no backlight DCS write while disabled · 0122 Sam Day's a3xx VBIF mask for A306 (runtime PM) ·
+0123/0124 Dmitry Baryshkov's shared-VM dma-buf teardown series (GTK4 app-start GPU fault storms) · 0125 mdp5 no stale
+hwpipe after resume (ours; upstream candidate) · 0126 wcn36xx HT20 only in 2.4 GHz (ours). REVERTED: 0119.
 
-### gt510-tweaks r33 (what it ships)
+## Public repo + release (Yaron's, 2026-10-02/03)
+- Repo **github.com/yarons/sm-t550-mainline** (public, personal account). Push from `~/workspace/gt510-public`
+  (its git config: `core.sshCommand` = `ssh -i ~/.ssh/old_id_rsa` = the PERSONAL key; `~/.ssh/id_ed25519` and `gh`
+  are the WORK account WORK-ACCOUNT and have no access). Never commit there by hand: rebuild the tree with
+  `review/assemble-public.sh` (curated rsync + `review/scrub-map.tsv` + leftover scan that FAILS on IPs/serials/
+  emails/coordinates/the tablet password), move `.git` out and back around it, commit (author Yaron Shahrabani
+  <406826+yarons@users.noreply.github.com>, `Co-Authored-By` trailer), scan the diff, push. `review/` is never
+  published (it holds the scrub map). Yaron's rules: no photos/raw camera dumps, name yes / email no, GPL-2.0.
+  HEAD e0550f7 (libcamera r111). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
+- Release images: `pmos-gt510.sh install-public` (no SSH keys, sshd off, UTC, password 147147) + `release`
+  (xz'd sparse userdata image, lk2nd, MANIFEST.txt, SHA256SUMS). gt510-tweaks r35 rebrands the OS on-device
+  ("SM-T550 Mainline (unofficial, based on Nura)", ID=nura kept, text plymouth theme sm-t550, Adwaita wallpaper).
+- READY TO UPLOAD (Yaron does it): `dist/release-20261003/` — tag `edge-20261003-prerelease` on main (built from
+  e0550f7, pmaports bbcd4e5b), title "postmarketOS/Nura (Phosh) on a mainline kernel for the Galaxy Tab A 9.7 2015
+  (SM-T550) — pre-release 2026-10-03", notes RELEASE-NOTES.md, files: gt510-unofficial-pmos-20261003-userdata.simg.xz
+  (sha256 1f2eaeeb…), lk2nd-msm8916.img, MANIFEST.txt, SHA256SUMS. The 20261002 builds are superseded, never published.
+- Upstream hand-off (Yaron signs off and sends; AI never sends): `upstream/README.md` — mdp5 0120 patch, Tested-by
+  drafts for Sam Day's a306 patch and Dmitry Baryshkov's series; `docs/UPSTREAM.md` in the repo lists all candidates.
+
+### gt510-tweaks r35 (what it ships; r35 adds the rebrand: gt510-rebrand + sm-t550 plymouth theme + 20_gt510-branding override)
 charger module autoload, accel mount matrix, GPU runtime PM left on (r34; the udev "on" rule is gone), hkdm keys (Home/Recents) + Back touch key =
 Escape (hwdb), gpsd-pds.service, THP madvise, zram lz4, animations off, auto-brightness, tile/service masks,
 `/etc/profile.d/zz-gt510-gtk-gl.sh` (GSK_RENDERER=gl — the ONLY GTK GL setting now), libcamera config
@@ -109,8 +132,10 @@ a reflash), RetroArch defaults (pointer, wayland input, fullscreen, StartupNotif
    event + the MDP5 enable-order bug (0120).
 3. DONE (ISSUES 10): a306 GPU runtime suspend works (kernel r31 0122 + tweaks r34). New ISSUES 11: rare GPU fault
    bursts at GTK4 app start (pre-existing, both runtime-PM modes).
-4. CPR fuse-based open-loop voltages (downstream cpr-regulator fuse rows) to run TURBO below 1.35 V.
-5. Venus rate control overshoot (~10x under GStreamer), 5 MP stills, hall/jack/A2DP untested, suspend off.
+4. ISSUES 13 idle power (IN FLIGHT, see top): lens drain fixed (libcamera 0109); suspend test running on kernel r33.
+   Remaining levers after it: Wi-Fi ~16 mA (DTIM 1 router, BMPS works after association), modem DSP ~8 mA (audio).
+5. CPR fuse-based open-loop voltages (downstream cpr-regulator fuse rows) to run TURBO below 1.35 V.
+6. Venus rate control overshoot (~10x under GStreamer), 5 MP stills, hall/jack/A2DP untested.
 6. OTG write path untested.
 7. Upstreaming (memory upstream-ai-policies; Yaron decides/writes where required): kernel 0114 (camss regression) / 0120 (mdp5
    enable order — plain upstream bug, A/B data in display/ab-2026-10-01/) /
@@ -130,7 +155,14 @@ a reflash), RetroArch defaults (pointer, wayland input, fullscreen, StartupNotif
   ~37 s after boot.
 - CPU debayer (software_isp mode cpu) rejected by Yaron (+680 mA vs +180 mA).
 
-## Tools (gl-hang/, usb-otg/, display/, gpu-pm/, gtk-fault/)
+## Tools (gl-hang/, usb-otg/, display/, gpu-pm/, gtk-fault/, power/)
+- power/ (2026-10-03): `powertest.sh` (root; waits for Discharging; gauge current_now per phase: baseline, Wi-Fi off,
+  modem DSP stopped, baseline, screen on; restores everything) · `suspendtest.sh <idle|suspend> <secs>` (root;
+  coulomb-counter average; suspend mode re-suspends via RTC alarm and logs wakeup sources per cycle).
+  `suspendab.sh [secs]` (root; waits for charger online=0, then suspend + idle runs under a logind block inhibitor) ·
+  `s2wake.sh <blank|lit> <secs>` one s2idle cycle with RTC wake · `stalepipe.sh <n>` lit suspend → blank cycles with
+  DRM plane/hwpipe state per step (kernel 0125 check).
+  Gauge: /sys/class/power_supply/max170xx_battery {current_now (µA, negative = discharge), charge_counter (µAh)}.
 - gtk-fault/ (2026-10-01): `faulttrace.sh <tag> <cmd…>` exact GPU fault count via ftrace iommu:io_page_fault (+unmap,
   msm submit/shrink/purge) around a command · `faultcatch2.sh <n>` app-launch loop that stops at the first fault ·
   `resizetest.py` (PyGObject GTK4, no cairo) + `relaunch.sh` · `memhog.py` · `leakper.sh` per-app GEM count ·
@@ -168,8 +200,10 @@ snapenv and gltest are back on the device).
 - SM-T550, APQ8016, 1.5 GB RAM, 768x1024 portrait, Adreno 306. adb/fastboot serial **ADB-SERIAL** (the T290
   T290-ADB-SERIAL is often on the same USB — always `-s`). Samsung BL → lk2nd 23.1 on BOOT → pmOS on `userdata`; lk2nd
   loads the FLAT `/boot/msm8916-samsung-gt510.dtb`.
-- `./gssh '<cmd>'`: USB network 172.16.42.1 (cable on the Mac's CDP port) else Wi-Fi **TABLET-WIFI-IP** (since the
-  2026-10-01 reflash; a new install gets a new lease). Key `~/.ssh/ssh-key`; user `user` / **<password>**; sudo via
+- `./gw '<cmd>'` = Wi-Fi ONLY, **TABLET-WIFI-IP** (lease since the 2026-10-03 reflash; a new install gets a new one:
+  find it with a port-22 sweep and check `cat /etc/hostname` = gt510 before acting). `./gssh` tries USB 172.16.42.1
+  first — DANGER: the Poco F1 (also pmOS) answers there when it is on USB; the tablet in MTP mode (usb-moded) gives
+  no USB network at all. Key `~/.ssh/ssh-key`; user `user` / **<password>**; sudo via
   `echo "${SUDO_PW:-147147}" | sudo -S -p ''`. scp sometimes drops — `./gssh 'cat > /tmp/x' < file` works. ssh sometimes hangs AFTER
   the remote command finished — write results to files on the device and read them back.
 - Boot session is auto-logged-in and unlocked. Unblank: `gdbus … DisplayConfig … PowerSaveMode "<0>"` (a blanked screen
@@ -185,7 +219,8 @@ snapenv and gltest are back on the device).
   card by themselves (gt510-persist). The camera permission is pre-granted (r33).
 
 ## Build pipeline — Yaron's laptop builder (since 2026-09-30)
-- Host `builder@BUILDER-HOST` (ThinkPad, Manjaro, x86_64, 12 threads, 16 GB RAM, key login, `sudo -n docker` ONLY — any
+- Host `builder@BUILDER-HOST` via `./lssh` (pins `~/.ssh/id_ed25519` with IdentitiesOnly: the agent offers the tablet
+  key first and the laptop rejects the login) (ThinkPad, Manjaro, x86_64, 12 threads, 16 GB RAM, key login, `sudo -n docker` ONLY — any
   other host sudo goes through Yaron, e.g. `sudo modprobe loop`). SHARED with the T290 Lineage builds
   (`lineage-build*`, ~12 GB RAM): `build-host/gt510-queue.sh "<name>:<target…>"…` waits before EVERY job until no
   gt510-* and no lineage-build* container runs; logs `~/gt510-pmos/logs/<name>.log`, progress `logs/queue.out`.

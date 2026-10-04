@@ -1,7 +1,7 @@
 # Local tweaks for the Samsung Galaxy Tab A 9.7 2015 (SM-T550, gt510wifi) on device-qcom-msm8916.
 pkgname=gt510-tweaks
 pkgver=1
-pkgrel=35
+pkgrel=36
 pkgdesc="SM-T550 (gt510wifi) integration: audio, charger, GPS, rotation, camera, trimmed services; Phosh"
 url="https://postmarketos.org"
 arch="noarch"
@@ -75,6 +75,8 @@ source="
 	sm-t550.script
 	sm-t550-mainline.svg
 	20_gt510-branding.gschema.override
+	gt510-wcnss-nv
+	gt510-wcnss-nv.service
 	"
 
 package() {
@@ -133,4 +135,7 @@ package() {
 	install -Dm644 "$srcdir"/sm-t550.plymouth "$srcdir"/sm-t550.script -t "$pkgdir"/usr/share/plymouth/themes/sm-t550/
 	install -Dm644 "$srcdir"/sm-t550-mainline.svg -t "$pkgdir"/usr/share/icons/hicolor/scalable/apps/
 	install -Dm644 "$srcdir"/20_gt510-branding.gschema.override -t "$pkgdir"/usr/share/glib-2.0/schemas/
+	# This tablet's own Wi-Fi/BT NV, copied once from the stock system partition (Samsung's file, never shipped)
+	install -Dm755 "$srcdir"/gt510-wcnss-nv -t "$pkgdir"/usr/libexec/
+	install -Dm644 "$srcdir"/gt510-wcnss-nv.service -t "$pkgdir"/usr/lib/systemd/system/
 }

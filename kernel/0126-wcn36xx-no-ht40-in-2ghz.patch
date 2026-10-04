@@ -1,0 +1,39 @@
+From: gt510 <gt510@localhost>
+Subject: wifi: wcn36xx: don't advertise 40 MHz in the 2.4 GHz band
+
+On SM-T550 (WCN3660B, firmware "WCN v2.0 ... CNSS-PR-2-0-1") the device
+never joined a 2.4 GHz BSS running HT40 (primary channel 9, secondary
+above): authentication and association succeed, then the firmware fails
+HAL_JOIN and HAL_CONFIG_BSS (status 5), mac80211 reports beacon loss and
+the 4-way handshake never completes, which wpa_supplicant reports as a
+wrong key (NetworkManager then asks for the password again and again).
+The same BSS joins and stays up when wpa_supplicant overrides the HT
+capabilities with disable_ht40=1 (control run with disable_ht40=0: 0 of 3
+joins). The downstream prima configuration for this device ships
+gChannelBondingMode24GHz=0, i.e. 2.4 GHz never used 40 MHz there.
+
+Advertise 20 MHz only in 2.4 GHz (dropping SGI_40 and DSSSCCK40, which
+only apply to 40 MHz); 5 GHz keeps HT40.
+---
+--- a/drivers/net/wireless/ath/wcn36xx/main.c
++++ b/drivers/net/wireless/ath/wcn36xx/main.c
+@@ -134,12 +134,15 @@
+ 	.bitrates	= wcn_2ghz_rates,
+ 	.n_bitrates	= ARRAY_SIZE(wcn_2ghz_rates),
+ 	.ht_cap		= {
++		/*
++		 * 20 MHz only: the downstream prima configuration ships
++		 * gChannelBondingMode24GHz=0, and with HT40 in 2.4 GHz the
++		 * WCN3660B firmware rejects JOIN/CONFIG_BSS, so the link
++		 * drops before the 4-way handshake completes.
++		 */
+ 		.cap =	IEEE80211_HT_CAP_GRN_FLD |
+ 			IEEE80211_HT_CAP_SGI_20 |
+-			IEEE80211_HT_CAP_DSSSCCK40 |
+-			IEEE80211_HT_CAP_LSIG_TXOP_PROT |
+-			IEEE80211_HT_CAP_SGI_40 |
+-			IEEE80211_HT_CAP_SUP_WIDTH_20_40,
++			IEEE80211_HT_CAP_LSIG_TXOP_PROT,
+ 		.ht_supported = true,
+ 		.ampdu_factor = IEEE80211_HT_MAX_AMPDU_64K,
+ 		.ampdu_density = IEEE80211_HT_MPDU_DENSITY_16,

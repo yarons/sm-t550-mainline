@@ -13,9 +13,9 @@ setup)
 	mv linux-717e5e25225035d13c09b376aab5f23a5d7abe61 linux
 	cd "$K"
 	for p in /src/0*.patch; do echo "== $p"; patch -p1 -F0 -s < "$p"; done
-	cp /src/running-config-r28 .config
+	cp "/src/${KCONFIG:-running-config-r28}" .config
 	make ARCH=arm64 LLVM=1 olddefconfig >/dev/null
-	diff /src/running-config-r28 .config | grep -E '^[<>] CONFIG' || echo "config identical"
+	diff "/src/${KCONFIG:-running-config-r28}" .config | grep -E '^[<>] CONFIG' || echo "config identical"
 	make ARCH=arm64 LLVM=1 -j"$(nproc)" modules_prepare >/dev/null
 	make ARCH=arm64 LLVM=1 -s kernelrelease ;;
 msm)

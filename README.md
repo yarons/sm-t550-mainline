@@ -36,13 +36,14 @@ Flashing replaces Android and erases the tablet's data.
 | GPU (freedreno a306), GTK4 GL renderer, phoc | works without workarounds (local Mesa 0100); runtime PM on (0122) |
 | Rear camera SR544 (5 MP, used at 1296x972) | ~22-24 fps preview in Snapshot, autofocus ~1.9 s, tuned colours (libcamera soft ISP on the GPU) |
 | Front camera SR200PC20 | ~20-22 fps, 640x480 |
-| Wi-Fi, Bluetooth, audio (speaker), sensors | works |
+| Wi-Fi (2.4 + 5 GHz), Bluetooth, audio (speaker), sensors | works; 2.4 GHz HT20 only (kernel 0126); the tablet's own Wi-Fi NV file is copied once from the stock system partition at first boot (Wi-Fi power save) |
 | Charging (MAX77849), battery gauge, USB networking | works |
 | USB OTG host (micro-B OTG cable) | works (read tested) |
 | CPU | 200-1209.6 MHz with CPR voltage scaling |
 | Hardware video encoding (venus) | works, but rate control overshoots ~10x |
 | GPS (Qualcomm PDS via gpsd) | service runs; no outdoor fix tested |
-| Suspend, hall sensor, headphone jack, A2DP, 5 MP stills | not working / untested |
+| Suspend (s2idle) | works: GNOME suspends after 15 min idle on battery, closing a cover (hall sensor) suspends, the power key wakes; screen-off standby 63 mA suspended vs 78 mA awake (no deeper SoC idle without PSCI firmware) |
+| Headphone jack, A2DP, 5 MP stills | untested |
 
 Known open problems are tracked in [ISSUES.md](ISSUES.md). The camera service's GPU memory leak (~8 MB per
 Snapshot session, item 12) is fixed in this repository (libcamera r110); release images built before that fix still
@@ -60,10 +61,10 @@ Release images are built with `pmos-gt510.sh install-public` + `release` (no per
 
 | Path | Content |
 |---|---|
-| `kernel/` | kernel patches `0100`-`0124`, `gt510.config`, `apply-7.3.sh`, `kdev73.sh` (fast module dev tree) |
+| `kernel/` | kernel patches `0100`-`0126`, `gt510.config`, `apply-7.3.sh`, `kdev73.sh` (fast module dev tree) |
 | `packages/` | gt510-tweaks (device integration), patched mesa, gtk4.0, libcamera, snapshot, phosh, gpsd, greetd-phrog |
 | `build-host/` | builder container + job queue |
-| `gl-hang/`, `gpu-pm/`, `gtk-fault/`, `display/`, `usb-otg/`, `shader-test/`, `camera/`, `libcamera-test/`, `mesa-test/` | measurement and debugging tools used during bring-up, with some evidence files |
+| `gl-hang/`, `gpu-pm/`, `gtk-fault/`, `display/`, `power/`, `wifi/`, `usb-otg/`, `shader-test/`, `camera/`, `libcamera-test/`, `mesa-test/` | measurement and debugging tools used during bring-up, with some evidence files |
 | `upstream/` | patches and test reports prepared for upstream projects |
 | `ISSUES.md` | the ordered work list with evidence for every fix |
 | `docs/` | flashing, building, upstream status, session notes |

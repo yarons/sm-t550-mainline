@@ -79,7 +79,7 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    (device-mapper-libs r7→r8, util-linux libs, ffmpeg-libavutil) and PURGED device-mapper-udev → mkinitfs aborted
    ("failed to stat /usr/lib/udev/rules.d/10-dm.rules", /boot/initramfs left untouched). `apk add device-mapper-udev`
    (r8) + `apk fix` → OK, initramfs rebuilt. Use plain `apk add <file>` for local packages from now on.
-13. ACTIVE (2026-10-03 15:40) — **Idle battery drain** (Yaron: "did you test discharge?"). Logged discharge on the public
+13. DONE (2026-10-04 13:10, Yaron: keep suspend) — **Idle battery drain** (Yaron: "did you test discharge?"). Logged discharge on the public
    image (upower history): 98 → 66 % in 20 h with the screen off = 1.6 %/h (~62 h from full). power/powertest.sh
    (root, self-running on battery, gauge current_now, screen off): baseline 177 mA, Wi-Fi radio off 161 (Wi-Fi
    ~16 mA), modem DSP stopped 169 (~8 mA), baseline again 179, screen on 849 mA (power/powertest-2026-10-03.txt).
@@ -89,4 +89,77 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    the control minimum. Verified: AF moves the lens during streams (493, 837), parked at 0 after every close, idle
    75 mA (SSH session open), rear camera 27-28/s. Next levers: Wi-Fi BMPS (5 "Can not enter BMPS" errors per boot,
    ~16 mA total for the radio), modem DSP (~8 mA, needed for audio), system suspend (none; biggest remaining).
-   Remember: install local APKs with plain `apk add` (item 12 trap). Tablet Wi-Fi IP is T290-WIFI-IP now (gssh).
+   Remember: install local APKs with plain `apk add` (item 12 trap).
+   2026-10-03 later: deep idle is out of reach (qcom_stats vmin/xosd Count 0; cpuidle driver qcom_spm = per-core
+   states only; cluster/SoC states need PSCI firmware Samsung's signed TZ lacks) → floor ~75 mA. Trying s2idle:
+   kernel r33 (CONFIG_SUSPEND=y in kernel/gt510.config) INSTALLED, plugged 30 s test resumed fine (woke early,
+   10.5 s, non-RTC source). IN FLIGHT: root unit `suspendab` (power/suspendtest.sh: suspend 900 s with per-wake
+   source logging, then idle 900 s; coulomb counter) → ~/suspendtest.out. Tablet Wi-Fi is TABLET-WIFI-IP (./gw).
+   2026-10-03 22:15: that run NEVER STARTED — the cable was still in (Mac USB) and at 100 % the gauge says "Full", not
+   "Discharging". Instead logind suspended at 21:56:15 on "Lid closed" (hall sensor, "Lid opened" the same second;
+   HandleLidSwitch=suspend applies on AC too) → 17 min s2idle, power key woke it (Wi-Fi back ~1 min later, wcn36xx
+   hal_join/config_bss -5 errors, then reconnected). Side finds: the HALL SENSOR WORKS; the screen-on suspend broke
+   display blanking → item 14. Harness fixed: power/suspendab.sh waits for charger online=0 and holds a logind
+   sleep:idle:handle-lid-switch block inhibitor (GNOME would suspend the 15-min idle phase). Re-armed after a reboot
+   (22:19), waiting for the unplug.
+14. DONE (2026-10-03 23:31, kernel r34/0125) — **Screen can't turn off after a suspend with the panel lit** (found via item 13's lid
+   suspend). After resume: `WARNING … mdp5_pipe.c:138 mdp5_pipe_release` + phoc "Atomic commit failed: Invalid
+   argument"; every later DPMS off fails ("Failed to commit power mode change", CRTC stays active, backlight on)
+   until reboot. Cause (upstream mdp5, no fix in torvalds or msm-next; patchwork search blocked by Anubis):
+   drm_atomic_helper_suspend()'s snapshot keeps the planes' hwpipe pointers but not the mdp5 global private state; the
+   suspend commit releases the pipes; resume restores plane-0 on DMA0 with the pipe unowned; the next release WARNs →
+   -EINVAL. Suspends with the screen already blank (GNOME idle path, our RTC test) are unaffected. FIX kernel/0125
+   (mdp5_plane_atomic_check: a plane that is not visible in the current state owns no hwpipe → drop any restored one
+   and assign afresh). Evidence: power/dmesg-r33-lidsuspend.txt.
+   VERIFIED on kernel r34 (#35, built 3 min on the laptop, APK sha256 c34c0540…, INSTALLED 22:33 with plain `apk add`):
+   power/stalepipe.sh (lit → s2idle, RTC +10 s → resume → PowerSaveMode 3 → state): r34 3/3 cycles CRTC inactive
+   when blanked, plane released, 0 WARN, 0 phoc failures; s2wake lit + 2 hand blank/unblank cycles clean. r33: WARN +
+   "Failed to commit power mode change", backlight stuck on (22:17).
+   SIDE ISSUE — 2 SPONTANEOUS RESETS during a lit s2idle (tablet reboots by itself ~2.5 min after suspend entry; no
+   log: watchdog0 = PM8916 PON WDT inactive, journal stops before the freeze; pstore ramoops at 0xdc000000 added to the
+   INSTALLED dtb by fdtput (backup /boot/msm8916-samsung-gt510.dtb.orig-r34, dtc installed) — the bootloader zeroes
+   that RAM on reset, so nothing survives; Samsung's preserved log region unknown). (1) 22:21 r33, stalepipe cycle 1,
+   fresh boot; (2) 23:13 r34, stalepipe cycle 1 but with console_suspend=N + loglevel 7 set by me (printing to the
+   suspended msm UART = classic hang; never do that again). Since then on r34, defaults: s2wake blank 10 s OK, lit 60 s
+   OK, lit 10 s OK, stalepipe 3/3 OK, 20-cycle stalepipe soak 20/20 (23:23-23:31): 26 suspends, 0 fail, 0 GPU faults/
+   underruns/WARN, untainted, Wi-Fi held on 5 GHz. Unexplained: (1) — maybe the stale pipe scanning without SMP blocks
+   on r33 (0125 removes that), unproven. Power A/B re-armed 23:31, never started (cable stayed in until 00:47) → DISARMED (it would blank + re-suspend
+   the tablet for 15 min under a user). Re-arm only when Yaron is about to unplug and leave it.
+   RESULT 2026-10-04 07:35-08:06 (unplugged, 99 %, screen off, power/suspendab.sh): s2idle 900 s (one clean cycle,
+   RTC wake at 901 s) avg 63 mA vs awake idle 900 s avg 78 mA (coulomb counter; charge_now 67 vs 82) → -15 mA (-19 %),
+   ~95 h vs ~77 h standby. DECISION (Yaron 2026-10-04): KEEP CONFIG_SUSPEND (kernel r33+). Remaining levers: Wi-Fi BMPS
+   (works with the stock NV, item 15), modem DSP ~8 mA (audio).
+15. DONE (2026-10-04 13:13, kernel r35) — **Wi-Fi never works on 2.4 GHz** (Yaron: "enter the wifi password over and over"). Journal
+   since 09-26: 2.4 GHz BSSID AP-2G-BSSID (ch 9) 0/37 joins, 5 GHz 8e:1f (ch 44) 16/16. Every 2.4 GHz try:
+   wcn36xx "hal_join response failed err=-5" + "hal_config_bss … failed" → CTRL-EVENT-BEACON-LOSS during the 4-way
+   handshake → wpa_supplicant "WRONG_KEY" → after 3 NM asks for the password. Trigger: a beacon loss on 5 GHz makes
+   it roam to 2.4 GHz; today's many suspends/reboots made it frequent. Not r34 (same on r32/r33 boots). MITIGATION
+   (Yaron OK'd): `nmcli con modify "HOME-WIFI" 802-11-wireless.band a` → connected on 5 GHz. Lead: the NV
+   calibration in use is the DragonBoard 410c one (/lib/firmware/wlan/prima/WCNSS_qcom_wlan_nv.bin from
+   firmware-qcom-db410c-wcnss-nv) — the tablet's own NV may still be on the stock system/persist partitions (read-only
+   look first; never write those partitions). Also: BMPS enter/exit errors (err 5) at every connect (item 13 lever).
+   2026-10-04: ROOT CAUSE = HT40 in 2.4 GHz, not the NV. The 2.4 GHz AP runs HT40 on ch 9 with the secondary ABOVE
+   (= ch 13), plus VHT/HE. wifi/ht20test.sh (private wpa_supplicant, NM unmanaged ~45 s, self-restoring) A/B against
+   that BSSID: disable_ht40=1 → connected, keys negotiated, no beacon loss; disable_ht40=0 → 0/3, 3× beacon loss +
+   "4-Way Handshake failed" + WRONG_KEY, hal_join 3 / config_bss 6. Stock prima config (WCNSS_qcom_cfg.ini) has
+   gChannelBondingMode24GHz=0. FIX kernel/0126 (wcn36xx: 2.4 GHz ht_cap without SUP_WIDTH_20_40/SGI_40/DSSSCCK40);
+   r35 = r34 + 0126 (laptop asleep → test module via kernel/kdev-wcn36xx.sh in colima t290 with running-config-r34,
+   test with wifi/modtest.sh, self-reverting). The 5 GHz lock stays until Yaron decides.
+   VERIFIED 13:02 (test module, vermagic 7.3.0-rc2-msm8916, taint E+O): 2.4 GHz caps now HT20 only; NM joined the
+   2.4 GHz BSSID first try, 0 hal_join / 0 config_bss / 0 WRONG_KEY / 0 beacon loss, HT20 rx 65 Mbit/s MCS 6 SGI,
+   ping gw 10/10 avg 11 ms; back on the 5 GHz lock after. TEST MODULE LEFT INSTALLED:
+   /lib/modules/7.3.0-rc2-msm8916/updates/wcn36xx.ko (shadows the packaged one, survives reboots) → DELETE it +
+   depmod when r35 is installed, else r35's own module never loads. r35 not built yet (laptop asleep).
+   r35 (#36, laptop build 2 min, APK sha256 6676ffa3…, pmb log shows 0125+0126 applied) INSTALLED 13:10; test module
+   deleted + depmod; ramoops dtb node gone (boot-deploy rewrote the dtb), .orig-r34 backup + dtc removed. After reboot:
+   untainted, boot 26.9 s, 2.4 GHz caps 0x803c (HT20 only), 0 hal_join / 0 BMPS errors, power save on; NM 2.4 GHz join
+   with the packaged module: connected, HT20 MCS 7 72 Mbit/s rx, ping 10/10, back on the 5 GHz lock. The lock stays
+   (Yaron didn't ask to remove it; 5 GHz is faster). Open: NV packaging (first-boot copy from the stock system partition?).
+   STOCK NV: found on the stock system partition (mmcblk0p25, T550XXU1CQL5, mounted ro,noload then unmounted) →
+   wifi/stock-T550XXU1CQL5/ (local only: proprietary, never in the public repo). wifi/nvtest.sh: it loads (atime) and
+   5 GHz works with 0 hal_join and 0 BMPS errors (db410c NV: BMPS failed at every connect = power save never on);
+   2.4 GHz still failed with it. HAND-INSTALLED on the tablet: /lib/firmware/updates/wlan/prima/WCNSS_qcom_wlan_nv.bin
+   (stock NV; remove to go back). Power save on with it: 24/24 pings, ~45 ms RTT. WATCH: 08:15-09:57 the tablet was
+   unreachable over Wi-Fi while NM stayed connected (DHCP renew 09:12 worked) — cause unknown (BMPS? scan?).
+   Archived pmaports firmware-samsung-gt510-wcnss-nv (pastebin base64) sha512 matches none of the stock file's base64
+   encodings (format unknown).

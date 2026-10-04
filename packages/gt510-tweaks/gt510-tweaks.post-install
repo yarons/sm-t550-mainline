@@ -2,7 +2,7 @@
 # pmOS images may be systemd or OpenRC; enable the same services on either.
 if [ -d /run/systemd/system ] || [ -e /usr/lib/systemd/systemd ]; then
 	# rmtfs (modem DSP -> audio) and iio-sensor-proxy come enabled via pmOS presets.
-	systemctl enable rmtfs.service hkdm.service gpsd-pds.service >/dev/null 2>&1
+	systemctl enable rmtfs.service hkdm.service gpsd-pds.service gt510-wcnss-nv.service >/dev/null 2>&1
 	# Wi-Fi tablet: no modem, no printing, no mDNS, no firmware-update daemon.
 	for u in ModemManager.service q6voiced.service cups.service cups.socket cups.path \
 		avahi-daemon.service avahi-daemon.socket fwupd.service; do

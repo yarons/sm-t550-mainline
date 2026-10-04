@@ -1,0 +1,49 @@
+#!/bin/sh
+# gt510-wcnss-nv: copy this tablet's own WCNSS NV file (Wi-Fi/Bluetooth RF configuration) once, read-only, from the
+# stock Samsung system partition into /lib/firmware/updates, which the kernel searches before the DragonBoard 410c
+# NV that device-qcom-msm8916 links as a fallback. With the DragonBoard NV the WCN3660B never enters Wi-Fi power save
+# (every BMPS request fails). The file is Samsung's and is never shipped: each tablet copies its own.
+# Runs before udev loads the WCNSS driver; if WCNSS is already running (late run), it is restarted once so the
+# copied NV is the one downloaded. Without a stock system partition or file, the fallback stays.
+DST=/lib/firmware/updates/wlan/prima/WCNSS_qcom_wlan_nv.bin
+SRC=etc/firmware/wlan/prima/WCNSS_qcom_wlan_nv.bin
+MNT=/run/gt510-wcnss-nv
+
+[ -s "$DST" ] && exit 0
+dev=
+for u in /sys/class/block/*/uevent; do
+	if grep -qx 'PARTNAME=system' "$u"; then
+		dev=/dev/$(sed -n 's/^DEVNAME=//p' "$u")
+		break
+	fi
+done
+if [ -z "$dev" ]; then
+	echo "no 'system' partition: keeping the generic NV"
+	exit 0
+fi
+mkdir -p "$MNT"
+if ! mount -t ext4 -o ro,noload,nodev,nosuid,noexec "$dev" "$MNT"; then
+	echo "cannot mount $dev read-only: keeping the generic NV"
+	rmdir "$MNT"
+	exit 0
+fi
+if [ -s "$MNT/$SRC" ]; then
+	mkdir -p "${DST%/*}"
+	cp "$MNT/$SRC" "$DST.tmp" && mv "$DST.tmp" "$DST" && echo "copied /system/$SRC from $dev ($(wc -c < "$DST") bytes)"
+else
+	echo "$dev has no /system/$SRC: keeping the generic NV"
+fi
+umount "$MNT"
+rmdir "$MNT"
+[ -s "$DST" ] || exit 0
+
+# Late run: WCNSS already booted with the generic NV. Restart it once so it downloads the copied one.
+for r in /sys/class/remoteproc/*; do
+	[ "$(cat "$r/name" 2>/dev/null)" = a204000.remoteproc ] || continue
+	[ "$(cat "$r/state" 2>/dev/null)" = running ] || continue
+	echo "restarting WCNSS to load the copied NV"
+	echo stop > "$r/state"
+	sleep 2
+	echo start > "$r/state"
+done
+exit 0

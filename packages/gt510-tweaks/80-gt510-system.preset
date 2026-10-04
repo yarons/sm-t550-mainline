@@ -3,3 +3,4 @@
 enable gpsd-pds.service
 enable hkdm.service
 enable rmtfs.service
+enable gt510-wcnss-nv.service

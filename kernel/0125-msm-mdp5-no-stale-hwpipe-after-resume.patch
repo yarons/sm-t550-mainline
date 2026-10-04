@@ -1,0 +1,44 @@
+From: gt510 <gt510@localhost>
+Subject: drm/msm/mdp5: don't keep a restored plane's stale hwpipe after resume
+
+drm_atomic_helper_suspend() snapshots the plane states, then disables
+everything; the disabling commit releases each plane's hwpipe (and its
+SMP blocks) in the mdp5 global state. The snapshot does not include
+that private object, so on drm_atomic_helper_resume() the restored plane
+states still point at their old hwpipes while the global state has them
+unassigned. mdp5_plane_atomic_check() keeps a plane's hwpipe whenever the
+caps fit, so the restored plane scans out of a pipe nobody owns, and the
+next commit that releases it trips the WARN in mdp5_pipe_release() and
+fails with -EINVAL. On SM-T550 (MSM8916) this happens whenever the
+display is on at suspend time (logind suspends on a lid/hall event while
+the panel is lit): after resume phoc's DPMS-off commit fails ("Failed to
+commit power mode change") and the panel stays on until reboot.
+
+A plane that is not visible in the current state owns no hwpipe, so treat
+any hwpipe in its new state as stale and assign the pipes afresh.
+---
+--- a/drivers/gpu/drm/msm/disp/mdp5/mdp5_plane.c
++++ b/drivers/gpu/drm/msm/disp/mdp5/mdp5_plane.c
+@@ -239,6 +239,22 @@
+ 
+ 		if (plane->type == DRM_PLANE_TYPE_CURSOR)
+ 			caps |= MDP_PIPE_CAP_CURSOR;
++
++		/*
++		 * A plane that is not visible in the current state owns no
++		 * hwpipe. If the new state names one anyway, it was restored
++		 * from a snapshot (drm_atomic_helper_resume() after system
++		 * suspend): the snapshot keeps the plane's hwpipe pointers but
++		 * not the global hwpipe assignment, and the suspend commit
++		 * released the pipes. Keeping such a pipe leaves it unowned in
++		 * the global state, so the next commit that releases it fails
++		 * with -EINVAL and the CRTC can no longer be disabled. Assign
++		 * the pipes afresh instead.
++		 */
++		if (!plane_enabled(old_state)) {
++			mdp5_state->hwpipe = NULL;
++			mdp5_state->r_hwpipe = NULL;
++		}
+ 
+ 		/* (re)allocate hw pipe if we don't have one or caps-mismatch: */
+ 		if (!mdp5_state->hwpipe || (caps & ~mdp5_state->hwpipe->caps))
