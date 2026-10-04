@@ -154,7 +154,9 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    deleted + depmod; ramoops dtb node gone (boot-deploy rewrote the dtb), .orig-r34 backup + dtc removed. After reboot:
    untainted, boot 26.9 s, 2.4 GHz caps 0x803c (HT20 only), 0 hal_join / 0 BMPS errors, power save on; NM 2.4 GHz join
    with the packaged module: connected, HT20 MCS 7 72 Mbit/s rx, ping 10/10, back on the 5 GHz lock. The lock stays
-   (Yaron didn't ask to remove it; 5 GHz is faster). Open: NV packaging (first-boot copy from the stock system partition?).
+   (Yaron didn't ask to remove it; 5 GHz is faster). NV packaging DONE (Yaron OK'd): gt510-tweaks r36
+   gt510-wcnss-nv copies it once from the stock system partition (early path before WCNSS boot verified by a reboot
+   with the file removed; late path restarts WCNSS). Pushed to the public repo as ea60f0b (Samsung files excluded).
    STOCK NV: found on the stock system partition (mmcblk0p25, T550XXU1CQL5, mounted ro,noload then unmounted) →
    wifi/stock-T550XXU1CQL5/ (local only: proprietary, never in the public repo). wifi/nvtest.sh: it loads (atime) and
    5 GHz works with 0 hal_join and 0 BMPS errors (db410c NV: BMPS failed at every connect = power save never on);

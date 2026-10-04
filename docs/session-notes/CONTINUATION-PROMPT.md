@@ -8,19 +8,27 @@ Paste this into a new session to continue. Everything lives in `~/workspace/gt51
   this file verbatim (the last one = "as of 2026-10-01 18:10"). Read the relevant part before re-investigating.
 - Memory: `samsung-t550-gt510.md`, `upstream-ai-policies.md`, `check-ai-policy-before-upstreaming.md`.
 
-## STATE (2026-10-04 13:15) — nothing in flight
-- Kernel **r35** (#36) INSTALLED = CONFIG_SUSPEND (kept, Yaron 2026-10-04: s2idle 63 vs idle 78 mA) + 0125 (mdp5 stale
-  hwpipe after a screen-on suspend) + 0126 (wcn36xx HT20 only in 2.4 GHz: the router's 2.4 GHz AP is HT40+ on ch 9 →
-  firmware rejected JOIN → "wrong password" prompts). ISSUES 13/14/15 DONE.
-- Wi-Fi profile "HOME-WIFI" locked to 5 GHz (both bands work now; lock kept). Stock NV (from the stock system
-  partition) HAND-INSTALLED at /lib/firmware/updates/wlan/prima/ — makes BMPS (Wi-Fi power save) work; packaging
-  undecided (proprietary: extract on-device, never ship). Local copy wifi/stock-T550XXU1CQL5/ (never publish).
-- NOT PUSHED to the public repo: gt510.config (CONFIG_SUSPEND), apply-7.3.sh (pkgrel 35), pmos-gt510.sh, 0125, 0126,
-  kdev73.sh (KCONFIG). Public push only via review/assemble-public.sh, and only when Yaron says so.
+## STATE (2026-10-04 14:35) — nothing in flight
+- RELEASE 20261004 READY TO UPLOAD (Yaron does it): `dist/release-20261004/` — tag `edge-20261004-prerelease`,
+  notes RELEASE-NOTES.md, files gt510-unofficial-pmos-20261004-userdata.simg.xz (sha256 d0863f16…, unpacked simg
+  e7ad5827…), lk2nd-msm8916.img, MANIFEST.txt, SHA256SUMS. Built from repo ea60f0b, pmaports 1e70e1b8 (build runs
+  `git pull` on pmaports every time). Boot-tested on the tablet (flash 375 s; first boot 31 s, NV copied at 12 s
+  before WCNSS 20 s, 0 faults, rear 28/s sensor 22 shown, front 22, lens parks). gtk4.0 is Alpine 4.24.1 (our r103
+  4.24.0 loses on version; measured: camera rates need none of GTK 0100-0102). Alpine has mesa 26.2.4: tweaks pins hold
+  local 26.2.3-r101 — rebuild packages/mesa on 26.2.4 before moving the pins (follow-up).
+- TABLET = that public image + restore: password <password>, UTC, SSH key, sshd (Yaron enabled), Wi-Fi profile
+  (5 GHz lock), Pictures/Videos/scripts from backup-2026-10-04/ (dconf/RetroArch from the SD card). NEW Wi-Fi IP
+  **TABLET-WIFI-IP** (`./gw` updated, now hostname-checked). USB: the Poco F1 also sits at 172.16.42.1 on another
+  interface → `./gl` (GL_HOST=fe80::…%enN link-local, hostname-checked).
+- Kernel **r35** (#36) + **gt510-tweaks r36**, public repo ea60f0b. r35 = CONFIG_SUSPEND + 0125 (mdp5 stale hwpipe
+  after a screen-on suspend) + 0126 (wcn36xx HT20 only in 2.4 GHz). r36 = gt510-wcnss-nv first-boot NV copy.
+- Wi-Fi profile "HOME-WIFI" locked to 5 GHz (both bands work; lock kept).
+- Public assembly hardened (review/assemble-public.sh): excludes wifi/stock-*/ (Samsung files), wifi/ref/,
+  kernel/ref-drm/, power/dmesg-*.txt, /gw /gu /lssh /gl; scrubs SSID/BSSIDs/WLAN MACs/work account/new IPs; scan
+  patterns added. In release 20261004 (above).
 - Open risk: one unexplained reset during a screen-on s2idle on r33 (ISSUES 14); none on r34/r35 in 26 cycles.
-- Debug helpers: `./gw` Wi-Fi ssh, `./gu` USB ssh with hostname check; wifi/{nvtest,ht20test,modtest}.sh (all
-  self-reverting); power/{suspendab,s2wake,stalepipe}.sh; kernel/kdev-wcn36xx.sh (module build in colima t290 with
-  kernel/running-config-r34).
+- Debug helpers: `./gw` Wi-Fi ssh, `./gu` USB ssh with hostname check; wifi/{nvtest,ht20test,modtest}.sh (self-
+  reverting; NM_CON/BSSID_2G env); power/{suspendab,s2wake,stalepipe}.sh; kernel/kdev-wcn36xx.sh.
 
 Why only s2idle helps a little: RPM stats `/sys/kernel/debug/qcom_stats/{vmin,xosd}` Count 0 since boot — the cpuidle
 driver is `qcom_spm` (per-core WFI + standalone power collapse only); cluster/SoC states (DT has cluster-retention,
@@ -33,7 +41,7 @@ enabled + Wi-Fi connected (Yaron), Pictures/Videos + test scripts from `backup-2
 | Package | Version | Local patches |
 |---|---|---|
 | linux-postmarketos-qcom-msm8916 | 7.3_rc2-**r35** (#36) | msm8916-mainline 7.3-rc2 @717e5e2 + `kernel/0100`–`0107`, `0109`–`0118`, `0120`–`0126` + `kernel/gt510.config` (r33: + CONFIG_SUSPEND; r34: + 0125; r35: + 0126) |
-| gt510-tweaks | **r35** | see "gt510-tweaks" (r35: rebrand) |
+| gt510-tweaks | **r36** | see "gt510-tweaks" (r35: rebrand; r36: gt510-wcnss-nv) |
 | libcamera | 99990.7.2-**r111** | pmOS fork + 0100–0107 (see below) + **0108 EGL context leak (upstream backport)** + **0109 park the lens on stop** |
 | mesa (+dri-gallium, egl, gbm, gl, gles) | 26.2.3-**r101** | LOCAL slim build (freedreno + llvmpipe; GL/GLES/EGL/GBM only) + **0100 freedreno a3xx fixes** |
 | snapshot | 51.0-**r112** | 0100 aperture paintable orientation (+EXIF/mp4 tags) · 0101 viewfinder sink sync=false · **0102 QrScreenBin snapshots its child once** (enables offload); Exec env `GSK_RENDERER=gl` only |
@@ -65,7 +73,7 @@ hwpipe after resume (ours; upstream candidate) · 0126 wcn36xx HT20 only in 2.4 
   emails/coordinates/the tablet password), move `.git` out and back around it, commit (author Yaron Shahrabani
   <406826+yarons@users.noreply.github.com>, `Co-Authored-By` trailer), scan the diff, push. `review/` is never
   published (it holds the scrub map). Yaron's rules: no photos/raw camera dumps, name yes / email no, GPL-2.0.
-  HEAD e0550f7 (libcamera r111). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
+  HEAD ea60f0b (2026-10-04: kernel r35 + tweaks r36). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
 - Release images: `pmos-gt510.sh install-public` (no SSH keys, sshd off, UTC, password 147147) + `release`
   (xz'd sparse userdata image, lk2nd, MANIFEST.txt, SHA256SUMS). gt510-tweaks r35 rebrands the OS on-device
   ("SM-T550 Mainline (unofficial, based on Nura)", ID=nura kept, text plymouth theme sm-t550, Adwaita wallpaper).
