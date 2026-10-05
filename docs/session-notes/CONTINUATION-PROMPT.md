@@ -14,8 +14,8 @@ Paste this into a new session to continue. Everything lives in `~/workspace/gt51
   e7ad5827…), lk2nd-msm8916.img, MANIFEST.txt, SHA256SUMS. Built from repo ea60f0b, pmaports 1e70e1b8 (build runs
   `git pull` on pmaports every time). Boot-tested on the tablet (flash 375 s; first boot 31 s, NV copied at 12 s
   before WCNSS 20 s, 0 faults, rear 28/s sensor 22 shown, front 22, lens parks). gtk4.0 is Alpine 4.24.1 (our r103
-  4.24.0 loses on version; measured: camera rates need none of GTK 0100-0102). Alpine has mesa 26.2.4: tweaks pins hold
-  local 26.2.3-r101 — rebuild packages/mesa on 26.2.4 before moving the pins (follow-up).
+  4.24.0 loses on version; measured: camera rates need none of GTK 0100-0102). Mesa: local 26.2.4-r100 + tweaks r37 since
+  2026-10-05 (ISSUES 16; the 20261004 release still has 26.2.3-r101).
 - TABLET = that public image + restore: password <password>, UTC, SSH key, sshd (Yaron enabled), Wi-Fi profile
   (5 GHz lock), Pictures/Videos/scripts from backup-2026-10-04/ (dconf/RetroArch from the SD card). NEW Wi-Fi IP
   **TABLET-WIFI-IP** (`./gw` updated, now hostname-checked). USB: the Poco F1 also sits at 172.16.42.1 on another
@@ -41,9 +41,9 @@ enabled + Wi-Fi connected (Yaron), Pictures/Videos + test scripts from `backup-2
 | Package | Version | Local patches |
 |---|---|---|
 | linux-postmarketos-qcom-msm8916 | 7.3_rc2-**r35** (#36) | msm8916-mainline 7.3-rc2 @717e5e2 + `kernel/0100`–`0107`, `0109`–`0118`, `0120`–`0126` + `kernel/gt510.config` (r33: + CONFIG_SUSPEND; r34: + 0125; r35: + 0126) |
-| gt510-tweaks | **r36** | see "gt510-tweaks" (r35: rebrand; r36: gt510-wcnss-nv) |
+| gt510-tweaks | **r37** | see "gt510-tweaks" (r35: rebrand; r36: gt510-wcnss-nv; r37: Mesa 26.2.4 pins) |
 | libcamera | 99990.7.2-**r111** | pmOS fork + 0100–0107 (see below) + **0108 EGL context leak (upstream backport)** + **0109 park the lens on stop** |
-| mesa (+dri-gallium, egl, gbm, gl, gles) | 26.2.3-**r101** | LOCAL slim build (freedreno + llvmpipe; GL/GLES/EGL/GBM only) + **0100 freedreno a3xx fixes** |
+| mesa (+dri-gallium, egl, gbm, gl, gles) | 26.2.4-**r100** | LOCAL slim build (freedreno + llvmpipe; GL/GLES/EGL/GBM only) + **0100 freedreno a3xx fixes** |
 | snapshot | 51.0-**r112** | 0100 aperture paintable orientation (+EXIF/mp4 tags) · 0101 viewfinder sink sync=false · **0102 QrScreenBin snapshots its child once** (enables offload); Exec env `GSK_RENDERER=gl` only |
 | gtk4.0 | 4.24.0-**r103** | 0100 no powf sRGB round trip (YUV, cairo) · 0101 cairo quarter-turn textures · 0102 import LINEAR dmabufs without explicit modifier |
 | phosh | 99990.57.0-**r100** | 0100 cellular tile hidden without a modem |
@@ -73,7 +73,7 @@ hwpipe after resume (ours; upstream candidate) · 0126 wcn36xx HT20 only in 2.4 
   emails/coordinates/the tablet password), move `.git` out and back around it, commit (author Yaron Shahrabani
   <406826+yarons@users.noreply.github.com>, `Co-Authored-By` trailer), scan the diff, push. `review/` is never
   published (it holds the scrub map). Yaron's rules: no photos/raw camera dumps, name yes / email no, GPL-2.0.
-  HEAD ea60f0b (2026-10-04: kernel r35 + tweaks r36). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
+  HEAD 1b88517 (2026-10-04: session notes; code at ea60f0b = kernel r35 + tweaks r36). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
 - Release images: `pmos-gt510.sh install-public` (no SSH keys, sshd off, UTC, password 147147) + `release`
   (xz'd sparse userdata image, lk2nd, MANIFEST.txt, SHA256SUMS). gt510-tweaks r35 rebrands the OS on-device
   ("SM-T550 Mainline (unofficial, based on Nura)", ID=nura kept, text plymouth theme sm-t550, Adwaita wallpaper).
@@ -95,8 +95,8 @@ auto-login (greetd initial_session, `/etc/gt510/greetd-autologin.toml`), lock/id
 `:Phrog` sections), gt510-persist (dconf + ~/.config/retroarch mirrored to `<SD>/.gt510-persist/`, restored once after
 a reflash), RetroArch defaults (pointer, wayland input, fullscreen, StartupNotify=false), and since 2026-10-01:
 - r30: the GTK freedreno workarounds are GONE (no environment.d/61-gt510-freedreno.conf, no wireplumber unset
-  drop-in); depends `mesa>=26.2.3-r101` + `mesa-dri-gallium<26.2.4` — an unpatched Alpine Mesa would hang the GPU
-  within seconds of a GTK app starting. When Alpine moves past 26.2.3: rebuild packages/mesa on the new version
+  drop-in); depends `mesa>=26.2.4-r100` + `mesa-dri-gallium<26.2.5` (tweaks r37) — an unpatched Alpine Mesa would hang the GPU
+  within seconds of a GTK app starting. When Alpine moves past 26.2.4: rebuild packages/mesa on the new version
   FIRST, then move both pins (until then `apk upgrade` holds Mesa back).
 - r31: `pipewire.service` enabled at login (the camera service is WantedBy=pipewire.service; socket activation made it
   start with the first Snapshot → the first Snapshot after boot opened the front camera).

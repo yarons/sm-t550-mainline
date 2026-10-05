@@ -1,7 +1,7 @@
 # Local tweaks for the Samsung Galaxy Tab A 9.7 2015 (SM-T550, gt510wifi) on device-qcom-msm8916.
 pkgname=gt510-tweaks
 pkgver=1
-pkgrel=36
+pkgrel=37
 pkgdesc="SM-T550 (gt510wifi) integration: audio, charger, GPS, rotation, camera, trimmed services; Phosh"
 url="https://postmarketos.org"
 arch="noarch"
@@ -10,8 +10,8 @@ options="!check"
 depends="
 	linux-postmarketos-qcom-msm8916>=7.3_rc2-r30
 	libcamera>=99990.7.2-r100
-	mesa>=26.2.3-r101
-	mesa-dri-gallium<26.2.4
+	mesa>=26.2.4-r100
+	mesa-dri-gallium<26.2.5
 	alsa-utils
 	iio-sensor-proxy
 	phosh-mobile-settings
@@ -32,10 +32,10 @@ depends="
 # breaks the install. The version cap keeps the real gnome-settings-daemon.
 # linux-postmarketos-qcom-msm8916>=7.3_rc2-r30: GPU runtime PM stays enabled (power/control=auto; the udev rule that forced "on" is gone since r34). Older kernels
 # wait for six VBIF XIN halt acks the a306 never gives, fail every suspend and retry it every 66 ms in kworkers.
-# mesa>=26.2.3-r101 + mesa-dri-gallium<26.2.4: GTK4's GL renderer runs WITHOUT the old freedreno workarounds
+# mesa>=26.2.4-r100 + mesa-dri-gallium<26.2.5: GTK4's GL renderer runs WITHOUT the old freedreno workarounds
 # (IR3_SHADER_DEBUG=nouboopt, FD_MESA_DEBUG=inorder) only on the local mesa with packages/mesa 0100; an
 # unpatched Alpine mesa would hang the a306 GPU within seconds of a GTK app starting. When Alpine moves past
-# 26.2.3, rebuild packages/mesa on the new version first, then move both pins.
+# 26.2.4, rebuild packages/mesa on the new version first, then move both pins.
 install="$pkgname.post-install $pkgname.post-upgrade"
 triggers="$pkgname.trigger=/usr/share/applications:/usr/lib"
 source="

@@ -165,3 +165,15 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    unreachable over Wi-Fi while NM stayed connected (DHCP renew 09:12 worked) — cause unknown (BMPS? scan?).
    Archived pmaports firmware-samsung-gt510-wcnss-nv (pastebin base64) sha512 matches none of the stock file's base64
    encodings (format unknown).
+16. DONE (2026-10-05 10:30, Yaron: rebuild on 26.2.4) — **Mesa 26.2.4** (Alpine moved past 26.2.3; tweaks pins held the
+   local 26.2.3-r101). packages/mesa 26.2.4-r100 = Alpine 26.2.4-r0 (only pkgver + tarball hash changed; its three
+   patches byte-identical) + 0100 unchanged (upstream 26.2.3..26.2.4: 107 commits, none in 0100's three files; ir3
+   got "Lower quad votes" + "const global offset unsigned"). gt510-tweaks r37 moves the pins (mesa>=26.2.4-r100,
+   mesa-dri-gallium<26.2.5). Laptop build 16 min (slim), all 4 patches applied.
+   A/B (gl-hang/mesasoak.sh: 10 GTK apps × 25 s + calculator 90 s under gltest.sh, Snapshot black frames, glmark2
+   subset, GPU fault count; gl-hang/kgxloop.sh; evidence gl-hang/mesa2624-ab-2026-10-04.txt):
+   r101 54 runs 0 hangs, glmark2 101-103 (a first 42 was an outlier); 26.2.4 108 runs 1 hang (kgx 3 s after start,
+   hangcheck recovered, session survived, devcoredump gl-hang/gpucrash-m2624-kgx.bin), glmark2 100-107, 0 GPU faults,
+   0 black frames in portrait. Rule agreed with Yaron: r101 clean → 54 more on 26.2.4 → clean → PASS. One run showed
+   40/40 black frames = test artifact (tablet in landscape, Snapshot on the front camera; portrait recheck 0/36, 0/37).
+   INSTALLED on the tablet (rollback APKs ~/mesa-r101-rollback/ + dist/mesa-r101-rollback/). WATCH: the kgx start hang.

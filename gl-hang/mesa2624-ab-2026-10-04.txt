@@ -1,0 +1,243 @@
+## r101
+== r101: mesa mesa-26.2.3-r101, kernel #36, faults before 0
+r101-gnome-calculator: OK faults=0 env=[] dump=none
+r101-gnome-text-editor: OK faults=0 env=[] dump=none
+r101-nautilus: OK faults=0 env=[] dump=none
+r101-gnome-clocks: OK faults=0 env=[] dump=none
+r101-kgx: OK faults=0 env=[] dump=none
+r101-gnome-contacts: OK faults=0 env=[] dump=none
+r101-gnome-control-center: OK faults=0 env=[] dump=none
+r101-loupe: OK faults=0 env=[] dump=none
+r101-gnome-calendar: OK faults=0 env=[] dump=none
+r101-gnome-weather: OK faults=0 env=[] dump=none
+r101-calc90: OK faults=0 env=[] dump=none
+r101: black=0/35 fps=0 cpu=12% hangs=0 env=[]
+                                  glmark2 Score: 42 
+GPU faults during the run: 0
+done
+## m2624
+== m2624: mesa mesa-26.2.4-r100, kernel #36, faults before 0
+m2624-gnome-calculator: OK faults=0 env=[] dump=none
+m2624-gnome-text-editor: OK faults=0 env=[] dump=none
+m2624-nautilus: OK faults=0 env=[] dump=none
+m2624-gnome-clocks: OK faults=0 env=[] dump=none
+m2624-kgx: HANG@3s faults=0 env=[] dump=/tmp/gpucrash-m2624-kgx.bin
+m2624-gnome-contacts: OK faults=0 env=[] dump=/tmp/gpucrash-m2624-gnome-contacts.bin
+m2624-gnome-control-center: OK faults=0 env=[] dump=/tmp/gpucrash-m2624-gnome-control-center.bin
+m2624-loupe: OK faults=0 env=[] dump=/tmp/gpucrash-m2624-loupe.bin
+m2624-gnome-calendar: OK faults=0 env=[] dump=/tmp/gpucrash-m2624-gnome-calendar.bin
+m2624-gnome-weather: OK faults=0 env=[] dump=/tmp/gpucrash-m2624-gnome-weather.bin
+m2624-calc90: OK faults=0 env=[] dump=/tmp/gpucrash-m2624-calc90.bin
+m2624: black=0/36 fps=0 cpu=12% hangs=0 env=[]
+                                  glmark2 Score: 107 
+GPU faults during the run: 0
+done
+## m2624b
+== m2624b: mesa mesa-26.2.4-r100, kernel #36, faults before 0
+m2624b-gnome-calculator: OK faults=0 env=[] dump=none
+m2624b-gnome-text-editor: OK faults=0 env=[] dump=none
+m2624b-nautilus: OK faults=0 env=[] dump=none
+m2624b-gnome-clocks: OK faults=0 env=[] dump=none
+m2624b-kgx: OK faults=0 env=[] dump=none
+m2624b-gnome-contacts: OK faults=0 env=[] dump=none
+m2624b-gnome-control-center: OK faults=0 env=[] dump=none
+m2624b-loupe: OK faults=0 env=[] dump=none
+m2624b-gnome-calendar: OK faults=0 env=[] dump=none
+m2624b-gnome-weather: OK faults=0 env=[] dump=none
+m2624b-calc90: OK faults=0 env=[] dump=none
+m2624b: black=0/35 fps=0 cpu=13% hangs=0 env=[]
+                                  glmark2 Score: 107 
+GPU faults during the run: 0
+done
+## m2624c
+== m2624c: mesa mesa-26.2.4-r100, kernel #36, faults before 0
+m2624c-gnome-calculator: OK faults=0 env=[] dump=none
+m2624c-gnome-text-editor: OK faults=0 env=[] dump=none
+m2624c-nautilus: OK faults=0 env=[] dump=none
+m2624c-gnome-clocks: OK faults=0 env=[] dump=none
+m2624c-kgx: OK faults=0 env=[] dump=none
+m2624c-gnome-contacts: OK faults=0 env=[] dump=none
+m2624c-gnome-control-center: OK faults=0 env=[] dump=none
+m2624c-loupe: OK faults=0 env=[] dump=none
+m2624c-gnome-calendar: OK faults=0 env=[] dump=none
+m2624c-gnome-weather: OK faults=0 env=[] dump=none
+m2624c-calc90: OK faults=0 env=[] dump=none
+m2624c: black=0/37 fps=0 cpu=12% hangs=0 env=[]
+                                  glmark2 Score: 106 
+GPU faults during the run: 0
+done
+## m2624d
+== m2624d: mesa mesa-26.2.4-r100, kernel #36, faults before 0
+m2624d-gnome-calculator: OK faults=0 env=[] dump=none
+m2624d-gnome-text-editor: OK faults=0 env=[] dump=none
+m2624d-nautilus: OK faults=0 env=[] dump=none
+m2624d-gnome-clocks: OK faults=0 env=[] dump=none
+m2624d-kgx: OK faults=0 env=[] dump=none
+m2624d-gnome-contacts: OK faults=0 env=[] dump=none
+m2624d-gnome-control-center: OK faults=0 env=[] dump=none
+m2624d-loupe: OK faults=0 env=[] dump=none
+m2624d-gnome-calendar: OK faults=0 env=[] dump=none
+m2624d-gnome-weather: OK faults=0 env=[] dump=none
+m2624d-calc90: OK faults=0 env=[] dump=none
+m2624d: black=40/40 fps=0 cpu=29% hangs=0 env=[]
+                                  glmark2 Score: 105 
+GPU faults during the run: 0
+done
+## r101b
+== r101b: mesa mesa-26.2.3-r101, kernel #36, faults before 0
+r101b-gnome-calculator: OK faults=0 env=[] dump=none
+r101b-gnome-text-editor: OK faults=0 env=[] dump=none
+r101b-nautilus: OK faults=0 env=[] dump=none
+r101b-gnome-clocks: OK faults=0 env=[] dump=none
+r101b-kgx: OK faults=0 env=[] dump=none
+r101b-gnome-contacts: OK faults=0 env=[] dump=none
+r101b-gnome-control-center: OK faults=0 env=[] dump=none
+r101b-loupe: OK faults=0 env=[] dump=none
+r101b-gnome-calendar: OK faults=0 env=[] dump=none
+r101b-gnome-weather: OK faults=0 env=[] dump=none
+r101b-calc90: OK faults=0 env=[] dump=none
+r101b: black=0/38 fps=0 cpu=32% hangs=0 env=[]
+                                  glmark2 Score: 101 
+GPU faults during the run: 0
+done
+## r101c
+== r101c: mesa mesa-26.2.3-r101, kernel #36, faults before 0
+r101c-gnome-calculator: OK faults=0 env=[] dump=none
+r101c-gnome-text-editor: OK faults=0 env=[] dump=none
+r101c-nautilus: OK faults=0 env=[] dump=none
+r101c-gnome-clocks: OK faults=0 env=[] dump=none
+r101c-kgx: OK faults=0 env=[] dump=none
+r101c-gnome-contacts: OK faults=0 env=[] dump=none
+r101c-gnome-control-center: OK faults=0 env=[] dump=none
+r101c-loupe: OK faults=0 env=[] dump=none
+r101c-gnome-calendar: OK faults=0 env=[] dump=none
+r101c-gnome-weather: OK faults=0 env=[] dump=none
+r101c-calc90: OK faults=0 env=[] dump=none
+r101c: black=0/36 fps=0 cpu=14% hangs=0 env=[]
+                                  glmark2 Score: 101 
+GPU faults during the run: 0
+done
+## r101d
+== r101d: mesa mesa-26.2.3-r101, kernel #36, faults before 0
+r101d-gnome-calculator: OK faults=0 env=[] dump=none
+r101d-gnome-text-editor: OK faults=0 env=[] dump=none
+r101d-nautilus: OK faults=0 env=[] dump=none
+r101d-gnome-clocks: OK faults=0 env=[] dump=none
+r101d-kgx: OK faults=0 env=[] dump=none
+r101d-gnome-contacts: OK faults=0 env=[] dump=none
+r101d-gnome-control-center: OK faults=0 env=[] dump=none
+r101d-loupe: OK faults=0 env=[] dump=none
+r101d-gnome-calendar: OK faults=0 env=[] dump=none
+r101d-gnome-weather: OK faults=0 env=[] dump=none
+r101d-calc90: OK faults=0 env=[] dump=none
+r101d: black=0/36 fps=0 cpu=13% hangs=0 env=[]
+                                  glmark2 Score: 103 
+GPU faults during the run: 0
+done
+## kgx m2624
+m2624-1: OK faults=0 env=[]
+m2624-2: OK faults=0 env=[]
+m2624-3: OK faults=0 env=[]
+m2624-4: OK faults=0 env=[]
+m2624-5: OK faults=0 env=[]
+m2624-6: OK faults=0 env=[]
+m2624-7: OK faults=0 env=[]
+m2624-8: OK faults=0 env=[]
+m2624-9: OK faults=0 env=[]
+m2624-10: OK faults=0 env=[]
+mesa-26.2.4-r100: hangs 0/10
+done
+## kgx r101
+r101-1: OK faults=0 env=[]
+r101-2: OK faults=0 env=[]
+r101-3: OK faults=0 env=[]
+r101-4: OK faults=0 env=[]
+r101-5: OK faults=0 env=[]
+r101-6: OK faults=0 env=[]
+r101-7: OK faults=0 env=[]
+r101-8: OK faults=0 env=[]
+r101-9: OK faults=0 env=[]
+r101-10: OK faults=0 env=[]
+mesa-26.2.3-r101: hangs 0/10
+done
+## m2624e
+== m2624e: mesa mesa-26.2.4-r100, kernel #36, faults before 0
+m2624e-gnome-calculator: OK faults=0 env=[] dump=none
+m2624e-gnome-text-editor: OK faults=0 env=[] dump=none
+m2624e-nautilus: OK faults=0 env=[] dump=none
+m2624e-gnome-clocks: OK faults=0 env=[] dump=none
+m2624e-kgx: OK faults=0 env=[] dump=none
+m2624e-gnome-contacts: OK faults=0 env=[] dump=none
+m2624e-gnome-control-center: OK faults=0 env=[] dump=none
+m2624e-loupe: OK faults=0 env=[] dump=none
+m2624e-gnome-calendar: OK faults=0 env=[] dump=none
+m2624e-gnome-weather: OK faults=0 env=[] dump=none
+m2624e-calc90: OK faults=0 env=[] dump=none
+m2624e: black=0/43 fps=0 cpu=41% hangs=0 env=[]
+                                  glmark2 Score: 102 
+GPU faults during the run: 0
+done
+## m2624f
+== m2624f: mesa mesa-26.2.4-r100, kernel #36, faults before 0
+m2624f-gnome-calculator: OK faults=0 env=[] dump=none
+m2624f-gnome-text-editor: OK faults=0 env=[] dump=none
+m2624f-nautilus: OK faults=0 env=[] dump=none
+m2624f-gnome-clocks: OK faults=0 env=[] dump=none
+m2624f-kgx: OK faults=0 env=[] dump=none
+m2624f-gnome-contacts: OK faults=0 env=[] dump=none
+m2624f-gnome-control-center: OK faults=0 env=[] dump=none
+m2624f-loupe: OK faults=0 env=[] dump=none
+m2624f-gnome-calendar: OK faults=0 env=[] dump=none
+m2624f-gnome-weather: OK faults=0 env=[] dump=none
+m2624f-calc90: OK faults=0 env=[] dump=none
+m2624f: black=0/43 fps=0 cpu=41% hangs=0 env=[]
+                                  glmark2 Score: 100 
+GPU faults during the run: 0
+done
+## m2624g
+== m2624g: mesa mesa-26.2.4-r100, kernel #36, faults before 0
+m2624g-gnome-calculator: OK faults=0 env=[] dump=none
+m2624g-gnome-text-editor: OK faults=0 env=[] dump=none
+m2624g-nautilus: OK faults=0 env=[] dump=none
+m2624g-gnome-clocks: OK faults=0 env=[] dump=none
+m2624g-kgx: OK faults=0 env=[] dump=none
+m2624g-gnome-contacts: OK faults=0 env=[] dump=none
+m2624g-gnome-control-center: OK faults=0 env=[] dump=none
+m2624g-loupe: OK faults=0 env=[] dump=none
+m2624g-gnome-calendar: OK faults=0 env=[] dump=none
+m2624g-gnome-weather: OK faults=0 env=[] dump=none
+m2624g-calc90: OK faults=0 env=[] dump=none
+m2624g: black=0/43 fps=0 cpu=42% hangs=0 env=[]
+                                  glmark2 Score: 101 
+GPU faults during the run: 0
+done
+## m2624h
+== m2624h: mesa mesa-26.2.4-r100, kernel #36, faults before 0
+m2624h-gnome-calculator: OK faults=0 env=[] dump=none
+m2624h-gnome-text-editor: OK faults=0 env=[] dump=none
+m2624h-nautilus: OK faults=0 env=[] dump=none
+m2624h-gnome-clocks: OK faults=0 env=[] dump=none
+m2624h-kgx: OK faults=0 env=[] dump=none
+m2624h-gnome-contacts: OK faults=0 env=[] dump=none
+m2624h-gnome-control-center: OK faults=0 env=[] dump=none
+m2624h-loupe: OK faults=0 env=[] dump=none
+m2624h-gnome-calendar: OK faults=0 env=[] dump=none
+m2624h-gnome-weather: OK faults=0 env=[] dump=none
+m2624h-calc90: OK faults=0 env=[] dump=none
+m2624h: black=0/43 fps=0 cpu=41% hangs=0 env=[]
+                                  glmark2 Score: 101 
+GPU faults during the run: 0
+done
+## kgx m2624x
+m2624x-1: OK faults=0 env=[]
+m2624x-2: OK faults=0 env=[]
+m2624x-3: OK faults=0 env=[]
+m2624x-4: OK faults=0 env=[]
+m2624x-5: OK faults=0 env=[]
+m2624x-6: OK faults=0 env=[]
+m2624x-7: OK faults=0 env=[]
+m2624x-8: OK faults=0 env=[]
+m2624x-9: OK faults=0 env=[]
+m2624x-10: OK faults=0 env=[]
+mesa-26.2.4-r100: hangs 0/10
+done
