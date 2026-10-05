@@ -92,7 +92,7 @@ kernel73)
 	$PMB checksum linux-postmarketos-qcom-msm8916
 	$PMB build --force --arch aarch64 linux-postmarketos-qcom-msm8916
 	mkdir -p /dist/kernel
-	cp -v /work/pmb/packages/edge/aarch64/linux-postmarketos-qcom-msm8916-7.3_rc2-r35.apk /dist/kernel/ ;;
+	cp -v /work/pmb/packages/edge/aarch64/linux-postmarketos-qcom-msm8916-7.3_rc2-r37.apk /dist/kernel/ ;;
 install)
 	# pmbootstrap can only drop ALL recommends (--no-recommends), so strip the phone apps from the
 	# local pmaports copy for this install and put the file back afterwards.

@@ -177,3 +177,33 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    0 black frames in portrait. Rule agreed with Yaron: r101 clean → 54 more on 26.2.4 → clean → PASS. One run showed
    40/40 black frames = test artifact (tablet in landscape, Snapshot on the front camera; portrait recheck 0/36, 0/37).
    INSTALLED on the tablet (rollback APKs ~/mesa-r101-rollback/ + dist/mesa-r101-rollback/). WATCH: the kgx start hang.
+17. DONE (2026-10-05, Yaron asked: what would a device-specific kernel change) — **boot-parameter A/B: kpti=0 and no
+   serial console** (power/kptiab.sh, results power/kptiab-2026-10-05.txt). KPTI is "forced ON by KASLR" on these
+   A53s (not Meltdown-affected). A (default) vs B1 (kpti=0) vs B2 (kpti=0 console=tty0; lk2nd's DT stdout-path keeps
+   ttyMSM0 as a console unless console= is given): perf bench syscall basic 0.467 → 0.409 µs/op (-12.5 %), sched
+   pipe / messaging within noise, system CPU while streaming the rear camera 26.1 / 24.5 / 25.8 % (noise), glmark2
+   102, stability pass 11/11 OK. No user-visible gain → REVERTED to the default (KPTI on, serial console) on Yaron's
+   tablet; not worth weakening KASLR. Other findings from the config review (not changed): KVM=y is useless (EL1
+   boot), ~546 of ~630 modules unused (disk/build only), DWARF5+BTF debug info costs build time only; ftrace/kprobes/
+   debugfs/devmem stay (our tooling).
+18. DONE (2026-10-05, kernel r36) — **Wake from suspend with Home / cover** (Yaron's #1 after the hardware review). Only
+   the PMIC power key woke the tablet: the gpio-keys Home button and the gpio-keys hall switch (SW_LID) had no
+   wakeup-source (downstream DT: home_key gpio-key,wakeup; hall via Samsung's flip-cover driver). kernel/0127 adds
+   wakeup-source to both from msm8916-samsung-gt510.dts (path references; the nodes live in gt5-common.dtsi).
+   Verified first with fdtput on the installed DTB, then r36 (#37): gpio-keys + gpio-hall-sensor power/wakeup=enabled;
+   Home woke the tablet from s2idle (16:56:19 → 16:56:31, gpio-keys event_count 2, screen on). Cover path untested:
+   Yaron's cover is not magnetic (the 2026-10-03 21:56 "Lid closed" suspend was some other magnet nearby).
+19. DONE (2026-10-05, kernel r37 installed) — **Microphone: 16 kHz tone** (Yaron chose root cause over a filter). The
+   primary mic (Mic1 = AMIC1, MIC BIAS External1) works — a 1 kHz speaker beep lifted the band 30 dB — but every
+   capture carried a ~16 kHz tone at -11 dBFS (ADC1 gain 8): crest 1.45, zero-crossing rate 0.66, frequency wandering
+   15.91-16.08 kHz (not locked to the 48 kHz clock), level following ADC1 gain exactly (12 dB per 4 steps), absent on
+   ADC2/ADC3/ZERO/DMIC, unchanged with the screen off. Rejected: display/backlight, L13 (mic-bias LDO) or S4 (codec
+   CP/PX buck, 770 mA like downstream) forced to high-power mode. ROOT CAUSE: CDC_A_MICB_1_INT_RBIAS (0xf143) keeps
+   its power-on 0x49 = TX1N/TX2N/TX3N internally pulled up to MIC BIAS, so bias-rail noise is captured differentially;
+   mainline's PM8950/PM8953 sequences write 0x00, the PM8916 one doesn't; Samsung's msm8x16-wcd writes 0x00
+   (CONFIG_SAMSUNG_JACK). Runtime test (kernel/cdcpoke test module, mask 0x49 -> 0): tone band -17.4 -> -75.3 dB
+   (-58 dB), loopback beep still +34 dB. FIX kernel/0128 (PM8916 sequence writes MICB_1_INT_RBIAS 0x00; MBHC/DAPM set
+   bit 4 for the headset mic later). Upstream candidate. Tools: audio/ (downstream sources, register dumps), the
+   tablet's ~/{micloop2,mictone,micband,micfmt,tonemeas}.sh + goertzel.py/tonetrack.py (analysis in RAM only).
+   VERIFIED on r37 (#38, laptop build 3 min) without poking: f143 = 0x10 after boot, tone band -77.1 dB (r36 -17.4),
+   rest -62 dB, loopback beep +36 dB, untainted. Secondary mic (AMIC3) and headset mic untested.

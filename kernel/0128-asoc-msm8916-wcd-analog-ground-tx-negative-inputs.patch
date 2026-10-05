@@ -1,0 +1,32 @@
+From: gt510 <gt510@localhost>
+Subject: ASoC: codecs: msm8916-wcd-analog: ground the TX negative inputs on PM8916
+
+CDC_A_MICB_1_INT_RBIAS powers up as 0x49: the internal pull-ups of
+TX1N, TX2N and TX3N are enabled, tying each microphone channel's negative
+input to MIC BIAS. The PM8950 and PM8953 register sequences write 0x00 to
+it, the PM8916 sequence never touches it, so on PM8916 the bias rail sits
+on the inverting input of every analog mic and any noise on it is
+captured differentially.
+
+On the Samsung Galaxy Tab A 9.7 (SM-T550) the primary mic (AMIC1, MIC BIAS
+External1) recorded a ~16 kHz tone at -11 dBFS at full ADC gain, its
+frequency wandering by ~150 Hz and its level following the ADC1 gain;
+clearing the three pull-up bits at runtime dropped it by 58 dB to the
+noise floor (-75 dB in the 14-18 kHz band) while a 1 kHz tone played on
+the speaker was still captured at the same level. The downstream
+msm8x16-wcd driver for this device writes 0x00 to the register too.
+
+Write 0x00 like the newer PMIC sequences. The internal bias for the
+headset mic (bit 4) is enabled later by the MBHC setup and the
+"MIC BIAS Internal2" DAPM supply when needed.
+---
+--- a/sound/soc/codecs/msm8916-wcd-analog.c
++++ b/sound/soc/codecs/msm8916-wcd-analog.c
+@@ -780,6 +780,7 @@
+ 	{CDC_A_SPKR_DAC_CTL, 0x03},
+ 	{CDC_A_SPKR_OCP_CTL, 0xE1},
+ 	{CDC_A_MASTER_BIAS_CTL, 0x30},
++	{CDC_A_MICB_1_INT_RBIAS, 0x00},
+ };
+ 
+ static const struct wcd_reg_seq pm8916_data = {

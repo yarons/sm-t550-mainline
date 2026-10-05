@@ -1,0 +1,58 @@
+== A: quiet splash plymouth.ignore-serial-consoles plymouth.prefer-fbcon earlycon console=ttyMSM0,115200 
+kpti: ; console: ttyMSM0 
+syscall basic #1:  0.465658 usecs/op
+sched pipe #1:  10.866485 usecs/op
+sched messaging #1:  Total time: 2.159 [sec]
+syscall basic #2:  0.467844 usecs/op
+sched pipe #2:  12.806170 usecs/op
+sched messaging #2:  Total time: 2.200 [sec]
+syscall basic #3:  0.468506 usecs/op
+sched pipe #3:  10.759940 usecs/op
+sched messaging #3:  Total time: 2.188 [sec]
+camera streaming: system CPU busy 261/1000 over 20 s
+last=Back: sensor 28/s
+done
+== B1: quiet splash plymouth.ignore-serial-consoles plymouth.prefer-fbcon kpti=0 
+kpti: page table isolation forced OFF by kpti command line option; console: ttyMSM0 tty0 
+syscall basic #1:  0.408663 usecs/op
+sched pipe #1:  11.066370 usecs/op
+sched messaging #1:  Total time: 2.229 [sec]
+syscall basic #2:  0.409428 usecs/op
+sched pipe #2:  9.852915 usecs/op
+sched messaging #2:  Total time: 2.268 [sec]
+syscall basic #3:  0.409940 usecs/op
+sched pipe #3:  11.859195 usecs/op
+sched messaging #3:  Total time: 2.199 [sec]
+camera streaming: system CPU busy 245/1000 over 20 s
+last=Back: sensor 28/s
+done
+== B2: quiet splash plymouth.ignore-serial-consoles plymouth.prefer-fbcon kpti=0 console=tty0 
+kpti: page table isolation forced OFF by kpti command line option; console: tty0 
+syscall basic #1:  0.408436 usecs/op
+sched pipe #1:  11.004000 usecs/op
+sched messaging #1:  Total time: 2.274 [sec]
+syscall basic #2:  0.410156 usecs/op
+sched pipe #2:  11.635505 usecs/op
+sched messaging #2:  Total time: 2.107 [sec]
+syscall basic #3:  0.408442 usecs/op
+sched pipe #3:  11.655655 usecs/op
+sched messaging #3:  Total time: 2.196 [sec]
+camera streaming: system CPU busy 258/1000 over 20 s
+last=Back: sensor 28/s
+done
+== kpti0: mesa mesa-26.2.4-r100, kernel #36, faults before 0
+kpti0-gnome-calculator: OK faults=0 env=[] dump=none
+kpti0-gnome-text-editor: OK faults=0 env=[] dump=none
+kpti0-nautilus: OK faults=0 env=[] dump=none
+kpti0-gnome-clocks: OK faults=0 env=[] dump=none
+kpti0-kgx: OK faults=0 env=[] dump=none
+kpti0-gnome-contacts: OK faults=0 env=[] dump=none
+kpti0-gnome-control-center: OK faults=0 env=[] dump=none
+kpti0-loupe: OK faults=0 env=[] dump=none
+kpti0-gnome-calendar: OK faults=0 env=[] dump=none
+kpti0-gnome-weather: OK faults=0 env=[] dump=none
+kpti0-calc90: OK faults=0 env=[] dump=none
+kpti0: black=0/36 fps=0 cpu=15% hangs=0 env=[]
+                                  glmark2 Score: 102 
+GPU faults during the run: 0
+done

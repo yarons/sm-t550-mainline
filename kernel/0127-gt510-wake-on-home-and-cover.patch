@@ -1,0 +1,32 @@
+From: gt510 <gt510@localhost>
+Subject: arm64: dts: qcom: msm8916-samsung-gt510: wake on Home key and cover open
+
+With system suspend enabled only the PMIC power key woke the tablet. Mark
+the Home key and the hall sensor (SW_LID) as wakeup sources: pressing Home
+or opening a cover resumes from s2idle. The downstream DT marks home_key
+with gpio-key,wakeup; the hall sensor is handled there by Samsung's own
+flip-cover driver.
+
+Tested: Home wakes from s2idle (gpio-keys event count, clean resume). The
+cover path uses the same gpio-keys wakeup mechanism and is untested (no
+magnetic cover at hand).
+---
+--- a/arch/arm64/boot/dts/qcom/msm8916-samsung-gt510.dts
++++ b/arch/arm64/boot/dts/qcom/msm8916-samsung-gt510.dts
+@@ -439,4 +439,16 @@
+ 
+ &usb_hs_phy {
+ 	extcon = <&muic>;
++};
++
++/*
++ * Wake from suspend with the Home key and when a cover is opened (hall
++ * sensor), as on Android; the power key (PMIC) already wakes.
++ */
++&{/gpio-keys/home-button} {
++	wakeup-source;
+ };
++
++&{/gpio-hall-sensor/hall-sensor-switch} {
++	wakeup-source;
++};

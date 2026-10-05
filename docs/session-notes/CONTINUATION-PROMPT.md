@@ -8,6 +8,15 @@ Paste this into a new session to continue. Everything lives in `~/workspace/gt51
   this file verbatim (the last one = "as of 2026-10-01 18:10"). Read the relevant part before re-investigating.
 - Memory: `samsung-t550-gt510.md`, `upstream-ai-policies.md`, `check-ai-policy-before-upstreaming.md`.
 
+## STATE (2026-10-05 17:40) — kernel r37 on the tablet, next: vibration (ISSUES list after the hardware review)
+- Kernel **r37** (#38) INSTALLED = r35 + 0127 (Home key + hall sensor wake from suspend, ISSUES 18) + 0128
+  (msm8916-wcd-analog: PM8916 sequence clears MICB_1_INT_RBIAS → mic 16 kHz tone gone, ISSUES 19). The 20261005
+  release still has r35 (no Home wake, mic tone) — a newer release would carry both.
+- Hardware review order (Yaron): #1 wake DONE, #2 mic DONE, #3 vibration NEXT, then #4 HW video decode, #5 A2DP,
+  #6 venus bitrate, #7 5 MP stills, #8 GPS fix, #9 touch-key LEDs, #10 CPR voltages, #11 off-mode charging;
+  headphone jack parked by Yaron. ISSUES 17: kpti=0/no-serial A/B → reverted (no real gain).
+- Laptop keep-awake `gt510-session` runs until ~20:03 (then the laptop sleeps again).
+
 ## STATE (2026-10-05 12:10) — nothing in flight
 - RELEASE 20261005 READY TO UPLOAD (Yaron does it): `dist/release-20261005/` — tag `edge-20261005-prerelease`,
   notes RELEASE-NOTES.md, files gt510-unofficial-pmos-20261005-userdata.simg.xz (sha256 dff8c2ea…, unpacked simg
@@ -43,7 +52,7 @@ parks, no camera-service leak), then restored by hand: password <password>, time
 enabled + Wi-Fi connected (Yaron), Pictures/Videos + test scripts from `backup-2026-10-03/`. Since then: kernel r33.
 | Package | Version | Local patches |
 |---|---|---|
-| linux-postmarketos-qcom-msm8916 | 7.3_rc2-**r35** (#36) | msm8916-mainline 7.3-rc2 @717e5e2 + `kernel/0100`–`0107`, `0109`–`0118`, `0120`–`0126` + `kernel/gt510.config` (r33: + CONFIG_SUSPEND; r34: + 0125; r35: + 0126) |
+| linux-postmarketos-qcom-msm8916 | 7.3_rc2-**r37** (#38) | msm8916-mainline 7.3-rc2 @717e5e2 + `kernel/0100`–`0107`, `0109`–`0118`, `0120`–`0128` + `kernel/gt510.config` (r33: + CONFIG_SUSPEND; r34: + 0125; r35: + 0126; r36: + 0127; r37: + 0128) |
 | gt510-tweaks | **r37** | see "gt510-tweaks" (r35: rebrand; r36: gt510-wcnss-nv; r37: Mesa 26.2.4 pins) |
 | libcamera | 99990.7.2-**r111** | pmOS fork + 0100–0107 (see below) + **0108 EGL context leak (upstream backport)** + **0109 park the lens on stop** |
 | mesa (+dri-gallium, egl, gbm, gl, gles) | 26.2.4-**r100** | LOCAL slim build (freedreno + llvmpipe; GL/GLES/EGL/GBM only) + **0100 freedreno a3xx fixes** |
@@ -66,7 +75,8 @@ to 1209.6 MHz · 0114 camss VFE PIX line · 0115 SR200PC20 640x480 · 0116 MUIC 
 retries · 0118 extcon-max77693 per-group pending bits · 0120 mdp5 flush the CTL before the timing engine (DPMS-on
 faults) · 0121 s6d7aa0 no backlight DCS write while disabled · 0122 Sam Day's a3xx VBIF mask for A306 (runtime PM) ·
 0123/0124 Dmitry Baryshkov's shared-VM dma-buf teardown series (GTK4 app-start GPU fault storms) · 0125 mdp5 no stale
-hwpipe after resume (ours; upstream candidate) · 0126 wcn36xx HT20 only in 2.4 GHz (ours). REVERTED: 0119.
+hwpipe after resume (ours; upstream candidate) · 0126 wcn36xx HT20 only in 2.4 GHz (ours) · 0127 Home/hall wakeup-source · 0128 msm8916-wcd-analog
+TXn− pull-ups off on PM8916 (ours). REVERTED: 0119.
 
 ## Public repo + release (Yaron's, 2026-10-02/03)
 - Repo **github.com/yarons/sm-t550-mainline** (public, personal account). Push from `~/workspace/gt510-public`
@@ -76,7 +86,7 @@ hwpipe after resume (ours; upstream candidate) · 0126 wcn36xx HT20 only in 2.4 
   emails/coordinates/the tablet password), move `.git` out and back around it, commit (author Yaron Shahrabani
   <406826+yarons@users.noreply.github.com>, `Co-Authored-By` trailer), scan the diff, push. `review/` is never
   published (it holds the scrub map). Yaron's rules: no photos/raw camera dumps, name yes / email no, GPL-2.0.
-  HEAD 1b88517 (2026-10-04: session notes; code at ea60f0b = kernel r35 + tweaks r36). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
+  HEAD dbc4c9d (2026-10-05: session notes; code at 5248021 = kernel r35 + tweaks r37 + Mesa 26.2.4). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
 - Release images: `pmos-gt510.sh install-public` (no SSH keys, sshd off, UTC, password 147147) + `release`
   (xz'd sparse userdata image, lk2nd, MANIFEST.txt, SHA256SUMS). gt510-tweaks r35 rebrands the OS on-device
   ("SM-T550 Mainline (unofficial, based on Nura)", ID=nura kept, text plymouth theme sm-t550, Adwaita wallpaper).
