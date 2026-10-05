@@ -8,17 +8,20 @@ Paste this into a new session to continue. Everything lives in `~/workspace/gt51
   this file verbatim (the last one = "as of 2026-10-01 18:10"). Read the relevant part before re-investigating.
 - Memory: `samsung-t550-gt510.md`, `upstream-ai-policies.md`, `check-ai-policy-before-upstreaming.md`.
 
-## STATE (2026-10-04 14:35) — nothing in flight
-- RELEASE 20261004 READY TO UPLOAD (Yaron does it): `dist/release-20261004/` — tag `edge-20261004-prerelease`,
-  notes RELEASE-NOTES.md, files gt510-unofficial-pmos-20261004-userdata.simg.xz (sha256 d0863f16…, unpacked simg
-  e7ad5827…), lk2nd-msm8916.img, MANIFEST.txt, SHA256SUMS. Built from repo ea60f0b, pmaports 1e70e1b8 (build runs
-  `git pull` on pmaports every time). Boot-tested on the tablet (flash 375 s; first boot 31 s, NV copied at 12 s
-  before WCNSS 20 s, 0 faults, rear 28/s sensor 22 shown, front 22, lens parks). gtk4.0 is Alpine 4.24.1 (our r103
-  4.24.0 loses on version; measured: camera rates need none of GTK 0100-0102). Mesa: local 26.2.4-r100 + tweaks r37 since
-  2026-10-05 (ISSUES 16; the 20261004 release still has 26.2.3-r101).
+## STATE (2026-10-05 12:10) — nothing in flight
+- RELEASE 20261005 READY TO UPLOAD (Yaron does it): `dist/release-20261005/` — tag `edge-20261005-prerelease`,
+  notes RELEASE-NOTES.md, files gt510-unofficial-pmos-20261005-userdata.simg.xz (sha256 dff8c2ea…, unpacked simg
+  4d5a0b3d…), lk2nd-msm8916.img, MANIFEST.txt, SHA256SUMS. Built from repo 5248021 (Mesa 26.2.4-r100 + tweaks r37,
+  kernel r35), pmaports a8dc5d9b. Boot-tested: flash 354 s, first boot 30.7 s, NV copied at 12.1 s (WCNSS 20.3 s),
+  0 faults, rear 28/s sensor 24.4 shown, front 22/19.4, lens parks, mesasoak 10/10 apps + calc90 OK (kgx skipped:
+  Yaron's console was open → single-instance EXITED@1s), 0 black, glmark2 137. Release 20261004 (Mesa 26.2.3) is
+  SUPERSEDED, never published (dist/release-20261004 kept). gtk4.0 = Alpine 4.24.1 (local r103 loses; not needed).
+- First boot clock: the PM8916 RTC reads 1970 and can't be set → a fresh image starts at a stored timestamp
+  (one day behind here) until timesyncd syncs; it did not retry by itself within minutes of Wi-Fi coming up
+  (restart synced at once). WATCH; harmless once synced.
 - TABLET = that public image + restore: password <password>, UTC, SSH key, sshd (Yaron enabled), Wi-Fi profile
-  (5 GHz lock), Pictures/Videos/scripts from backup-2026-10-04/ (dconf/RetroArch from the SD card). NEW Wi-Fi IP
-  **TABLET-WIFI-IP** (`./gw` updated, now hostname-checked). USB: the Poco F1 also sits at 172.16.42.1 on another
+  (5 GHz lock), Pictures/Videos/scripts from backup-2026-10-05/ (dconf/RetroArch from the SD card). NEW Wi-Fi IP
+  **LAN-IP** (`./gw` updated, now hostname-checked). USB: the Poco F1 also sits at 172.16.42.1 on another
   interface → `./gl` (GL_HOST=fe80::…%enN link-local, hostname-checked).
 - Kernel **r35** (#36) + **gt510-tweaks r36**, public repo ea60f0b. r35 = CONFIG_SUSPEND + 0125 (mdp5 stale hwpipe
   after a screen-on suspend) + 0126 (wcn36xx HT20 only in 2.4 GHz). r36 = gt510-wcnss-nv first-boot NV copy.
