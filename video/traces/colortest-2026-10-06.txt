@@ -1,0 +1,37 @@
+=== colortest-base709b.log
+[0xffff96b58100] Setting color state cicp-1/1/1/0
+=== colortest-base601.log
+[0xffff86ff42d0] Setting color state cicp-1/1/6/0
+=== colortest-nest-stock709.log
+[0xffff723b3100] Setting color state cicp-1/1/1/0
+(phoc:60098): phoc-server-WARNING **: 14:45:19.015: Session terminated: Child process killed by signal 15 (0)
+=== colortest-nest-r100-709.log
+Coefficients (limited range)  1 (identity):  ✗
+Coefficients (limited range)  2 (bt709):     ✓
+Coefficients (limited range)  3 (fcc):       ✗
+Coefficients (limited range)  4 (bt601):     ✓
+Coefficients (limited range)  5 (smpte240):  ✗
+Coefficients (limited range)  6 (bt2020):    ✓
+Coefficients (limited range)  7 (bt2020-cl): ✗
+Coefficients (limited range)  8 (ictcp):     ✗
+[0xffff90aa8010] Setting color state cicp-1/1/1/0
+Setting color state cicp-1/1/1/0 (fourcc YU12, premul 0) on surface: coefficients: 2 (bt709), range: 2 (limited), alpha 0 (premultiplied-electrical)
+(phoc:91691): phoc-server-WARNING **: 15:19:36.317: Session terminated: Child process killed by signal 15 (0)
+=== colortest-nest-r100-601.log
+Coefficients (limited range)  1 (identity):  ✗
+Coefficients (limited range)  2 (bt709):     ✓
+Coefficients (limited range)  3 (fcc):       ✗
+Coefficients (limited range)  4 (bt601):     ✓
+Coefficients (limited range)  5 (smpte240):  ✗
+Coefficients (limited range)  6 (bt2020):    ✓
+Coefficients (limited range)  7 (bt2020-cl): ✗
+Coefficients (limited range)  8 (ictcp):     ✗
+[0xffff64ae9a60] Setting color state cicp-1/1/6/0
+Setting color state cicp-1/1/6/0 (fourcc YU12, premul 0) on surface: coefficients: 4 (bt601), range: 2 (limited), alpha 0 (premultiplied-electrical)
+(phoc:91885): phoc-server-WARNING **: 15:19:55.590: Session terminated: Child process killed by signal 15 (0)
+=== colortest-inst709b.log (installed phoc r100, boot 17:24:47)
+[0xffff7cac4100] Setting color state cicp-1/1/1/0
+Setting color state cicp-1/1/1/0 (fourcc YU12, premul 0) on surface: coefficients: 2 (bt709), range: 2 (limited), alpha 0 (premultiplied-electrical)
+=== colortest-inst601c.log (installed phoc r100, boot 17:24:47)
+[0xffff747de780] Setting color state cicp-1/1/6/0
+Setting color state cicp-1/1/6/0 (fourcc YU12, premul 0) on surface: coefficients: 4 (bt601), range: 2 (limited), alpha 0 (premultiplied-electrical)

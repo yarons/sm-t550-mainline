@@ -10,16 +10,22 @@ Paste this into a new session to continue. Everything lives in `~/workspace/gt51
 
 ## VIDEO / VENUS (hardware review #4 + #6, session 392683 → its continuation d0acb3) — STATE 2026-10-06 14:55
 (ISSUES 21 + 26 DONE; 21 (g) BT.709 colours IN FLIGHT). Session d0acb3 is the forked continuation of 392683 (same
-work, same notes); d5c224 (14:41) and e173ce (14:52) were told to message d0acb3 for video/Venus; 4d591a not yet.
+work, same notes); d5c224, e173ce and 4d591a were told (14:41-15:20) to message d0acb3 for video/Venus.
 The chronological log of today's work is archived verbatim at the end of CONTINUATION-PROMPT.2026-09-27-history.md
 ("Archived 2026-10-06 13:25"). ISSUES 21 (decode/playback) and 26 (encoder) carry the findings.
 
-INSTALLED on the tablet (14:12, read back with apk info): kernel r39 (#40, taint 0), gtk4.0 4.24.1-r100, showtime
+INSTALLED on the tablet (17:35; boot 17:24:47): kernel r40 (d5c224: r39 + CPR 0132), phoc 0.57.0-r100 (mine, BT.709),
+snapshot r121 + gt510-tweaks r46 (d5c224/e173ce) — the list below is the 14:12 state: kernel r39 (#40, taint 0), gtk4.0 4.24.1-r100, showtime
 50.0-r100, snapshot 51.0-r115, libcamera 99990.7.2-r113 (d5c224, 15:10; r112 = its AWB fix), ffmpeg-libavcodec 8.1.2-r104 (d5c224's
 Firefox fixes), mesa 26.2.4-r100, gt510-tweaks 1-r43 (d5c224: pins gtk4.0=4.24.1-r100, showtime=50.0-r100, ffmpeg
 via ffmpeg-libavcodec>=8.1.2-r103 + ffmpeg-libavutil<8.1.3). Snapshot is NOT pinned (Alpine 51.x would replace r115).
 
 Verified details:
+- Kernel **r40** (#41, d5c224, colima kernel73 8 min) = r39 + 0132 (CPR open loop from the per-chip fuses, ISSUES 28):
+  CPU 200/400 1.05 V, 533/800 1.1125 V, 998.4 1.1625 V (capped), 1094.4-1209.6 1.2875 V (was 1.1625/1.35);
+  kernel/cprtest.sh soak 0 mismatches; 4-core load still throttles to ~1.07 GHz at 77 °C.
+- **snapshot r121** (0105 v3 + 0107): rear stills 2584x1944, tap→file 6-8 s, viewfinder 1152x864 (ISSUES 24);
+  camera/rear/snapstill.sh SNAPBIN=/WAIT= (raise WAIT after a boot). Firefox 1080p on phoc r100 re-checked clean.
 - Kernel **r39** (#40) = r37 + 0129 + 0130 (Venus decoder seeks: capture buffers queued during a seek reach the
   firmware once; parked READONLY buffers are unlinked on capture STREAMOFF) + 0131 (Venus 1.x encoder rate control
   from S_PARM instead of buffer timestamps). Taint 0; venus_dec CEEE21FD…, venus_enc CED380CB…. Venus node numbers move
@@ -38,7 +44,18 @@ Verified details:
   idle screen 468 mA (~9 h vs ~6 h of playback).
 
 NEXT (for whoever continues; Yaron decides order):
-0. ISSUES 21 (g) BT.709 colours (Yaron picked it 14:25; research only, NO installs without asking) — see IN FLIGHT.
+0. ISSUES 21 (g) BT.709 colours: DONE on the device 17:33 (installed phoc: BT.709 + BT.601 clips exact, Showtime
+   1080p 21.5-27.8 fps, no regression). Firefox re-checked by d5c224 17:40: clean, unchanged (it
+   composites video itself, no YUV subsurface). Remaining: tweaks pin. Was: Yaron approved; INSTALLED 17:25 (phoc,
+   -schemas, -lang r100; /usr/bin/phoc sha256 80b29d70…; rollback apks ~/phoc-rollback/ r1). Active from the next boot
+   = 4d591a's off-mode test boot with d5c224's kernel r40 (its first run 16:31 only SUSPENDED the tablet; rerun with
+   systemctl poweroff pending, 17:30). Nobody plans a tweaks bump: until one adds the pin, `apk upgrade` could replace
+   phoc r100 with a newer Alpine phoc (then rebuild r100 on it). AFTER BOOT: colortest.sh run 709/601 (not nested) +
+   Showtime 1080p fps (showbench/planefps); d5c224 re-checks Firefox; phoc=0.57.0-r100 pin in the next tweaks bump
+   (tweaks is at r46 now, by d5c224/e173ce). Was: ask Yaron: install
+   (apk add dist/colima/localpkgs/phoc{,-schemas}-0.57.0-r100.apk + session restart/reboot) + tweaks pin.
+   If yes: install it right before d5c224's kernel r40 reboot (CPR #10, 0132; announced 15:30) so one reboot
+   covers both; d5c224 pings before rebooting and re-checks Firefox after. No kernel changes from video for r40.
 1. Upstream (below): Yaron reviews, adds Signed-off-by, sends A, then B, then C.
 2. ISSUES 33 (e173ce took it, Yaron 14:20): Snapshot sometimes opens the front camera with last-camera-id = Back.
 3. Snapshot pin: owned by d5c224/e173ce now. 15:05: snapshot r116 (d5c224's 0105 v1) broke photos (not-negotiated on
@@ -62,7 +79,8 @@ IN FLIGHT:
   usr/bin/phoc from the apk to ~/vtest/phoc-r100/ and run `PHOC=~/vtest/phoc-r100/phoc WAIT=12 ~/vtest/colortest.sh
   run 709 nest709` (and 601): Showtime inside a NESTED phoc (wayland backend) — the nested phoc converts the video.
   Control done 14:45: nested stock /usr/bin/phoc = BT.601 (distance 0) with GTK offloading (it logged "Setting color
-  state cicp-1/1/1/0"), so the nested method is valid. Expected with r100: BT.709 clip matches BT.709, 601 stays 601.
+  state cicp-1/1/1/0"), so the nested method is valid. RESULT 15:25 with r100: BT.709 clip 6/6 exact BT.709 (was 0/6), BT.601 clip 6/6 exact BT.601;
+  GTK logs coefficients bt709/bt601 limited (YU12 subsurface). Trace video/traces/colortest-2026-10-06.txt.
   Then ask Yaron about installing (phoc restart = session restart; rollback = Alpine phoc-0.57.0-r1) + a pin in the
   next gt510-tweaks bump; tell d5c224 to re-check Firefox (phoc newly advertises wp_color_representation_v1).
   Upstream later (Yaron's call): wlroots MR for the GLES2 part (stale MR 5067 hard-codes BT.709 instead), phoc MR
@@ -101,9 +119,12 @@ re-index after seeding: copy as root, then in ONE container `pmbootstrap -y chro
 COORDINATION (shared tablet): d5c224 = Firefox #23, 5 MP stills #24, CPR #28, tweaks r42/r43; 4d591a = A2DP #25, GPS
 #29, off-mode charging #30; e173ce = #27 spec cross-check, #32 camera. Message before any reboot, kernel install,
 camera/Venus/GPU-heavy run or apk add (apk takes a lock: check `pgrep -x apk`); announce public pushes. Public repo
-last pushed 2d9052d (14:15): assemble-public.sh REPLACES ~/workspace/gt510-public — park .git outside and restore it.
+last pushed 059574f (15:20): assemble-public.sh REPLACES ~/workspace/gt510-public — park .git outside and restore it.
 
-TRAPS learned today: a backgrounded `(sleep 1; systemctl reboot) &` over ssh dies with the session — use
+TRAPS learned today: a hostname probe inside a stdin-piping ssh wrapper must use `ssh -n`, or it eats the piped
+file (gssh 17:20: truncated copies until fixed) · ./gssh went to the POCO F1 (172.16.42.1 over USB) at 15:16 — fixed 15:22: gssh now uses USB only
+when its hostname is gt510 and the remote command exits 99 elsewhere (like ./gw); a stray ~/vtest/phoc-r100/phoc
+(1.3 MB) is left on the Poco (deleting it there was denied to me: Yaron's call) · a backgrounded `(sleep 1; systemctl reboot) &` over ssh dies with the session — use
 `sudo systemctl reboot --no-block` · fpsdisplaysink counts frames handed to the sink, not shown — use planefps.py ·
 GDK_DEBUG=offload explains every offload refusal · GStreamer's v4l2 encoders send frame_number × 1 s timestamps ·
 camerabin applies a new video-profile only at NULL→READY · Snapshot saves videos in ~/Videos/Camera and its shutter
@@ -208,7 +229,8 @@ drop parked (READONLY) capture buffers on capture STREAMOFF (ours). REVERTED: 01
   emails/coordinates/the tablet password), move `.git` out and back around it, commit (author Yaron Shahrabani
   <406826+yarons@users.noreply.github.com>, `Co-Authored-By` trailer), scan the diff, push. `review/` is never
   published (it holds the scrub map). Yaron's rules: no photos/raw camera dumps, name yes / email no, GPL-2.0.
-  HEAD 2d9052d (2026-10-06: showtime/snapshot packages, ffmpeg 0103/0104; before 75a77b7 upstream/venus hand-off; Venus 0129-0131, gtk4.0/snapshot/libcamera/ffmpeg local patches, notes ISSUES 21-28; before: 06ed139). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
+  HEAD 059574f (2026-10-06 15:20: phoc r100 BT.709 patches + colortest.sh, snapshot 0105/0106 + libcamera 0111 +
+  tweaks r45 marked in progress; before 2d9052d: showtime/snapshot packages, ffmpeg 0103/0104; before 75a77b7 upstream/venus hand-off; Venus 0129-0131, gtk4.0/snapshot/libcamera/ffmpeg local patches, notes ISSUES 21-28; before: 06ed139). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
 - Release images: `pmos-gt510.sh install-public` (no SSH keys, sshd off, UTC, password 147147) + `release`
   (xz'd sparse userdata image, lk2nd, MANIFEST.txt, SHA256SUMS). gt510-tweaks r35 rebrands the OS on-device
   ("SM-T550 Mainline (unofficial, based on Nura)", ID=nura kept, text plymouth theme sm-t550, Adwaita wallpaper).

@@ -1,0 +1,150 @@
+From: gt510 <gt510@localhost>
+Subject: aperture: no decodebin3 between a raw-only camera and wrappercamerabinsrc
+
+The camera source bin is pipewiresrc → capsfilter → decodebin3 → capsfilter (video/x-raw). decodebin3 answers caps
+queries with the caps of its first stream, even after the stream moved to other caps. A full-resolution still (0105)
+therefore failed on the first shot: 0105's capsfilter switched the camera to 2584x1944 (frames arrived), then
+wrappercamerabinsrc's start_image_capture() cleared its src-capsfilter and asked upstream for the allowed caps, got
+the 1152x864 viewfinder caps from decodebin3, intersected them with image-capture-caps 2584x1944 → EMPTY, and
+pipewiresrc stopped with "not-negotiated" (GST_DEBUG on the SM-T550, snapshot r118).
+
+A camera that offers only video/x-raw (every libcamera camera) needs no decoder, so the bin now links pipewiresrc →
+capsfilter → capsfilter directly for such a camera. Cameras with compressed formats keep decodebin3. The bin is
+built once, for the first camera Snapshot opens; a camera picked later that needs decoding would get no decoder
+(not an issue on the SM-T550, whose cameras are both libcamera).
+
+Without decodebin3, pipewiresrc's downstream caps query reached all of camerabin (converters, encoders) and took
+4.7 s before the first frame (r119). The bin's last capsfilter now answers downstream caps queries itself with the
+query's filter (as decodebin3 did, without asking downstream); camerabin converts any raw format, and its own
+renegotiation queries travel upstream, which still passes through.
+---
+diff --git a/aperture/src/viewfinder.rs b/aperture/src/viewfinder.rs
+--- a/aperture/src/viewfinder.rs
++++ b/aperture/src/viewfinder.rs
+@@ -1465,27 +1465,84 @@
+     fn create_camera_element(
+         &self,
+         device_src: &gst::Element,
++        raw_only: bool,
+     ) -> Result<gst::Element, glib::BoolError> {
+         use gst::prelude::*;
+ 
+         let bin = gst::Bin::new();
+ 
+         let capsfilter = gst::ElementFactory::make("capsfilter").build()?;
+-        let decodebin3 = gst::ElementFactory::make("decodebin3").build()?;
+         let capsfilter_post_decode = gst::ElementFactory::make("capsfilter").build()?;
+         let caps_post_decode = gst::Caps::builder("video/x-raw").build();
+         capsfilter_post_decode.set_property("caps", &caps_post_decode);
+ 
+-        bin.add_many([
+-            device_src,
+-            &capsfilter,
+-            &decodebin3,
+-            &capsfilter_post_decode,
+-        ])?;
+-        gst::Element::link_many([device_src, &capsfilter, &decodebin3])?;
++        // A camera that only offers raw video needs no decoder. decodebin3 also answers
++        // caps queries with the caps of its first stream, so wrappercamerabinsrc's
++        // renegotiation for a still at another resolution ends in EMPTY caps.
++        if raw_only {
++            bin.add_many([device_src, &capsfilter, &capsfilter_post_decode])?;
++            gst::Element::link_many([device_src, &capsfilter, &capsfilter_post_decode])?;
++
++            // Answer the camera's caps queries here instead of asking camerabin: its
++            // converters and encoders take seconds to answer on a slow CPU (4.7 s on the
++            // SM-T550, before the first frame). Downstream converts any raw format, and
++            // camerabin's own renegotiation queries upstream, which still passes.
++            capsfilter_post_decode
++                .static_pad("src")
++                .unwrap()
++                .add_probe(gst::PadProbeType::QUERY_DOWNSTREAM, |_, info| {
++                    if let Some(gst::PadProbeData::Query(query)) = info.data.as_mut() {
++                        if let gst::QueryViewMut::Caps(caps_query) = query.view_mut() {
++                            let caps = caps_query
++                                .filter()
++                                .map(|filter| filter.to_owned())
++                                .unwrap_or_else(gst::Caps::new_any);
++                            caps_query.set_result(&caps);
++                            return gst::PadProbeReturn::Handled;
++                        }
++                    }
++                    gst::PadProbeReturn::Ok
++                });
++        } else {
++            self.add_decodebin3(&bin, device_src, &capsfilter, &capsfilter_post_decode)?;
++        }
+ 
+         self.imp().capsfilter.set(capsfilter).unwrap();
+ 
++        let pad = capsfilter_post_decode.static_pad("src").unwrap();
++        let ghost_pad = gst::GhostPad::with_target(&pad)?;
++        ghost_pad.set_active(true)?;
++
++        bin.add_pad(&ghost_pad)?;
++
++        let wrappercamerabinsrc = gst::ElementFactory::make("wrappercamerabinsrc")
++            .property("video-source", &bin)
++            .build()
++            .expect("Missing GStreamer Bad Plug-ins");
++
++        Ok(wrappercamerabinsrc)
++    }
++
++    fn add_decodebin3(
++        &self,
++        bin: &gst::Bin,
++        device_src: &gst::Element,
++        capsfilter: &gst::Element,
++        capsfilter_post_decode: &gst::Element,
++    ) -> Result<(), glib::BoolError> {
++        use gst::prelude::*;
++
++        let decodebin3 = gst::ElementFactory::make("decodebin3").build()?;
++
++        bin.add_many([
++            device_src,
++            capsfilter,
++            &decodebin3,
++            capsfilter_post_decode,
++        ])?;
++        gst::Element::link_many([device_src, capsfilter, &decodebin3])?;
++
++        let capsfilter_post_decode = capsfilter_post_decode.clone();
+         let (sender, receiver) = futures_channel::oneshot::channel::<bool>();
+         let sender = std::sync::Arc::new(std::sync::Mutex::new(Some(sender)));
+         decodebin3.connect_pad_added(glib::clone!(#[weak] capsfilter_post_decode, move |_, pad| {
+@@ -1513,18 +1570,7 @@
+             }
+         ));
+ 
+-        let pad = capsfilter_post_decode.static_pad("src").unwrap();
+-        let ghost_pad = gst::GhostPad::with_target(&pad)?;
+-        ghost_pad.set_active(true)?;
+-
+-        bin.add_pad(&ghost_pad)?;
+-
+-        let wrappercamerabinsrc = gst::ElementFactory::make("wrappercamerabinsrc")
+-            .property("video-source", &bin)
+-            .build()
+-            .expect("Missing GStreamer Bad Plug-ins");
+-
+-        Ok(wrappercamerabinsrc)
++        Ok(())
+     }
+ 
+     fn setup_camera_element(&self, camera: &crate::Camera) -> Result<(), glib::BoolError> {
+@@ -1582,7 +1628,12 @@
+                 });
+             }
+ 
+-            let wrapper = self.create_camera_element(&element)?;
++            // The source bin is built once, for the first camera: a camera that is
++            // picked later and needs decoding (MJPEG, H.264) then gets no decoder.
++            let raw_only = camera.caps().is_some_and(|caps| {
++                !caps.is_empty() && caps.iter().all(|s| s.has_name("video/x-raw"))
++            });
++            let wrapper = self.create_camera_element(&element, raw_only)?;
+             imp.camerabin().set_property("camera-source", &wrapper);
+ 
+             imp.camera_element.set(element).unwrap();

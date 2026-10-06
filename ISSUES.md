@@ -260,6 +260,22 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    + 0101 (phoc: color-representation global + per-surface encoding in both render paths). Builds in colima after
    d5c224's snapshot r116. Installing = phoc restart = session restart: ask Yaron. Watch Firefox (d5c224, ISSUES 23):
    phoc newly advertises wp_color_representation_v1.
+   RESULT (15:25, phoc 0.57.0-r100 built in colima 15:14-15:16, run NESTED from ~/vtest/phoc-r100, nothing installed):
+   BT.709 clip → 6/6 bars exact BT.709 (distance 0; was 0/6), BT.601 clip → 6/6 exact BT.601; GTK logs "coefficients:
+   2 (bt709), range: 2 (limited)" resp. "4 (bt601)" on the YU12 subsurface; phoc advertises bt601/bt709/bt2020 in both
+   ranges. Control: nested stock phoc = BT.601 for both. video/traces/colortest-2026-10-06.txt. NEXT: Yaron decides on
+   installing (apk add phoc r100 + phoc-schemas r100, then a session restart or reboot; rollback = Alpine phoc r1) and
+   a pin in the next gt510-tweaks bump; d5c224 re-checks Firefox after.
+   INSTALLED (Yaron approved; 17:25 phoc/-schemas/-lang r100, active from the 17:24:47 boot = 4d591a's off-mode test
+   with d5c224's kernel r40): phoc runs from /usr/bin/phoc and advertises wp_color_representation_v1. colortest
+   (installed, not nested): BT.709 clip 6/6 exact BT.709, BT.601 clip 6/6 exact BT.601. Showtime 1080p: 21.5-27.8 fps
+   shown, Showtime 24-26 % of a core (load average still 3-7 after boot + d5c224's CPR stress test; before: 24.5-29 fps,
+   27 %) → no regression seen. Re-measured after d5c224's soak (17:43, CPU policy normal): 22.2 / 27.5 / 24.2 fps,
+   23-26 % — same spread as before; the patch only adds work once per buffer (re-import), not per frame. phoc's assertion lines (gm_display_panel_get_name, layout_transaction) are the same with
+   stock phoc on earlier boots. Rollback apks ~/phoc-rollback/ (r1). OPEN: phoc=0.57.0-r100 pin (no tweaks bump
+   planned by anyone, 17:30). Firefox re-check (d5c224, 17:40): unchanged and clean — Venus zero-copy, 28 fb/s,
+   colours right; Firefox composites video itself (no YUV subsurface), so the new global doesn't touch its path. colortest trap: the first runs after boot/under load can
+   grab Showtime's UI instead of the video (late seek, dropped frames) — rerun when the result shows grey UI colours.
 22. CLOSED (2026-10-06, nothing to implement) — **Touch-key LEDs** (hardware review #9). Recents/Back are maXTouch
    1664T T15 keys (mainline keycodes KEY_APPSELECT 0x244, KEY_BACK 0x9e). Stock never lit them: Samsung's gt510 driver
    (Galaxy-MSM8916 lineage-17.1 drivers/input/touchscreen/mxt_t/, DT compatible "atmel,mxt_t") has
@@ -344,7 +360,13 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    prepared, NOT BUILT: colima's repo still holds the seeded mesa r100 APKs (a Claude Code safety check stopped the
    scripted rm; Yaron's call) and ffmpeg won't build next to them. Next tweaks bump: pin ffmpeg-libavcodec as
    >=8.1.2-r103 + <8.1.3 instead of exact, so local ffmpeg revisions stop forcing tweaks bumps.
-24. ACTIVE (2026-10-06, hardware review #7, session d5c224) — **Full 5 MP stills (rear SR544).** The sensor streams
+   RE-CHECK on kernel r40 + phoc r100 (wp_color_representation_v1) + ffmpeg r104 (17:33, bench profile, vidtest.html
+   1920x1080 testsrc2, HW forced): 8-shot strip clean, colours right; Venus zero-copy (Dmabuf HW surfaces), plane-0
+   28.0 fb changes/s, Firefox 66 % CPU (38 of it bench-profile IndexedDB I/O). Firefox still composites the video
+   itself (XR24 primary plane only), so phoc's colour-representation support does not change its path. Trap: the
+   first run after a boot read 295 % CPU / 18 fps (WebExtensions first-run + memory pressure) — use WAIT=45.
+   STILL OPEN: Yaron's YouTube test on r104 (blocks, black triangle).
+24. DONE (2026-10-06 17:27, hardware review #7, session d5c224; snapshot r121 + tweaks r46 INSTALLED) — **Full 5 MP stills (rear SR544).** The sensor streams
    2592x1944 at 27.9 fps; /etc/libcamera/configuration.yaml caps the soft ISP output at 1296x972 because 5 MP once
    debayered at 0.7 fps (2026-09-25, before the GPU debayer / Mesa a3xx work). Remeasured on r38 with the cap lifted for
    one process (camera/rear/stills5m.sh: XDG_CONFIG_HOME copy of the config without max_output_*; `cam --capture=N`):
@@ -376,6 +398,10 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    (GPU, 2584x1944) is real native detail; the CPU debayer can't scale and crops the centre instead.
    DECISION (Yaron 11:25, via e173ce): OPTION 1 = reconfigure on shutter (viewfinder stays <=1080 tall; shutter:
    stop -> 2584x1944 -> AE/AWB settle -> grab -> back), not a 5 MP viewfinder. Config cap 1296x972 still in place.
+   VERIFIED by e173ce 17:27 (Yaron asked; after the r40 charger boot, snapshot r121 + tweaks r46): snapstill.sh → 2584x1944
+   JPEG 7.86 MB, tap→file 6.0 s, viewfinder 1152x864, YAVG 96, no "Resource busy"; camera service configured 1152 →
+   2584 → 2584 (again 0.4 s later) → 1152. A first try 1 min after boot (WAIT=10) got no photo: tap before Snapshot was
+   ready on its first post-boot launch; WAIT=20 worked.
    PLAN (option 1, d5c224): Snapshot/aperture already uses GStreamer camerabin (camera/snapshot/viewfinder.rs) and
    never sets `image-capture-caps`, so stills = viewfinder caps. camerabin's wrappercamerabinsrc renegotiates the
    source to image-capture-caps for the shot and back afterwards = reconfigure-on-shutter built in. Steps: (1)
@@ -406,6 +432,36 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    1296x972). 0105 v2 (on disk): take_picture() switches aperture's own capsfilter to the still caps, fires
    start-capture on the matching caps event, on_image_done() restores the viewfinder caps; e173ce's 0106 applies on
    top. NEXT: snapshot r118 (0105v2 + 0106) + tweaks r46 (pin r118), then snapstill.sh.
+   r118 + tweaks r45 INSTALLED (e173ce, 15:15): viewfinder 1152x864 OK, shutter → no photo. GST_DEBUG
+   (snapstill.sh GSTDBG): 0105 v2's capsfilter switch works (pipewiresrc renegotiates to 2584x1944 RGBA, start-capture
+   fires on the caps event), then wrappercamerabinsrc start_image_capture() clears src-capsfilter and asks upstream for
+   the allowed caps; decodebin3 answers with its FIRST stream's caps (1152x864 BGRx) → ∩ image-capture-caps 2584x1944
+   = EMPTY → src-capsfilter EMPTY → pipewiresrc not-negotiated. Fix: snapshot 0107 (no decodebin3 between a raw-only
+   camera and wrappercamerabinsrc; bin built once, a later camera needing decoding would get none), r119 building in
+   colima 15:24; test = the r119 binary from the APK without installing, then tweaks r46 (pin r119).
+   r119 TESTED (binary from the APK in ~/pkgs-r119, snapstill.sh SNAPBIN=/WAIT=): STILLS WORK — 2584x1944 JPEG,
+   7.8 MB, tap→file 9.0 s, viewfinder 1152x864, colours right (libcamera now picks ARGB8888 = GStreamer BGRA at
+   2584). Test photos moved to the tablet's /tmp/snapstill-photos (RAM). REGRESSION: viewfinder starts ~7 s after
+   setup (r118: 0.5 s) — without decodebin3, pipewiresrc's downstream caps query walks all of camerabin (4.7 s,
+   pipewiresrc:5 log). 0107 v2 (r120, building 15:41): a QUERY_DOWNSTREAM probe on the bin's last capsfilter
+   answers caps queries with the filter (as decodebin3 did). Also seen: 4 libcamera reconfigurations at 2584 per
+   shot (look at after r120).
+   r120: caps query 4.7 → 0.17 s; launch→first frame A/B r118 6/6 s vs r120 8/7 s; stills OK (8 s). The extra
+   reconfigurations: pipewiresrc (1.6.9) skips a renegotiation only if the FIRST structure of the new caps EQUALS the
+   current caps, and bare width/height still caps never do. 0105 v3 (r121): still caps = the device's own structures at
+   the largest size (camera.device_caps(), no limit_fps framerate range: 2584x1944 RGBA/RGBx/BGRA/BGRx, no framerate).
+   r121 TESTED 16:11 (2 runs): 2584x1944 8.1 MB, tap→file 8.0/7.0 s (uitap's sudo + uinput setup is ~2 s of it), one
+   switch to 2584 and one back per shot (each logged twice by libcamera), launch→first frame 7 s, colours OK.
+   WEDGE seen once: quitting Snapshot while the camera was still at 2584 mid-renegotiation (r120, 15:54) left
+   wireplumber's libcamera with "Failed to setup link 'msm_csiphy0'[1] -> 'msm_csid0'[0]: Resource busy" for every
+   later start (viewfinder Error) until `systemctl --user restart wireplumber@video-capture` (16:10). Follow-up: find
+   whether libcamera's simple pipeline leaks the link on stop during configure.
+   gt510-tweaks r46 = r45 + snapshot=51.0-r121 (APKBUILD edited; needs the mesa seed-in/out → asked e173ce to build it
+   and install r121 + r46 together). Until then the tablet's r118 has NO working rear shutter.
+   INSTALLED 17:2x (e173ce, Yaron's seed OK; seeds out again): snapshot + snapshot-lang r121, gt510-tweaks r46.
+   VERIFIED on kernel r40 (e173ce 17:27): 2584x1944 JPEG 7.86 MB, tap→file 6.0 s, viewfinder 1152x864, no Resource
+   busy. Its first post-boot try with WAIT=10 tapped before the viewfinder was up (WAIT=20 worked) → snapstill
+   should poll for the viewfinder. Follow-ups: the r120 quit-mid-switch wedge; ~1 s slower launch than r118.
 
 25. ACTIVE (2026-10-06, session 4d591a) — **A2DP / Bluetooth audio** (hardware review #5). Headset = Yaron's Jabra
    Evolve2 65 (paired by Yaron, now trusted). Sound server is PulseAudio 17 (module-bluez5-discover,
@@ -516,7 +572,7 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    bluetoothd started 10:32:41 → `bluetoothctl show` Name + Alias = "Galaxy Tab A 9.7"; hostnamectl Pretty "Galaxy
    Tab A 9.7", Vendor Samsung, Model "Galaxy Tab A 9.7 (SM-T550)"; installed gt510-tweaks is already r40 with the same
    gt510-rebrand (md5 7a85462c; its re-run left the values unchanged); Jabra reconnected by itself. DONE.
-28. ACTIVE (2026-10-06, hardware review #10, session d5c224; research only, nothing changed) — **CPR: per-chip CPU
+28. DONE (2026-10-06 17:43, hardware review #10, session d5c224; kernel r40 0132 INSTALLED) — **CPR: per-chip CPU
    voltages.** Today (0113, r21+) CPR runs "qcom,force-ceiling-voltage": every corner at its ceiling, fuses ignored —
    200/400 MHz 1.05 V, 533-998.4 MHz 1.1625 V (gt510: 998.4 on NOM), 1.094-1.2096 GHz 1.35 V. The mainline
    msm8916_cpr_desc in 0113 has corner limits only (no fuse cells, refs, steps; "fuse-based scaling not supported
@@ -531,6 +587,35 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    complete msm8916_cpr_desc with the fuse cells/refs/steps → per-chip open loop (closed loop stays off); (b) hard-code
    this unit's 1.285 V ceiling (not portable to other SM-T550s). Needs a kernel build + stress test (0113 r20 style:
    4-core sha256, temperatures) + reboot → Yaron's go.
+   GO (a) (Yaron 15:0x, "do it automatically"). kernel/0132-msm8916-cpr-fuse-open-loop.patch (after 0113): cpr.c full
+   msm8916 desc (refs/steps/limits above, step quot 26, no voltage interpolation), `open_loop` (never closed loop, CPR
+   block left off), `no_quot_offset`, per-level cap `qcom,opp-max-microvolt`; qcom_spmi-regulator: uV_step when only
+   one range has set points (PM8916 S2 = ULT buck had none → regulator_get_linear_step() 0 → fuse parsing -EINVAL);
+   dtsi: row-27 cells (init 0xd8/0 6, 0xda/2 6, 0xdc/4 6; quot 0xd8/6 12, 0xdb/0 12, 0xdd/2 12; ring 0xde/6 3 — checked
+   against this chip's row), force-ceiling dropped, CPR level 4: 998.4 MHz = level 3 in the TURBO fuse corner (as
+   downstream) capped at 1.1625 V; 1094.4+ = level 4; S2 max 1.375 V. Expected here: 200/400 1.05 V, 533/800 1.1125 V
+   (was 1.1625), 998.4 1.1625 V (same), 1094-1209.6 1.2875 V (was 1.35). Risk: a probe error only loses cpufreq (boot
+   clock). NEXT: kdev compile check, kernel r40 (colima, kernel73), install + one reboot (d0acb3 may add phoc r100),
+   verify debugfs/regulator voltages per OPP, stress test.
+   kdev check (16:08, W=1): cpr.o + qcom_spmi-regulator.o clean, gt510 DTB has the cells, 4 CPR levels, the cap.
+   Kernel r40 BUILT in colima (kernel73, 8 min native; sha256 445e7b1f…; scripts bumped via temp+mv) and INSTALLED
+   16:26 (plain apk add; /boot DTB has the cells). Reboot pending d0acb3's phoc r100 answer. kernel/cprtest.sh [s]
+   [freqs] (root): pins policy0, 4× sha256 of 64 MiB zeros, APC voltage idle/mid-load, average kHz from time_in_state,
+   hottest zone. BASELINE r39 (30 s/step, dist/cprtest-r39-baseline.txt): 0 mismatches; 533-998.4 at 1.1625 V
+   (46/52/57 °C); 1094.4 and 1209.6 idle 1.35 V but 1.1625 V mid-load and no more rounds than 998.4 → thermally
+   throttled to ~998.4 within seconds at 71-77 °C (cpu2-3-thermal) — the top speeds are heat-limited today.
+   BOOTED r40 (#41) 17:24:47 via 4d591a's real off-mode power-on (with phoc r100 + snapshot r121 + tweaks r46). dmesg:
+   "qcom-cpr b018000.power-controller: driver initialized with 4 OPPs", no static-ceiling line, no errors; S2 max
+   1.375 V. IDLE SWEEP (each OPP pinned 1 s): 200/400 1.05 V, 533/800 **1.1125 V**, 998.4 1.1625 V, 1094.4/1152/
+   1209.6 **1.2875 V** — exactly the fuse values. STRESS r40 (30 s/step, dist/cprtest-r40.txt; uptime 3 min, and
+   d0acb3's Showtime 1080p test overlapped, so rounds are low by ~15 % and not comparable): 0 mismatches at every
+   step; 533 52 °C, 800 56 °C, 998.4 62 °C, 1094.4 avg 1078 MHz 75 °C, 1209.6 avg 1077 MHz 77 °C (load voltage stayed
+   1.2875 V: still throttling under 4-core load, but on r39 the mid-load voltage already showed ≤998.4).
+   SOAK r40 (17:36, 90 s/step, quiet, dist/cprtest-r40-soak.txt): 0 mismatches; 533 1.1125 V 56 °C 36 rounds, 800
+   1.1125 V 59 °C 52, 998.4 1.1625 V 65 °C 64, 1209.6 1.2875 V avg 1065 MHz 77 °C 63 — sustained 4-core load is
+   heat-capped at ~1 GHz either way (1209.6 does the work of 998.4); the gain is less heat/power at 533-800 MHz and
+   in bursts at 1.09-1.21 GHz. Not done: closed-loop CPR (would go below the open-loop values; needs the quotient
+   tables validated) and the off-by-boot-clock fallback is untested (a probe error only loses cpufreq).
 29. ACTIVE (2026-10-06, hardware review #8, session 4d591a) — **GPS fix.** Stack: gpsd 3.27.3-r101 `-N -b pds://any`
    (gpsd-pds.service, engine runs only while a client watches); QRTR name service lists LOC/PDS svc 16 v2 on the modem
    (node 0 port 14) → "QRTR open: Found PDS at 0 14". Indoors (10:05, gpsd -D 6, 73 s): NMEA at 1 Hz (GNGNS, GPGGA,
@@ -595,7 +680,18 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    tablet cannot stay off: power-off = reboot into the full OS (USB_CHG power-on trigger; lk2nd/extlinux gives Linux no
    hint). Same boot verified two ISSUES 25 items: Jabra auto-connect after boot (helper "connected" 11:24:43 → a2dp_sink)
    and auto_switch=0; gt510-xtra.timer armed (RandomizedDelaySec 10 min → first run 11:32, too late for a quick fix
-   after boot → shrink to ~1 min next bump). Still open: (B') unplugged poweroff then plug-in; what the screen shows.
+   after boot → shrink to ~1 min next bump; done in tweaks r42+).
+   RESULT (B'), 17:23-17:25: first attempt aborted by the script — the Mac's USB cable was still in (MUIC CDP, usb0 up,
+   1800 mA limit; a computer port counts as a charger). An earlier "off" at 17:20 was really idle SUSPEND (16:42), which
+   the charger plug woke (d5c224, journal). Real run: all USB unplugged, 85 %, −198 mA; `systemctl poweroff` 17:23:56 →
+   old boot ended 17:24:06 (`journalctl --list-boots`), tablet stayed dark → Yaron plugged the WALL charger → Samsung
+   logo → lk2nd → full boot 17:24:47 (kernel r40 #41, Phosh). PON_REASON1 0x10 USB_CHG, POFF_REASON1 0x02 PS_HOLD, no
+   androidboot.* → 85 % charging +546 mA.
+   VERDICT: off stays off only without power on USB; any charger or computer port powers it on and boots the full OS
+   (plugging into an off tablet, or powering off while plugged in). No charging-while-off state exists today. Fix
+   option (Yaron to decide): pmOS initramfs charge mode keyed on PON_REASON1 = USB_CHG/DC_CHG/CBLPWR without KPDPWR_N
+   and HARD_RESET (battery % via pbsplash, power key → normal boot, unplug → poweroff; needs PMIC regmap/debugfs or a
+   small kernel patch exposing the PON reason, and charger + gauge modules in the initramfs).
 31. OPEN (2026-10-06, session 4d591a) — **gt510-tweaks upgrade burns ~3 min of CPU** (r40 install 10:50-10:53: apk.log
    spends it in post-upgrade/triggers; overlapped Yaron's YouTube test → likely the early stutter d5c224 saw).
    Suspects (post-upgrade): unconditional `systemd-hwdb update` (full hwdb.bin recompile, for one 61-gt510 hwdb file),
@@ -612,6 +708,12 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    own package. Build note: d5c224 keeps colima's mesa r100 seed in dist/colima/seed/ (removed from the repo because it
    breaks ffmpeg builds); tweaks builds need re-seed → build → un-seed. Until fixed: never install tweaks while Yaron
    uses the tablet.
+   SHIPPED in r41 (installed 11:2x by d5c224: r41 + ffmpeg r102 = 109 s wall incl. the one-time hwdb move/compile).
+   VERIFIED on the next tweaks upgrade (e173ce, snapshot r118 + gt510-tweaks r43→r45): 93 s wall, 0 hwdb lines in that
+   apk.log transaction. Remaining main cost = postmarketos-mkinitfs 23.3 s (initramfs 9.6 s + boot-deploy 13.7 s),
+   fired by 61-gt510-accel.rules (/usr/lib/udev) + the plymouth theme (/usr/share/plymouth), plus systemd reloads.
+   Optional next step (Yaron to decide; tweaks bumps currently go through d5c224): rules → /etc/udev/rules.d, splash
+   theme → its own rarely-bumped package → tweaks upgrades would skip mkinitfs entirely.
 32. CLOSED (2026-10-06 12:16, session e173ce: NOT A BUG, wrong camera in the test) — **Rear camera slow on battery.**
    Found by d5c224 during ISSUES 24: on battery (tuned profile balanced-battery) the rear camera at 1296x972
    delivers 8.5 fps vs 25-28 fps on USB power, same scene. Same on libcamera r111 (A/B), so not 0110's AWB change.
@@ -632,7 +734,7 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    FIXED 12:2x (Yaron asked): lastframe.sh + awbab.sh (same bug) use `cam -c "$REAR"`, REAR = the camera@28 ID
    (cam -c takes an ID too); Mac + tablet ~/vtest copies updated. VERIFIED 14:10 (lastframe.sh 1296 972 fixcheck
    45): "Using camera …/camera@28", 1296x972-ABGR8888, 45 frames, YAVG 110. awbab.sh same change, not run.
-33. ACTIVE (2026-10-06, session e173ce, from 392683) — **Snapshot sometimes opens the FRONT camera although last-camera-id = Back**
+33. DONE (2026-10-06 15:29, session e173ce, from 392683; snapshot 0106) — **Snapshot sometimes opens the FRONT camera although last-camera-id = Back**
    (cousin of ISSUES 8, but here both cameras were already enumerated). 14:01:39: `gapplication launch
    org.gnome.Snapshot` (snapshot r115, tablet up since 11:23, wireplumber@video-capture active, both PipeWire nodes
    "Built-in Back Camera" / "Built-in Front Camera" present, no other process on a camera) → libcamera "configuring
@@ -667,3 +769,14 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    stills (not-negotiated; tablet rolled back to snapshot r115 + tweaks r43). r118 = 0105 v2 + 0106 building
    (dist/colima/snapshot118.log); gt510-tweaks r45 = r44 + snapshot=51.0-r118 (r45 never built before). Then mesa seeds
    out + reindex, "colima free" to d0acb3 (phoc), install r118 + r45 together, d5c224 tests stills, I test the pick.
+   DONE: r118 + gt510-tweaks r45 INSTALLED 15:14-15:16 (93 s, plain apk add; seeds out + reindexed, colima handed to
+   d0acb3). VERIFIED (camera/snapshot/picktest.sh, LATE=1 = camera service started 1 s after Snapshot, so both cameras
+   arrive late; here Back is reported first, Front ~ms later): default Back → 6/6 rear; default FRONT → 4/4 front
+   (the old handler would start the first arrival = Back; FRONT can only come from 0106's default check); normal
+   launches 4/4 rear; one "configuring streams" per launch (no double start). The portal-grant path (Front first,
+   provtest --portal) is the same handler, not separately reproducible in real Snapshot. last-camera-id restored to
+   Back. 0106 stays in d5c224's r119 (0107 decodebin3 fix for stills; r118 stills still fail on the back camera).
+   17:2x (Yaron OK'd to e173ce directly; d5c224's session could not do the seed step): mesa seeds in → gt510-tweaks r46
+   (d5c224's APKBUILD: snapshot=51.0-r121) built in colima → snapshot + snapshot-lang r121 (0105 v3 + 0106 + 0107) +
+   tweaks r46 INSTALLED (plain apk add, 94 s) before 4d591a's off-mode power-off → seeds out + reindexed (repo/APKINDEX
+   0 mesa, seed-removed 6), colima handed back. Logs dist/colima/{seed-in-r46,tweaks46,seed-out-r46}.log.

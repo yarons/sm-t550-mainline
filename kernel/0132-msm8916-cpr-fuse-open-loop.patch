@@ -1,0 +1,367 @@
+From: gt510 <gt510@localhost>
+Subject: msm8916: CPR open-loop voltages from the per-chip fuses
+
+0113 runs CPR with "qcom,force-ceiling-voltage": every corner sits at its
+ceiling, whatever the chip. MSM8916 fuses an open-loop voltage per fuse
+corner (row 27), which downstream used as the starting point (and the only
+voltage when CPR is off). Use it, without closed loop:
+
+- cpr: complete msm8916_cpr_desc from the downstream msm8916-regulator.dtsi
+  (init voltage = ref 1.05/1.15/1.375 V + 6-bit sign-magnitude x 10 mV,
+  12-bit target quotients, ro-sel, step quotient 26, floors 1.05/1.05/
+  1.1625 V, ceilings 1.05/1.15/1.375 V, no voltage interpolation);
+  open_loop: never enable the closed loop and leave the CPR block off;
+  no_quot_offset: MSM8916 has no quotient-offset fuses; optional
+  "qcom,opp-max-microvolt" on a CPR OPP caps that level.
+- qcom_spmi-regulator: set the linear step when only one range has set
+  points; PM8916 S2 (ULT buck) reported none, so CPR's fuse parsing failed
+  with -EINVAL.
+- dts: row-27 nvmem cells, no force-ceiling, a fourth CPR level: 998.4 MHz
+  in the TURBO fuse corner as downstream, capped at the TURBO floor 1.1625 V
+  (its voltage since 0113); 1094.4 MHz and up at the TURBO fuse voltage;
+  VDD_APC (S2) up to the downstream ceiling 1.375 V.
+
+SM-T550 (kernel/cpr-fuses.py): row 27 = 0x988d920364911b29 → SVS 1.05 V,
+NOM 1.11 V (→ 1.1125 V on the 12.5 mV regulator), TURBO 1.285 V
+(→ 1.2875 V). So 200/400 MHz stay at 1.05 V, 533/800 MHz drop from 1.1625
+to 1.1125 V, 998.4 MHz stays at 1.1625 V, 1094.4-1209.6 MHz drop from
+1.35 to 1.2875 V.
+---
+--- a/arch/arm64/boot/dts/qcom/msm8916-pm8916.dtsi
++++ b/arch/arm64/boot/dts/qcom/msm8916-pm8916.dtsi
+@@ -41,7 +41,7 @@
+ &pm8916_spmi_regulators {
+ 	pm8916_spmi_s2: s2 {
+ 		regulator-min-microvolt = <1050000>;
+-		regulator-max-microvolt = <1350000>;
++		regulator-max-microvolt = <1375000>;
+ 		/* Disabled automatically by hardware when CPU is in deep idle */
+ 		regulator-always-on;
+ 	};
+--- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
++++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+@@ -297,33 +297,32 @@
+ 		opp-998400000 {
+ 			opp-hz = /bits/ 64 <998400000>;
+ 			/*
+-			 * NOM corner, not TURBO: CPR only applies ceiling voltages
+-			 * (no fuse-based AVS yet), and TURBO's is 1.35 V. The NOM
+-			 * ceiling is raised to 1.1625 V (the downstream TURBO floor)
+-			 * in the CPR driver so 998.4 MHz stays within the stock
+-			 * voltage range; the boot firmware ran it at 1.15 V.
++			 * TURBO fuse corner as downstream, but its own CPR level,
++			 * capped at the TURBO floor (1.1625 V): CPR runs open loop
++			 * only, and the TURBO fuse voltage would be well above
++			 * what 998.4 MHz needs (the boot firmware ran it at 1.15 V).
+ 			 */
+-			required-opps = <&rpmpd_opp_super_turbo>, <&cpr_opp2>, <&rpmpd_opp_svs_soc>;
++			required-opps = <&rpmpd_opp_super_turbo>, <&cpr_opp3>, <&rpmpd_opp_svs_soc>;
+ 			opp-supported-hw = <0xf>; /* 0, 1, 2, 3 */
+ 		};
+ 		opp-1094400000 {
+ 			opp-hz = /bits/ 64 <1094400000>;
+-			required-opps = <&rpmpd_opp_super_turbo>, <&cpr_opp3>, <&rpmpd_opp_nom>;
++			required-opps = <&rpmpd_opp_super_turbo>, <&cpr_opp4>, <&rpmpd_opp_nom>;
+ 			opp-supported-hw = <0x7>; /* 0, 1, 2 */
+ 		};
+ 		opp-1152000000 {
+ 			opp-hz = /bits/ 64 <1152000000>;
+-			required-opps = <&rpmpd_opp_super_turbo>, <&cpr_opp3>, <&rpmpd_opp_nom>;
++			required-opps = <&rpmpd_opp_super_turbo>, <&cpr_opp4>, <&rpmpd_opp_nom>;
+ 			opp-supported-hw = <0x7>; /* 0, 1, 2 */
+ 		};
+ 		opp-1209600000 {
+ 			opp-hz = /bits/ 64 <1209600000>;
+-			required-opps = <&rpmpd_opp_super_turbo>, <&cpr_opp3>, <&rpmpd_opp_nom>;
++			required-opps = <&rpmpd_opp_super_turbo>, <&cpr_opp4>, <&rpmpd_opp_nom>;
+ 			opp-supported-hw = <0x5>; /* 0, 2 */
+ 		};
+ 		opp-1363200000 {
+ 			opp-hz = /bits/ 64 <1363200000>;
+-			required-opps = <&rpmpd_opp_super_turbo>, <&cpr_opp3>, <&rpmpd_opp_nom>;
++			required-opps = <&rpmpd_opp_super_turbo>, <&cpr_opp4>, <&rpmpd_opp_nom>;
+ 			opp-supported-hw = <0x4>; /* 2 */
+ 		};
+ 	};
+@@ -642,6 +641,42 @@
+ 				bits = <1 7>;
+ 			};
+ 
++			/* CPR fuse row 27 (downstream msm8916-regulator.dtsi) */
++			cpr_efuse_init_voltage3: init-voltage3@d8 {
++				reg = <0xd8 0x1>;
++				bits = <0 6>;
++			};
++
++			cpr_efuse_quot3: quot3@d8 {
++				reg = <0xd8 0x3>;
++				bits = <6 12>;
++			};
++
++			cpr_efuse_init_voltage2: init-voltage2@da {
++				reg = <0xda 0x1>;
++				bits = <2 6>;
++			};
++
++			cpr_efuse_quot2: quot2@db {
++				reg = <0xdb 0x2>;
++				bits = <0 12>;
++			};
++
++			cpr_efuse_init_voltage1: init-voltage1@dc {
++				reg = <0xdc 0x2>;
++				bits = <4 6>;
++			};
++
++			cpr_efuse_quot1: quot1@dd {
++				reg = <0xdd 0x2>;
++				bits = <2 12>;
++			};
++
++			cpr_efuse_ring: ring@de {
++				reg = <0xde 0x2>;
++				bits = <6 3>;
++			};
++
+ 			tsens_mode: mode@ef {
+ 				reg = <0xef 0x1>;
+ 				bits = <5 3>;
+@@ -2677,9 +2712,26 @@
+ 			#power-domain-cells = <0>;
+ 			operating-points-v2 = <&cpr_opp_table>;
+ 			acc-syscon = <&tcsr>;
+-			nvmem-cells = <&mem_acc_override>;
+-			nvmem-cell-names = "mem_acc_override";
+-			qcom,force-ceiling-voltage;
++			nvmem-cells = <&mem_acc_override>,
++				      <&cpr_efuse_init_voltage1>,
++				      <&cpr_efuse_init_voltage2>,
++				      <&cpr_efuse_init_voltage3>,
++				      <&cpr_efuse_quot1>,
++				      <&cpr_efuse_quot2>,
++				      <&cpr_efuse_quot3>,
++				      <&cpr_efuse_ring>,
++				      <&cpr_efuse_ring>,
++				      <&cpr_efuse_ring>;
++			nvmem-cell-names = "mem_acc_override",
++					   "cpr_init_voltage1",
++					   "cpr_init_voltage2",
++					   "cpr_init_voltage3",
++					   "cpr_quotient1",
++					   "cpr_quotient2",
++					   "cpr_quotient3",
++					   "cpr_ring_osc1",
++					   "cpr_ring_osc2",
++					   "cpr_ring_osc3";
+ 
+ 			cpr_opp_table: opp-table {
+ 				compatible = "operating-points-v2-qcom-level";
+@@ -2694,6 +2746,11 @@
+ 				};
+ 				cpr_opp3: opp3 {
+ 					opp-level = <3>;
++					qcom,opp-fuse-level = <3>;
++					qcom,opp-max-microvolt = <1162500>;
++				};
++				cpr_opp4: opp4 {
++					opp-level = <4>;
+ 					qcom,opp-fuse-level = <3>;
+ 				};
+ 			};
+--- a/drivers/pmdomain/qcom/cpr.c
++++ b/drivers/pmdomain/qcom/cpr.c
+@@ -155,12 +155,15 @@
+ struct cpr_fuses {
+ 	int init_voltage_step;
+ 	int init_voltage_width;
++	/* No quotient offset fuses: scale by the target quotient difference */
++	bool no_quot_offset;
+ 	const struct fuse_corner_data *fuse_corner_data;
+ };
+ 
+ struct corner_data {
+ 	unsigned int fuse_corner;
+ 	unsigned long freq;
++	int max_uV;
+ };
+ 
+ struct cpr_desc {
+@@ -182,6 +185,8 @@
+ 	struct cpr_fuses cpr_fuses;
+ 	bool reduce_to_fuse_uV;
+ 	bool reduce_to_corner_uV;
++	/* Use the fused (open-loop) voltages only, never enable closed loop */
++	bool open_loop;
+ };
+ 
+ struct acc_desc {
+@@ -690,8 +695,11 @@
+ 	cpr_write(drv, REG_RBIF_IRQ_EN(0), 0);
+ 	cpr_write(drv, REG_RBCPR_CTL, 0);
+ 
+-	/* Without fuses we never allow enabling, so skip initialization */
+-	if (!drv->cpr_fuses)
++	/*
++	 * Without fuses or in open-loop mode we never allow enabling, so skip
++	 * initialization
++	 */
++	if (!cpr_is_allowed(drv))
+ 		return 0;
+ 
+ 	/* Program the default HW ceiling, floor and vlevel */
+@@ -1079,6 +1087,22 @@
+ 	return fuse_corner;
+ }
+ 
++/*
++ * Optional "qcom,opp-max-microvolt" on a CPR OPP: caps the voltage of that
++ * level below its fuse corner's (0 = no cap).
++ */
++static int cpr_get_opp_max_uV(struct dev_pm_opp *opp)
++{
++	struct device_node *np;
++	u32 uV = 0;
++
++	np = dev_pm_opp_get_of_node(opp);
++	of_property_read_u32(np, "qcom,opp-max-microvolt", &uV);
++	of_node_put(np);
++
++	return uV;
++}
++
+ static unsigned long cpr_get_opp_hz_for_req(struct dev_pm_opp *ref,
+ 					    struct device *cpu_dev)
+ {
+@@ -1165,6 +1189,7 @@
+ 		}
+ 		cdata[level - 1].fuse_corner = fnum;
+ 		cdata[level - 1].freq = freq;
++		cdata[level - 1].max_uV = cpr_get_opp_max_uV(opp);
+ 
+ 		fuse = &drv->fuse_corners[fnum];
+ 		dev_dbg(drv->dev, "freq: %lu level: %u fuse level: %u\n",
+@@ -1251,6 +1276,9 @@
+ 
+ 		corner->max_uV = fuse->max_uV;
+ 		corner->min_uV = fuse->min_uV;
++		if (cdata[i].max_uV)
++			corner->max_uV = clamp(cdata[i].max_uV, corner->min_uV,
++					       corner->max_uV);
+ 		corner->uV = clamp(corner->uV, corner->min_uV, corner->max_uV);
+ 		corner->last_uV = corner->uV;
+ 
+@@ -1311,6 +1339,9 @@
+ 		if (!fuses[i].quotient)
+ 			return ERR_PTR(-ENOMEM);
+ 
++		if (desc->cpr_fuses.no_quot_offset)
++			continue;
++
+ 		snprintf(tbuf, 32, "cpr_quotient_offset%d", i + 1);
+ 		fuses[i].quotient_offset = devm_kstrdup(drv->dev, tbuf,
+ 							GFP_KERNEL);
+@@ -1401,28 +1432,54 @@
+ }
+ 
+ static const struct cpr_desc msm8916_cpr_desc = {
+-	/* NOTE: This is incomplete, fuse adjustments are not supported yet */
++	/*
++	 * Downstream msm8916-regulator.dtsi: fuse row 27, init voltage = ref +
++	 * 6-bit sign-magnitude x 10 mV, 12-bit target quotients, one ro-sel,
++	 * step quotient 26, floors 1.05/1.05/1.1625 V, ceilings 1.05/1.15/
++	 * 1.375 V. Open loop only: every corner runs its fused init voltage,
++	 * as downstream does before (and without) closed-loop AVS, which is
++	 * not validated here yet.
++	 */
++	.open_loop = true,
+ 	.num_fuse_corners = 3,
++	.min_diff_quot = CPR_FUSE_MIN_QUOT_DIFF,
++	.step_quot = (const int []){ 26, 26, 26, 26, 26, 26, 26, 26 },
++	.timer_delay_us = 5000,
++	.timer_cons_up = 0,
++	.timer_cons_down = 2,
++	.up_threshold = 0,
++	.down_threshold = 2,
++	.idle_clocks = 15,
++	.gcnt_us = 1,
++	.vdd_apc_step_up_limit = 1,
++	.vdd_apc_step_down_limit = 1,
+ 	.cpr_fuses = {
+-		.fuse_corner_data = (struct fuse_corner_data[]){
+-			/* fuse corner 0 */
++		.init_voltage_step = 10000,
++		.init_voltage_width = 6,
++		.no_quot_offset = true,
++		.fuse_corner_data = (const struct fuse_corner_data[]){
++			/* fuse corner 0 (SVS) */
+ 			{
++				.ref_uV = 1050000,
+ 				.max_uV = 1050000,
+ 				.min_uV = 1050000,
++				.quot_scale = 1,
+ 			},
+-			/* fuse corner 1 */
++			/* fuse corner 1 (NOM) */
+ 			{
+-				/*
+-				 * gt510: 1162500 (TURBO floor) instead of 1150000,
+-				 * since 998.4 MHz runs on this corner (see dtsi).
+-				 */
+-				.max_uV = 1162500,
++				.ref_uV = 1150000,
++				.max_uV = 1150000,
+ 				.min_uV = 1050000,
++				.max_quot_scale = 650,
++				.quot_scale = 1,
+ 			},
+-			/* fuse corner 2 */
++			/* fuse corner 2 (TURBO) */
+ 			{
+-				.max_uV = 1350000,
++				.ref_uV = 1375000,
++				.max_uV = 1375000,
+ 				.min_uV = 1162500,
++				.max_quot_scale = 650,
++				.quot_scale = 1,
+ 			},
+ 		},
+ 	},
+@@ -1612,7 +1669,7 @@
+ 	if (ret)
+ 		return ret;
+ 
+-	if (drv->cpr_fuses)
++	if (drv->cpr_fuses && !drv->desc->open_loop)
+ 		cpr_set_loop_allowed(drv);
+ 
+ 	ret = cpr_init_parameters(drv);
+--- a/drivers/regulator/qcom_spmi-regulator.c
++++ b/drivers/regulator/qcom_spmi-regulator.c
+@@ -2581,10 +2581,23 @@
+ 			of_node_put(reg_node);
+ 		}
+ 
+-		if (vreg->set_points && vreg->set_points->count == 1) {
+-			/* since there is only one range */
+-			range = vreg->set_points->range;
+-			vreg->desc.uV_step = range->step_uV;
++		if (vreg->set_points) {
++			const struct spmi_voltage_range *r;
++			int i, n = 0;
++
++			/*
++			 * The step is linear if only one range has set points
++			 * (the ULT bucks' second range is read-only).
++			 */
++			for (i = 0; i < vreg->set_points->count; i++) {
++				r = &vreg->set_points->range[i];
++				if (r->set_point_max_uV) {
++					range = r;
++					n++;
++				}
++			}
++			if (n == 1)
++				vreg->desc.uV_step = range->step_uV;
+ 		}
+ 
+ 		config.dev = dev;

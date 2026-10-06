@@ -20,7 +20,7 @@ rm -f 0001-kbuild-Add-fno-builtin-wcslen.patch
 rm -f 0*.patch  # the aport dir persists between runs: drop stale local patches first
 cp /src/kernel/0*.patch /src/kernel/gt510.config .
 sed -i \
-	-e 's/^pkgrel=.*/pkgrel=39/' \
+	-e 's/^pkgrel=.*/pkgrel=40/' \
 	-e "s|^\tconfig-\$_flavor.aarch64$|&\n\tgt510.config\n$(ls 0*.patch | sed 's/^/\\t/' | tr '\n' '@' | sed 's/@$//; s/@/\\n/g')|" \
 	-e 's|^\tmake ARCH="\$_carch" LLVM=1 olddefconfig$|\tcat "$srcdir/gt510.config" >> .config\n&|' \
 	APKBUILD

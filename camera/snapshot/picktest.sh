@@ -1,10 +1,13 @@
 #!/bin/sh
-# picktest.sh [runs] — ISSUES 33: launch GNOME Snapshot N times the normal way (gapplication launch = D-Bus
+# picktest.sh [runs] — ISSUES 33 (LATE=1: cameras arrive after Snapshot started, see below): launch GNOME Snapshot N times the normal way (gapplication launch = D-Bus
 # activation) and report which camera each launch opened (libcamera "configuring streams" in the camera service:
 # 640x480/1600x1200 NV21 = front SR200PC20, XRGB = rear SR544) plus aperture's own view of the device list
 # ("Camera found" = listed at provider start, "Camera added" = arrived later on the bus). Snapshot's debug log is
 # switched on for this test only (G_MESSAGES_DEBUG=snapshot in the activation environment) and removed at the end;
 # last-camera-id is restored if a run changed it. Session user; refuses if Snapshot or cam is already running.
+# LATE=1: per run the camera service (wireplumber@video-capture) is stopped BEFORE Snapshot launches and started
+# 1 s after, so the provider starts with no camera and both arrive one by one (ISSUES 8/33 case: front first).
+# The service is only ever started under an open Snapshot, never restarted (ISSUES 1 trap); it is left running.
 N=${1:-8}
 export XDG_RUNTIME_DIR=/run/user/$(id -u) DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus
 pgrep -x snapshot >/dev/null && { echo "Snapshot already running"; exit 3; }
@@ -18,7 +21,7 @@ cleanup() {
 	systemctl --user unset-environment G_MESSAGES_DEBUG
 	[ "$(gsettings get org.gnome.Snapshot last-camera-id)" = "$id0" ] || gsettings set org.gnome.Snapshot last-camera-id "$id0"
 }
-trap cleanup EXIT INT TERM
+trap 'cleanup; systemctl --user start wireplumber@video-capture' EXIT INT TERM
 dbus-update-activation-environment --systemd G_MESSAGES_DEBUG=snapshot >/dev/null 2>&1
 gdbus call --session --dest org.gnome.Mutter.DisplayConfig --object-path /org/gnome/Mutter/DisplayConfig \
 	--method org.freedesktop.DBus.Properties.Set org.gnome.Mutter.DisplayConfig PowerSaveMode "<0>" >/dev/null
@@ -26,8 +29,13 @@ echo "last-camera-id $id0"
 front=0; rear=0
 for i in $(seq 1 "$N"); do
 	t=$(date "+%Y-%m-%d %H:%M:%S"); sleep 1
-	gapplication launch org.gnome.Snapshot >/dev/null 2>&1
-	sleep 7
+	if [ "${LATE:-0}" = 1 ]; then
+		systemctl --user stop wireplumber@video-capture; sleep 2
+		gapplication launch org.gnome.Snapshot >/dev/null 2>&1; sleep 1
+		systemctl --user start wireplumber@video-capture; sleep 9
+	else
+		gapplication launch org.gnome.Snapshot >/dev/null 2>&1; sleep 7
+	fi
 	cfg=$(journalctl --user -u wireplumber@video-capture --since "$t" --no-pager -o cat 2>/dev/null |
 		grep -o "configuring streams: (0) [^ ]*" | sed 's/configuring streams: (0) //' | tr '\n' ' ')
 	ap=$(journalctl --user --since "$t" --no-pager -o cat 2>/dev/null | grep -o -E "Camera (found|added): Built-in [A-Za-z]+" |

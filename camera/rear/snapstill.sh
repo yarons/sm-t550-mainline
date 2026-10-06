@@ -3,7 +3,8 @@
 # touchscreen (video/uitap.py; positions as in video/snaprec.sh) and report the photo's size and the time from the
 # tap to the file, plus the viewfinder size PipeWire negotiated. Snapshot runs via systemd-run with the camera env
 # from gt510-camera.conf (a running session only picks environment.d changes up after a re-login).
-# GSTDBG=<GST_DEBUG spec> logs GStreamer to /tmp/snapstill-<tag>.gst. Run as the session user (sudo password <password> for uitap.py).
+# GSTDBG=<GST_DEBUG spec> logs GStreamer to /tmp/snapstill-<tag>.gst; SNAPBIN=<path> runs another snapshot binary
+# (e.g. one extracted from a test APK, not installed); WAIT=<s> before the tap (default 10). Run as the session user (sudo password <password> for uitap.py).
 export XDG_RUNTIME_DIR=/run/user/$(id -u) DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus
 T=$1; D=$HOME/Pictures/Camera
 mode0=$(gsettings get org.gnome.Snapshot capture-mode)
@@ -11,8 +12,8 @@ gsettings set org.gnome.Snapshot capture-mode picture
 gdbus call --session --dest org.gnome.Mutter.DisplayConfig --object-path /org/gnome/Mutter/DisplayConfig \
 	--method org.freedesktop.DBus.Properties.Set org.gnome.Mutter.DisplayConfig PowerSaveMode "<0>" >/dev/null
 systemd-run --user --unit=snapstill --collect env $(grep -v "^#" /etc/environment.d/60-gt510-camera.conf | tr "\n" " ") \
-	GSK_RENDERER=gl ${GSTDBG:+GST_DEBUG=$GSTDBG GST_DEBUG_FILE=/tmp/snapstill-$T.gst GST_DEBUG_NO_COLOR=1} snapshot >/dev/null 2>&1
-sleep 10
+	GSK_RENDERER=gl ${GSTDBG:+GST_DEBUG=$GSTDBG GST_DEBUG_FILE=/tmp/snapstill-$T.gst GST_DEBUG_NO_COLOR=1} ${SNAPBIN:-snapshot} >/dev/null 2>&1
+sleep ${WAIT:-10}
 N=libcamera_input._base_soc_0_cci_1b0c000_i2c-bus_0_camera_28
 vf=$(pw-dump 2>/dev/null | python3 -c '
 import json, sys
@@ -31,7 +32,7 @@ f=""; for i in $(seq 1 60); do sleep 0.25; n=$(ls -t "$D" 2>/dev/null | head -1)
 t1=$(date +%s.%N)
 gdbus call --session --dest org.gnome.Snapshot --object-path /org/gnome/Snapshot \
 	--method org.gtk.Actions.Activate quit "[]" "{}" >/dev/null 2>&1
-sleep 2; pkill -x snapshot 2>/dev/null
+sleep 2; pkill -x snapshot 2>/dev/null; [ -n "$SNAPBIN" ] && pkill -x "$(basename "$SNAPBIN")" 2>/dev/null
 gsettings set org.gnome.Snapshot capture-mode "$mode0"
 [ -n "$f" ] || { echo "$T: no new photo (viewfinder ${vf:-?}, transform $XFORM)"; exit 1; }
 sz=$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "$D/$f")
