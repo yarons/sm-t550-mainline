@@ -1,7 +1,7 @@
 # Local tweaks for the Samsung Galaxy Tab A 9.7 2015 (SM-T550, gt510wifi) on device-qcom-msm8916.
 pkgname=gt510-tweaks
 pkgver=1
-pkgrel=38
+pkgrel=41
 pkgdesc="SM-T550 (gt510wifi) integration: audio, charger, GPS, rotation, camera, trimmed services; Phosh"
 url="https://postmarketos.org"
 arch="noarch"
@@ -13,6 +13,7 @@ depends="
 	mesa>=26.2.4-r100
 	mesa-dri-gallium<26.2.5
 	gtk4.0=4.24.1-r100
+	ffmpeg-libavcodec=8.1.2-r102
 	alsa-utils
 	iio-sensor-proxy
 	phosh-mobile-settings
@@ -26,6 +27,8 @@ depends="
 	soc-qcom-msm8916-rproc
 	gnome-settings-daemon<999
 	rsync
+	python3
+	qmi-utils
 	"
 # gnome-settings-daemon<999: the systemd extra repo's gnome-settings-daemon-mobile provides
 # gnome-settings-daemon=999948.0. pmbootstrap installs local APKs (our phosh) with "apk add -u",
@@ -41,6 +44,9 @@ depends="
 # management; Alpine's gtk4.0 draws every video frame on the a306 instead (~10 fps for 1080p). An exact pin,
 # because a plain >= would let Alpine's next release replace it. When Alpine moves past 4.24.1, rebuild
 # packages/gtk4.0 on the new version first, then move this pin; every local gtk4.0 rebuild moves it too.
+# ffmpeg-libavcodec=8.1.2-r101: gt510-firefox-video.js forces Firefox's V4L2-M2M decoder (Venus); only the local
+# ffmpeg (packages/ffmpeg 0100 DRM PRIME output + 0101 timestamps without a timebase) makes that path work — with
+# Alpine's libavcodec every H.264 video in Firefox would freeze ("Got non-DRM-PRIME frame"). Exact pin, like gtk4.0.
 install="$pkgname.post-install $pkgname.post-upgrade"
 triggers="$pkgname.trigger=/usr/share/applications:/usr/lib"
 source="
@@ -48,6 +54,7 @@ source="
 	61-gt510-accel.rules
 	61-gt510-back-escape.hwdb
 	zz-gt510-gtk-gl.sh
+	gt510-firefox-video.js
 	gt510-bt-policy.pa
 	gt510-phosh-unblank
 	gt510-phosh-unblank.desktop
@@ -55,6 +62,10 @@ source="
 	gt510-keys.toml
 	30_gt510-phosh-keys.gschema.override
 	gpsd-pds.service
+	gt510-xtra
+	gt510-xtra-inject
+	gt510-xtra.service
+	gt510-xtra.timer
 	gt510-libcamera.yaml
 	gt510-camera.conf
 	90-gt510-split-video.conf
@@ -91,8 +102,11 @@ package() {
 	install -Dm644 "$srcdir"/gt510-modules.conf "$pkgdir"/etc/modules-load.d/gt510.conf
 	# Accelerometer Z sign (auto-rotate via iio-sensor-proxy)
 	install -Dm644 "$srcdir"/61-gt510-accel.rules -t "$pkgdir"/usr/lib/udev/rules.d/
-	install -Dm644 "$srcdir"/61-gt510-back-escape.hwdb -t "$pkgdir"/usr/lib/udev/hwdb.d/
+	# /etc/udev/hwdb.d, not /usr/lib/udev/hwdb.d: the systemd and mkinitfs apk triggers watch the latter, so every
+	# tweaks upgrade recompiled hwdb (twice, with post-upgrade) and rebuilt the initramfs (ISSUES 31)
+	install -Dm644 "$srcdir"/61-gt510-back-escape.hwdb -t "$pkgdir"/etc/udev/hwdb.d/
 	install -Dm644 "$srcdir"/zz-gt510-gtk-gl.sh -t "$pkgdir"/etc/profile.d/
+	install -Dm644 "$srcdir"/gt510-firefox-video.js -t "$pkgdir"/usr/lib/firefox-esr/defaults/pref/
 	# Bluetooth headsets stay on A2DP: HFP is silent on WCNSS (no SCO path in btqcomsmd), ISSUES 25
 	install -Dm644 "$srcdir"/gt510-bt-policy.pa "$pkgdir"/etc/pulse/default.pa.d/gt510-bt-policy.pa
 	# Phosh: fix a stale "display off" state so the power key blanks on the first press
@@ -104,6 +118,9 @@ package() {
 	install -Dm644 "$srcdir"/gt510-keys.toml -t "$pkgdir"/etc/hkdm/config.d/
 	# gpsd on the modem GNSS (Alpine gpsd ships no systemd unit)
 	install -Dm644 "$srcdir"/gpsd-pds.service -t "$pkgdir"/usr/lib/systemd/system/
+	# GNSS assistance: XTRA download + inject into the modem (ISSUES 29: TTFF ~12 min cold without it)
+	install -Dm755 "$srcdir"/gt510-xtra "$srcdir"/gt510-xtra-inject -t "$pkgdir"/usr/libexec/
+	install -Dm644 "$srcdir"/gt510-xtra.service "$srcdir"/gt510-xtra.timer -t "$pkgdir"/usr/lib/systemd/system/
 	# Front camera: YUV sensor, no soft ISP; camera monitor in its own WirePlumber
 	install -Dm644 "$srcdir"/gt510-libcamera.yaml "$pkgdir"/etc/libcamera/configuration.yaml
 	# Snapshot: prefer 4:3 modes (the 16:9 ones crop the 4:3 sensors on a 4:3 screen).

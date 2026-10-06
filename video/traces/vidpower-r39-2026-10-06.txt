@@ -1,0 +1,7 @@
+== vidpower 11:04:49 clip /home/user/vtest/t1920x1080-100s.mp4, 40 s per phase, #40 SMP PREEMPT Tue Oct  6 07:25:53 UTC 
+idle                468 mA  CPU  18.9 % of 400  showtime   0.0 %  shown 0.3 fps  venus fds 0  backlight 138  battery 83 %
+venus               658 mA  CPU  91.5 % of 400  showtime  22.5 %  shown 24.5 fps  venus fds 4  backlight 138  battery 83 %
+venus-nooffload     614 mA  CPU  67.2 % of 400  showtime  29.4 %  shown 10.0 fps  venus fds 4  backlight 138  battery 82 %
+sw                  993 mA  CPU 210.6 % of 400  showtime 169.7 %  shown 25.3 fps  venus fds 0  backlight 138  battery 82 %
+idle2               463 mA  CPU  18.4 % of 400  showtime   0.0 %  shown 0.3 fps  venus fds 0  backlight 138  battery 82 %
+DONE

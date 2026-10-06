@@ -4,8 +4,28 @@
 # never moves headsets to A2DP) and brings cards up "off" after a PulseAudio restart. Switch such a card to a2dp_sink
 # as soon as A2DP is available. "off" is only overridden on a card that is new (or present when this starts), so an
 # explicit "off" chosen in Settings is kept.
+# Once per start (login) it also connects paired+trusted audio sinks that are not connected: BlueZ only reconnects
+# after a link loss, and a headset gives up while the tablet reboots (Android reconnects the last headset at boot).
 
 pending=	# indices of new cards that may still be "off"
+
+autoconnect() {
+	for delay in 3 12 30; do
+		sleep $delay
+		bluetoothctl show 2>/dev/null | grep -q "Powered: yes" || continue
+		for dev in $(bluetoothctl devices Trusted 2>/dev/null | awk '$1 == "Device" {print $2}'); do
+			info=$(bluetoothctl info "$dev" 2>/dev/null)
+			case $info in *"Connected: yes"*) continue ;; esac
+			case $info in *"Paired: yes"*) ;; *) continue ;; esac
+			case $info in *"UUID: Audio Sink"*) ;; *) continue ;; esac
+			bluetoothctl --timeout 20 connect "$dev" >/dev/null 2>&1
+			bluetoothctl info "$dev" 2>/dev/null | grep -q "Connected: yes" &&
+				echo "gt510-bt-a2dp: connected $dev"
+		done
+	done
+}
+
+autoconnect &
 
 fix() {
 	out=$(pactl list cards 2>/dev/null | awk -v pend=" $pending " '

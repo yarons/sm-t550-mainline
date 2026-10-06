@@ -1,0 +1,64 @@
+From 77bac17e8ef520b2f0b0cd260f2fbf0d091d6e09 Mon Sep 17 00:00:00 2001
+From: Yaron Shahrabani <EMAIL>
+Date: Tue, 6 Oct 2026 08:30:04 +0000
+Subject: [PATCH 4/5] media: venus: venc: do not offer VIDIOC_CREATE_BUFS on
+ HFI 1.x
+
+The HFI 1.x firmware (MSM8916) is told the number of buffers once, when
+the session starts, and aborts the session as soon as a buffer it does
+not know about is queued. GStreamer grows its buffer pools with
+VIDIOC_CREATE_BUFS while streaming whenever the ioctl is available (a
+6th input and a 5th capture buffer here), which killed every encode;
+v4l2-ctl, which never grows its pools, worked.
+
+Return -ENOTTY on HFI 1.x, so that clients stay with the count they
+got from VIDIOC_REQBUFS.
+
+Fixes: aaaa93eda64b ("[media] media: venus: venc: add video encoder files")
+Assisted-by: claude-opus-5-5
+---
+ drivers/media/platform/qcom/venus/venc.c | 19 ++++++++++++++++++-
+ 1 file changed, 18 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/media/platform/qcom/venus/venc.c b/drivers/media/platform/qcom/venus/venc.c
+index b497ee2..0174e6d 100644
+--- a/drivers/media/platform/qcom/venus/venc.c
++++ b/drivers/media/platform/qcom/venus/venc.c
+@@ -569,6 +569,23 @@ unlock:
+ 	return ret;
+ }
+ 
++static int venc_create_bufs(struct file *file, void *fh,
++			    struct v4l2_create_buffers *create)
++{
++	struct venus_inst *inst = to_inst(file);
++
++	/*
++	 * The HFI 1.x firmware learns the buffer count once, at stream start
++	 * (BUFFER_COUNT_ACTUAL), and aborts the session as soon as a buffer it
++	 * does not know about is queued. GStreamer grows its pools with
++	 * CREATE_BUFS whenever the ioctl probes as available, so hide it.
++	 */
++	if (IS_V1(inst->core))
++		return -ENOTTY;
++
++	return v4l2_m2m_ioctl_create_bufs(file, fh, create);
++}
++
+ static const struct v4l2_ioctl_ops venc_ioctl_ops = {
+ 	.vidioc_querycap = venc_querycap,
+ 	.vidioc_enum_fmt_vid_cap = venc_enum_fmt,
+@@ -583,7 +600,7 @@ static const struct v4l2_ioctl_ops venc_ioctl_ops = {
+ 	.vidioc_s_selection = venc_s_selection,
+ 	.vidioc_reqbufs = v4l2_m2m_ioctl_reqbufs,
+ 	.vidioc_querybuf = v4l2_m2m_ioctl_querybuf,
+-	.vidioc_create_bufs = v4l2_m2m_ioctl_create_bufs,
++	.vidioc_create_bufs = venc_create_bufs,
+ 	.vidioc_prepare_buf = v4l2_m2m_ioctl_prepare_buf,
+ 	.vidioc_qbuf = v4l2_m2m_ioctl_qbuf,
+ 	.vidioc_expbuf = v4l2_m2m_ioctl_expbuf,
+base-commit: 2c3418fffa9d037b2038a6db48be63f9e2291806
+
+-- 
+2.54.0 (Apple Git-157)
+

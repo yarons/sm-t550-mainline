@@ -1,0 +1,33 @@
+From: gt510 <gt510@localhost>
+Subject: avcodec/v4l2_buffers: keep timestamps when the caller sets no timebase
+
+v4l2_get_timebase() returns pkt_timebase, else time_base. A caller that
+sets neither (Firefox's FFmpeg video decoder) gets {0, 0}, and every
+av_rescale_q() through it turns the packet pts into AV_NOPTS_VALUE: all
+decoded frames come out without timestamps, Firefox drops them as late and
+flushes over and over (Venus on the SM-T550: 62 flushes, the 100 s clip
+skipped to its end in ~30 s). Fall back to the V4L2 microsecond timebase
+itself, i.e. pass the timestamps through unchanged.
+---
+diff --git a/libavcodec/v4l2_buffers.c b/libavcodec/v4l2_buffers.c
+index 0d30295..cbd5c58 100644
+--- a/libavcodec/v4l2_buffers.c
++++ b/libavcodec/v4l2_buffers.c
+@@ -58,9 +58,15 @@ static inline AVRational v4l2_get_timebase(V4L2Buffer *avbuf)
+ {
+     V4L2m2mContext *s = buf_to_m2mctx(avbuf);
+ 
+-    if (s->avctx->pkt_timebase.num)
++    if (s->avctx->pkt_timebase.num && s->avctx->pkt_timebase.den)
+         return s->avctx->pkt_timebase;
+-    return s->avctx->time_base;
++    if (s->avctx->time_base.num && s->avctx->time_base.den)
++        return s->avctx->time_base;
++    /*
++     * No timebase at all (Firefox sets neither): pass the timestamps through
++     * unchanged instead of rescaling them by 0/0 into AV_NOPTS_VALUE.
++     */
++    return v4l2_timebase;
+ }
+ 
+ static inline void v4l2_set_pts(V4L2Buffer *out, int64_t pts)

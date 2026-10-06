@@ -1,0 +1,71 @@
+To: David Heidelberg <david@ixit.cz>
+Cc: Vikash Garodia <vikash.garodia@oss.qualcomm.com>,
+ Dikshita Agarwal <dikshita.agarwal@oss.qualcomm.com>,
+ Bryan O'Donoghue <bod@kernel.org>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Stanimir Varbanov <stanimir.varbanov@linaro.org>,
+ linux-media@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] media: venus: vdec: Start capture after a seek that
+ streams CAPTURE first
+In-Reply-To: <20260928-venus-vdec-eos-v1-2-6e9eb3ce9849@ixit.cz>
+
+Hi David,
+
+I ran into the same seek stall on MSM8916 (HFI 1.x, firmware
+VIDEO.VE.1.8) and ended up with an equivalent change, so thanks for
+posting this. On that firmware it needs one more piece, though.
+
+Between the CAPTURE STREAMON and the OUTPUT STREAMON, the capture
+buffers userspace queues go straight to the firmware from
+venus_helper_vb2_buf_queue() (start_streaming_called is already set),
+but they also stay in the m2m context. The new SEEK path then submits
+them a second time through venus_helper_process_initial_cap_bufs().
+GStreamer queues buffers in that window on almost every seek, and the
+1.x firmware answers with "Err_Fatal - ...\venus\utils\src\vbuffer.c:623"
+followed by a system error and recovery (7 of them in one test session,
+none without the patch).
+
+Keeping capture buffers in the m2m context while the decoder is in SEEK
+and OUTPUT is off fixes that here; the diff on top of your patch is
+below. With both, flushing seeks to 0 s and 10 s in GStreamer playbin3,
+and seeking in Firefox (FFmpeg h264_v4l2m2m), play on without firmware
+errors. Seeks also exposed a second, independent bug (stale parked
+capture buffers after STREAMOFF), for which I'm sending "media: venus:
+vdec: drop parked capture buffers on capture STREAMOFF" separately.
+
+If you fold this into v2, feel free to add:
+
+Tested-by: Yaron Shahrabani <EMAIL> # SM-T550 (MSM8916, HFI 1.x)
+
+This was found and tested with the help of an AI assistant; I reviewed
+and tested the change myself.
+
+Thanks,
+Yaron
+
+---
+diff --git a/drivers/media/platform/qcom/venus/vdec.c b/drivers/media/platform/qcom/venus/vdec.c
+index fddde47..a727b42 100644
+--- a/drivers/media/platform/qcom/venus/vdec.c
++++ b/drivers/media/platform/qcom/venus/vdec.c
+@@ -1412,6 +1412,19 @@ static void vdec_vb2_buf_queue(struct vb2_buffer *vb)
+ 		return;
+ 	}
+ 
++	/*
++	 * During a seek, keep capture buffers in the m2m context until the
++	 * output queue is restarted: vdec_start_output() hands all of them to
++	 * the firmware after the first input buffers. Submitting them here as
++	 * well would give the firmware the same buffer twice.
++	 */
++	if (V4L2_TYPE_IS_CAPTURE(vb->vb2_queue->type) &&
++	    inst->codec_state == VENUS_DEC_STATE_SEEK && !inst->streamon_out) {
++		v4l2_m2m_buf_queue(inst->m2m_ctx, vbuf);
++		mutex_unlock(&inst->lock);
++		return;
++	}
++
+ 	venus_helper_vb2_buf_queue(vb);
+ 	mutex_unlock(&inst->lock);
+ }

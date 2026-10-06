@@ -54,9 +54,10 @@ High 4 Mbit/s made with ffmpeg libx264, decbench.py, showbench.sh, planefps.py):
 - Tablet: unlocked + on USB power for this (it auto-locks after suspend now — Phosh lock on resume, gt510-tweaks
   disables lock only on blank; to check). Wi-Fi LAN-IP (./gw). Laptop keep-awake expired (it sleeps).
   Test module 0129 is LOADED on the tablet right now.
-- PUSHED 06ed139 (2026-10-06): ISSUES 20 + haptics/ + video/ tools + these notes. NOT published: kernel/0129
-  and video/venus-0129-v1-double-submit.patch (WIP, broken); video/ref/ (upstream copies, excluded in
-  assemble-public.sh like the other ref/ dirs).
+- PUSHED 7ffd5b4 (2026-10-06 ~10:15, session 392683; before: 06ed139): kernel 0129/0130/0131, gtk4.0 0103 (old
+  0100-0102 dropped), snapshot 0103, libcamera 0110, ffmpeg r100 (d5c224), gt510-tweaks BT files (4d591a), gps/touchkey
+  tools, video tools + traces, notes + ISSUES 21-28. review/scrub-map.tsv now also maps Yaron's headset BT MAC.
+  Excluded as before: video/ref/, images/videos (*.png/*.mp4), attic/ (incl. 4d591a's PA source copies).
 - HANDED OFF 2026-10-06 08:35 from session d5c224 to session 392683 (Yaron's call).
 - 0129 v1 CRASHES THE FIRMWARE (session 392683, 08:40): dmesg since the v1 insmod = 7× `SFR … Err_Fatal
   vbuffer.c:623` + `no valid instance(session_id:dead)` + "system error (recovered)", 48× 1004; NONE before the insmod
@@ -128,6 +129,21 @@ High 4 Mbit/s made with ffmpeg libx264, decbench.py, showbench.sh, planefps.py):
   reverted. **r39 = r38 + 0131 QUEUED** (Yaron, ~09:50; pkgrel 39 in kernel/apply-7.3.sh + pmos-gt510.sh, laptop job
   kernel-r39 chained after tweaks-r38 → gtk4-r100 → d5c224's ffmpeg100b, so pmbootstrap jobs never overlap). Install =
   reboot: ask Yaron, announce to d5c224/4d591a, `sudo systemctl reboot --no-block`.
+- UPSTREAM VENUS (11:35): upstream/venus/README.md — A) reply to David Heidelberg's 2026-09-28 seek patch (= our 0129
+  minus the buf_queue gate → double submit) with fixup + Tested-by offer; B) 0130 as a new patch; C) encoder series
+  0107/0109/0110/0111/0131 + cover letter. Formatted vs mainline 2c3418fffa9d, checkpatch/get_maintainer done.
+  Yaron reviews, adds Signed-off-by, sends. ref/ (mainline copies, mboxes) excluded from the public repo.
+- LAPTOP BUSY from 2026-10-06 11:15 for ~6-10 h: lineage-build-first-j8 (session 153de1; matches the queue's busy check, so
+  queued gt510 jobs wait). Build gt510 packages in colima t290 meanwhile (d5c224/4d591a seeded its repo; same key).
+- (11:08: 4d591a accidentally truncated ISSUES.md and restored it from file history + 7ffd5b4 — re-check ISSUES 21 e/f.)
+- **r39 BATCH INSTALLED 10:32** (one apk add + one reboot): kernel r39 (#40, 0131; venus_enc CED380CB, venus_dec CEEE21FD,
+  taint 0) + gtk4.0/-lang 4.24.1-r100 + gt510-tweaks **1-r39** (d5c224's superset of my r38: + Firefox video prefs, +
+  ffmpeg-libavcodec=8.1.2-r101 pin, + e173ce's /etc/machine-info rebrand). VERIFIED: encbench bars 2.00 Mbit/s (2 VBR),
+  seek 10 → 13.35 s, gt510-bt-a2dp active, **Showtime on Venus + GTK offload: 29.2 fps shown (was 10), 0 offload
+  refusals, Showtime 27 % of one core**; "too many pending frames" only in the first 4 s (startup), none after; colours
+  right (testsrc2 bars). POWER 11:05 (ISSUES 21 f): Venus+offload 658 mA / 24.5 fps vs software 993 mA, idle 468 mA.
+  NEXT: packages/showtime (TEST copy only so far); snapshot r113 +
+  libcamera r112 still building on the laptop (~11:01 / ~11:07), then install them (no reboot) + snaprec re-check.
 - SNAPSHOT RECORDING with 0131 (10:00): video 0.78 Mbit/s (driver default 1 Mbit/s; aperture has no v4l2h264enc
   entry in its DEFAULT_BITRATE map). packages/snapshot r113 = + 0103-aperture-v4l2h264enc-bitrate.patch (extra-controls
   video_bitrate = 2048*1024), Yaron 10:05. Laptop chain: ffmpeg100b (d5c224) → gtk4-r100 → tweaks-r38 (+ 4d591a's
@@ -162,15 +178,10 @@ Headphone jack parked by Yaron.
 - 5 MP STILLS (d5c224, #7, IN FLIGHT) = ISSUES 24: 5 MP soft ISP now 9.5 fps (was 0.7); 1296x972 25.7. Next: quality
   check with Yaron aiming the camera (camera/rear/lastframe.sh), then decide reconfigure-on-shutter in aperture vs a
   5 MP viewfinder. Laptop builder went offline ~09:35 (asleep?) with ffmpeg100b mid-build.
-- FIREFOX 1080p (d5c224, IN FLIGHT) = ISSUES 23 (all numbers there). Decode is not the limit (ffmpeg SW 1080p25
-  H.264 1.2 cores; Venus via h264_v4l2m2m 6 %); Firefox's path is: 3 decode threads 222 % + WebRender upload 93 % =
-  all 4 cores, 17.7 fps, plus RAM (uBlock Origin force-installed by policy). Forced HW decode reaches Venus but stalls
-  on "Got non-DRM-PRIME frame". packages/ffmpeg r100 (Alpine 8.1.2-r3 + LibreELEC v4l2-drmprime as 0100) is READY,
-  NOT BUILT — waiting for Yaron (laptop asleep). Then gt510-tweaks Firefox prefs (force-enabled HW decode + YouTube
-  H.264 only) and fxbench.sh with PROF=/home/user/.cache/fxbench-prof (warm bench profile on the tablet, 78 MB).
-  Seeks need kernel 0129 (392683). Tools: video/{swdec.sh,fxbench.sh}, video/clips/ (not published).
-
-## STATE (2026-10-05 17:40) — kernel r37 on the tablet, next: vibration (ISSUES list after the hardware review)
+- FIREFOX 1080p (d5c224) = ISSUES 23: HW decode in Firefox WORKS (ffmpeg r101 = Alpine 8.1.2 + 0100 LibreELEC
+  drmprime + 0101 timebase fallback, installed): 57 % CPU vs 410 %, ~28 fps shown, seeks OK. tweaks r39 (prefs +
+  exact ffmpeg pin + e173ce rebrand) goes in with 392683's kernel r39 batch. Next: YouTube test with Yaron.
+  colima t290 builds gt510 packages natively (gt510-pmos image + gt510-pmos-vol; seeded with laptop APKs).
 - Kernel **r37** (#38) INSTALLED = r35 + 0127 (Home key + hall sensor wake from suspend, ISSUES 18) + 0128
   (msm8916-wcd-analog: PM8916 sequence clears MICB_1_INT_RBIAS → mic 16 kHz tone gone, ISSUES 19). The 20261005
   release still has r35 (no Home wake, mic tone) — a newer release would carry both.
@@ -249,7 +260,7 @@ drop parked (READONLY) capture buffers on capture STREAMOFF (ours). REVERTED: 01
   emails/coordinates/the tablet password), move `.git` out and back around it, commit (author Yaron Shahrabani
   <406826+yarons@users.noreply.github.com>, `Co-Authored-By` trailer), scan the diff, push. `review/` is never
   published (it holds the scrub map). Yaron's rules: no photos/raw camera dumps, name yes / email no, GPL-2.0.
-  HEAD 06ed139 (2026-10-06: session notes + haptics/video tools; code = fbcaa52 kernel r37, Mesa 26.2.4 at 5248021). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
+  HEAD 7ffd5b4 (2026-10-06: Venus 0129-0131, gtk4.0/snapshot/libcamera/ffmpeg local patches, notes ISSUES 21-28; before: 06ed139). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
 - Release images: `pmos-gt510.sh install-public` (no SSH keys, sshd off, UTC, password 147147) + `release`
   (xz'd sparse userdata image, lk2nd, MANIFEST.txt, SHA256SUMS). gt510-tweaks r35 rebrands the OS on-device
   ("SM-T550 Mainline (unofficial, based on Nura)", ID=nura kept, text plymouth theme sm-t550, Adwaita wallpaper).

@@ -19,6 +19,18 @@ fi
 if [ -f /etc/issue ] && grep -q '^Welcome to Nura' /etc/issue; then
 	sed -i 's|^Welcome to Nura!*|Welcome to SM-T550 Mainline (unofficial, based on Nura)!|' /etc/issue
 fi
+# Device name: the generic port's /etc/machine-info (device-qcom-msm8916) says "Qualcomm msm8916-based device",
+# which bluetoothd advertises (PRETTY_HOSTNAME) and Settings shows. Replace only those exact defaults, so a name the
+# user set (Settings > About, hostnamectl --pretty) stays; an edited /etc file also survives device package upgrades.
+# hostnamed rewrites the file without quotes around values that have no spaces (HARDWARE_VENDOR=Qualcomm).
+# bluetoothd reads the name at start: a running one keeps the old name until it restarts.
+m=/etc/machine-info
+if [ -f "$m" ]; then
+	sed -i \
+		-e 's|^PRETTY_HOSTNAME="Qualcomm msm8916-based device"$|PRETTY_HOSTNAME="Galaxy Tab A 9.7"|' \
+		-e 's|^HARDWARE_VENDOR="\{0,1\}Qualcomm"\{0,1\}$|HARDWARE_VENDOR=Samsung|' \
+		-e 's|^HARDWARE_MODEL="msm8916-based device"$|HARDWARE_MODEL="Galaxy Tab A 9.7 (SM-T550)"|' "$m"
+fi
 c=/etc/plymouth/plymouthd.conf
 if [ -d /usr/share/plymouth/themes/sm-t550 ] && ! grep -q '^Theme=' "$c" 2>/dev/null; then
 	mkdir -p /etc/plymouth

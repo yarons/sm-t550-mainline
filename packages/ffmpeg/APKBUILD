@@ -4,13 +4,16 @@
 # frame from FFmpeg V4L2"). Software pixel formats still work for every other caller. pkgrel 100+ = local.
 # svt-av1-dev is listed at the top: pmbootstrap's APKBUILD parser ignores the `case $CARCH` block that adds it for
 # aarch64, so configure (--enable-libsvtav1) failed with "SvtAv1Enc >= 0.9.0 not found".
+# r101: + 0101 (v4l2m2m timestamps when the caller sets no timebase: Firefox got AV_NOPTS_VALUE on every frame).
+# r102: + 0102 (delayed capture requeue: Firefox released frames before compositing → corruption; coded height
+# for DRM PRIME frames: Firefox's chroma offset). LTO off: under pmbootstrap's qemu the LTO link alone took ~50 min (lto1 emulated); the build is ~4x faster without.
 # Contributor: Sergei Lukin <sergej.lukin@gmail.com>
 # Contributor: Łukasz Jendrysik <scadu@yandex.com>
 # Contributor: Jakub Skrzypnik <j.skrzypnik@openmailbox.org>
 maintainer="Achill Gilgenast <achill@achill.org>"
 pkgname=ffmpeg
 pkgver=8.1.2
-pkgrel=100
+pkgrel=102
 pkgdesc="Complete and free Internet live audio and video broadcasting solution for Linux/Unix"
 url="https://ffmpeg.org/"
 arch="all"
@@ -87,6 +90,8 @@ source="https://ffmpeg.org/releases/ffmpeg-$pkgver.tar.xz
 	add-av_stream_get_first_dts-for-chromium.patch
 	posix-ioctl.patch
 	0100-v4l2m2m-drm-prime-output.patch
+	0101-v4l2m2m-timestamps-without-timebase.patch
+	0102-v4l2m2m-delay-capture-requeue-and-coded-height.patch
 	"
 options="!check" # tests/data/hls-lists.append.m3u8 fails
 
@@ -293,7 +298,6 @@ build() {
 		--enable-libxvid \
 		--enable-libzimg \
 		--enable-libzmq \
-		--enable-lto=auto \
 		--enable-lv2 \
 		--enable-openssl \
 		--enable-pic \
@@ -399,4 +403,6 @@ b3adc16fe426217bb607da01c4137cee0a9788fc08e077874336db185d2b7287746a7dc94cf0181e
 0c2284bc053c92478ce6e3665e03273cb93926534c6f927eb60e060c7770c68dca12724853adbcac03c4a58df81f2de938d54e82f43c7e789d345bed872ffc69  add-av_stream_get_first_dts-for-chromium.patch
 790b3ea796855f0572531eec8bb436f8ae2b894e29ea7fa2bf7fcddbbc1a58da5c403b366bc116729b92da54ca6d74c82df3bb71c5069e41ae8540a38f7151ae  posix-ioctl.patch
 a684319943ed9b6fd49f12148ca9ec8ef9375e34d5cd65c5afdf862b5f4912c70a2f2d15263e08b518373e7128bdda3db3d6d4e9cfbdf2db10d53b5a3e0250c0  0100-v4l2m2m-drm-prime-output.patch
+81cea8597e64298c4523d37c01dcaea40f72f008bdcdcb33368afba2c80a7b1b361987bda97dd492542345740195125e1226eb80453e0765adeca129ebb45926  0101-v4l2m2m-timestamps-without-timebase.patch
+c1d42975329bbfa9b68b5a5f80babacfa0507afa623cb6b3acb7c36182e27702498df26762356b21883cf30d4a88d9de619be947cec45eadd74438af570f4dd7  0102-v4l2m2m-delay-capture-requeue-and-coded-height.patch
 "

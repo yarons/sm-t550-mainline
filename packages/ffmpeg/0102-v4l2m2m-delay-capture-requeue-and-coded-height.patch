@@ -1,0 +1,183 @@
+From: gt510 <gt510@localhost>
+Subject: avcodec/v4l2m2m: delay capture buffer requeue; coded height for DRM PRIME
+
+Two problems with zero-copy (DRM PRIME) users of the V4L2 M2M decoders,
+seen with Firefox 140 on the Venus decoder of the SM-T550 (MSM8916):
+
+1. Firefox releases each decoded frame (ReleaseUnusedVAAPIFrames() before
+   every avcodec_receive_frame()) before the compositor has used it. The
+   buffer goes straight back to the driver, the firmware decodes the next
+   pictures into it, and the screen shows blocks of later frames in every
+   moving area. Venus' own output is bit-exact (framemd5 against the
+   software decoder, 600/600 frames). Released capture buffers now wait
+   for V4L2_CAPTURE_REQUEUE_DELAY (8) later releases before they are
+   queued again, and the default num_capture_buffers goes from 20 to 24 so
+   the driver keeps enough of them.
+
+2. Firefox places the chroma plane of a single-buffer NV12 frame at
+   pitch * frame->height, but the buffer holds the coded height (1088 rows
+   for 1080p): the colours sat 8 rows too high and the top rows showed a
+   green band. DRM PRIME frames now report the coded height. A bottom crop
+   cannot express this: av_frame_apply_cropping() folds it back into the
+   height for hwaccel formats.
+---
+diff --git a/libavcodec/v4l2_buffers.c b/libavcodec/v4l2_buffers.c
+index cbd5c58..186418b 100644
+--- a/libavcodec/v4l2_buffers.c
++++ b/libavcodec/v4l2_buffers.c
+@@ -28,6 +28,7 @@
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <poll.h>
++#include <string.h>
+ #include "libavcodec/avcodec.h"
+ #include "libavutil/hwcontext.h"
+ #include "libavutil/pixdesc.h"
+@@ -313,6 +314,39 @@ static uint8_t * v4l2_get_drm_frame(V4L2Buffer *avbuf)
+     return (uint8_t *) drm_desc;
+ }
+ 
++/*
++ * Queue a released capture buffer to the driver only after
++ * V4L2_CAPTURE_REQUEUE_DELAY later releases. A zero-copy user (Firefox's V4L2
++ * decoder) drops its reference to a decoded frame before the frame has been
++ * composited, and the driver may hand a requeued buffer straight back to the
++ * decoder, which then overwrites a picture that is still waiting to be shown
++ * or still on screen (Venus on MSM8916: blocks of later frames in moving
++ * areas). Output buffers and small capture pools are queued at once.
++ */
++static void v4l2_requeue_capture(V4L2Buffer *avbuf)
++{
++    V4L2Context *ctx = avbuf->context;
++    V4L2Buffer *ready = avbuf;
++
++    if (!V4L2_TYPE_IS_OUTPUT(ctx->type) &&
++        ctx->num_buffers > 2 * V4L2_CAPTURE_REQUEUE_DELAY) {
++        ff_mutex_lock(&ctx->delay_lock);
++        ctx->delayed[ctx->nb_delayed++] = avbuf;
++        if (ctx->nb_delayed > V4L2_CAPTURE_REQUEUE_DELAY) {
++            ready = ctx->delayed[0];
++            memmove(&ctx->delayed[0], &ctx->delayed[1],
++                    V4L2_CAPTURE_REQUEUE_DELAY * sizeof(ctx->delayed[0]));
++            ctx->nb_delayed--;
++        } else {
++            ready = NULL;
++        }
++        ff_mutex_unlock(&ctx->delay_lock);
++    }
++
++    if (ready)
++        ff_v4l2_buffer_enqueue(ready);
++}
++
+ static void v4l2_free_buffer(void *opaque, uint8_t *unused)
+ {
+     V4L2Buffer* avbuf = opaque;
+@@ -330,7 +364,7 @@ static void v4l2_free_buffer(void *opaque, uint8_t *unused)
+                 avbuf->status = V4L2BUF_AVAILABLE;
+             }
+             else if (avbuf->context->streamon)
+-                ff_v4l2_buffer_enqueue(avbuf);
++                v4l2_requeue_capture(avbuf);
+         }
+ 
+         av_refstruct_unref(&avbuf->context_ref);
+@@ -604,6 +638,21 @@ int ff_v4l2_buffer_buf_to_avframe(AVFrame *frame, V4L2Buffer *avbuf)
+     /* these values are updated also during re-init in v4l2_process_driver_event */
+     frame->height = avbuf->context->height;
+     frame->width = avbuf->context->width;
++
++    /*
++     * A DRM PRIME user (Firefox) finds the chroma plane of a single-buffer
++     * NV12/YUV420 frame at pitch * frame->height, but the buffer holds the
++     * coded (aligned) height, e.g. 1088 rows for 1080p: report that height.
++     * A bottom crop would not help, av_frame_apply_cropping() folds it back
++     * into the height for hwaccel formats.
++     */
++    if (frame->format == AV_PIX_FMT_DRM_PRIME && avbuf->num_planes == 1) {
++        int coded = V4L2_TYPE_IS_MULTIPLANAR(avbuf->context->type) ?
++                    avbuf->context->format.fmt.pix_mp.height :
++                    avbuf->context->format.fmt.pix.height;
++        if (coded > frame->height)
++            frame->height = coded;
++    }
+     frame->sample_aspect_ratio = avbuf->context->sample_aspect_ratio;
+ 
+     /* 3. report errors upstream */
+diff --git a/libavcodec/v4l2_context.c b/libavcodec/v4l2_context.c
+index 1f1fd6d..818fac1 100644
+--- a/libavcodec/v4l2_context.c
++++ b/libavcodec/v4l2_context.c
+@@ -744,6 +744,11 @@ void ff_v4l2_context_release(V4L2Context* ctx)
+     if (!ctx->buffers)
+         return;
+ 
++    ff_mutex_lock(&ctx->delay_lock);
++    ctx->nb_delayed = 0;
++    ff_mutex_unlock(&ctx->delay_lock);
++    ff_mutex_destroy(&ctx->delay_lock);
++
+     ret = v4l2_release_buffers(ctx);
+     if (ret)
+         av_log(logger(ctx), AV_LOG_WARNING, "V4L2 failed to unmap the %s buffers\n", ctx->name);
+@@ -766,6 +771,9 @@ int ff_v4l2_context_init(V4L2Context* ctx)
+     if (ret)
+         av_log(logger(ctx), AV_LOG_ERROR, "%s VIDIOC_G_FMT failed\n", ctx->name);
+ 
++    ff_mutex_init(&ctx->delay_lock, NULL);
++    ctx->nb_delayed = 0;
++
+     memset(&req, 0, sizeof(req));
+     req.count = ctx->num_buffers;
+     req.memory = V4L2_MEMORY_MMAP;
+diff --git a/libavcodec/v4l2_context.h b/libavcodec/v4l2_context.h
+index 858d0ec..a29d07d 100644
+--- a/libavcodec/v4l2_context.h
++++ b/libavcodec/v4l2_context.h
+@@ -30,10 +30,17 @@
+ #include "libavutil/pixfmt.h"
+ #include "libavutil/frame.h"
+ #include "libavutil/rational.h"
++#include "libavutil/thread.h"
+ #include "codec_id.h"
+ #include "packet.h"
+ #include "v4l2_buffers.h"
+ 
++/**
++ * Number of later releases a released capture buffer waits for before it is
++ * queued to the driver again (see v4l2_free_buffer()).
++ */
++#define V4L2_CAPTURE_REQUEUE_DELAY 8
++
+ typedef struct V4L2Context {
+     /**
+      * context name.
+@@ -95,6 +102,15 @@ typedef struct V4L2Context {
+ 
+     AVBufferRef *frames_ref;
+ 
++    /**
++     * Capture context: buffers released by the user that are not queued to
++     * the driver yet (oldest first), and the lock that guards them (buffers
++     * are released from any thread).
++     */
++    V4L2Buffer *delayed[V4L2_CAPTURE_REQUEUE_DELAY + 1];
++    int nb_delayed;
++    AVMutex delay_lock;
++
+ } V4L2Context;
+ 
+ /**
+diff --git a/libavcodec/v4l2_m2m_dec.c b/libavcodec/v4l2_m2m_dec.c
+index 0dc848f..383d23d 100644
+--- a/libavcodec/v4l2_m2m_dec.c
++++ b/libavcodec/v4l2_m2m_dec.c
+@@ -295,7 +295,7 @@ static void v4l2_decode_flush(AVCodecContext *avctx)
+ static const AVOption options[] = {
+     V4L_M2M_DEFAULT_OPTS,
+     { "num_capture_buffers", "Number of buffers in the capture context",
+-        OFFSET(num_capture_buffers), AV_OPT_TYPE_INT, {.i64 = 20}, 2, INT_MAX, FLAGS },
++        OFFSET(num_capture_buffers), AV_OPT_TYPE_INT, {.i64 = 24}, 2, INT_MAX, FLAGS },
+     { "pixel_format", "Pixel format to be used by the decoder", OFFSET(pix_fmt), AV_OPT_TYPE_PIXEL_FMT, {.i64 = AV_PIX_FMT_NONE}, AV_PIX_FMT_NONE, AV_PIX_FMT_NB, FLAGS },
+     { NULL},
+ };

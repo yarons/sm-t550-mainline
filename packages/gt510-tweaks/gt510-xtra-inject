@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+# gt510 (ISSUES 29): inject Qualcomm XTRA predicted orbits into the modem GNSS engine over QRTR/QMI LOC, so the first
+# fix takes seconds instead of a ~12 min cold start. libqmi's qmicli has no XTRA-data injection, hence this.
+# Message layout from libqmi data/qmi-service-loc.json: LOC 0x0035 "Inject Predicted Orbits Data" = TLV 0x01 total
+# size (u32), 0x02 total parts (u16), 0x03 part number (u16, 1-based), 0x04 part data (u16 length + <=1024 bytes),
+# 0x10 format (u32, 0 = XTRA); each part → response (TLV 0x02 result) then indication 0x0035 (TLV 0x01 status).
+# Usage: gt510-xtra-inject FILE   (run as root; exit 0 when every part was accepted)
+import socket, struct, sys
+
+LOC_SERVICE = 16
+MSG_INJECT = 0x0035
+PART = 1024
+
+
+def lookup_loc():
+    s = socket.socket(socket.AF_QIPCRTR, socket.SOCK_DGRAM)
+    s.settimeout(2)
+    s.sendto(struct.pack("<5I", 10, LOC_SERVICE, 0, 0, 0), (1, 0xfffffffe))  # QRTR_TYPE_NEW_LOOKUP
+    try:
+        while True:
+            t, svc, _inst, node, port = struct.unpack("<5I", s.recv(64)[:20])
+            if t == 4 and svc == LOC_SERVICE:  # QRTR_TYPE_NEW_SERVER
+                return node, port
+            if t == 4 and svc == 0:
+                break
+    except socket.timeout:
+        pass
+    sys.exit("gt510-xtra-inject: no QMI LOC service on QRTR (modem down?)")
+
+
+def tlv(t, fmt, *v):
+    body = struct.pack(fmt, *v)
+    return struct.pack("<BH", t, len(body)) + body
+
+
+def parse_tlvs(b):
+    out, i = {}, 0
+    while i + 3 <= len(b):
+        t, n = struct.unpack_from("<BH", b, i)
+        out[t] = b[i + 3:i + 3 + n]
+        i += 3 + n
+    return out
+
+
+def main():
+    data = open(sys.argv[1], "rb").read()
+    if not data:
+        sys.exit("gt510-xtra-inject: empty file")
+    dest = lookup_loc()
+    s = socket.socket(socket.AF_QIPCRTR, socket.SOCK_DGRAM)
+    s.settimeout(10)
+    parts = (len(data) + PART - 1) // PART
+    for n in range(1, parts + 1):
+        chunk = data[(n - 1) * PART:n * PART]
+        txn = n & 0xffff
+        tlvs = (tlv(0x01, "<I", len(data)) + tlv(0x02, "<H", parts) + tlv(0x03, "<H", n) +
+                struct.pack("<BHH", 0x04, len(chunk) + 2, len(chunk)) + chunk + tlv(0x10, "<I", 0))
+        s.sendto(struct.pack("<BHHH", 0x00, txn, MSG_INJECT, len(tlvs)) + tlvs, dest)
+        got_resp = got_ind = False
+        while not (got_resp and got_ind):
+            try:
+                m = s.recv(4096)
+            except socket.timeout:
+                sys.exit(f"gt510-xtra-inject: timeout on part {n}/{parts} (resp={got_resp} ind={got_ind})")
+            mtype, mtxn, mid, mlen = struct.unpack_from("<BHHH", m)
+            if mid != MSG_INJECT:
+                continue
+            t = parse_tlvs(m[7:7 + mlen])
+            if mtype == 0x02 and mtxn == txn:
+                res, err = struct.unpack("<HH", t.get(0x02, b"\0\0\0\0")[:4])
+                if res:
+                    sys.exit(f"gt510-xtra-inject: part {n}/{parts} rejected, QMI error {err}")
+                got_resp = True
+            elif mtype == 0x04:
+                status = struct.unpack("<I", t.get(0x01, b"\xff\xff\xff\xff")[:4])[0]
+                if status:
+                    sys.exit(f"gt510-xtra-inject: part {n}/{parts} indication status {status}")
+                got_ind = True
+    print(f"gt510-xtra-inject: injected {len(data)} bytes in {parts} parts")
+
+
+main()

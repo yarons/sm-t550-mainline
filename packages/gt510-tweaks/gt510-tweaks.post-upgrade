@@ -2,7 +2,7 @@
 # pmOS images may be systemd or OpenRC; enable the same services on either.
 if [ -d /run/systemd/system ] || [ -e /usr/lib/systemd/systemd ]; then
 	# rmtfs (modem DSP -> audio) and iio-sensor-proxy come enabled via pmOS presets.
-	systemctl enable rmtfs.service hkdm.service gpsd-pds.service gt510-wcnss-nv.service >/dev/null 2>&1
+	systemctl enable rmtfs.service hkdm.service gpsd-pds.service gt510-wcnss-nv.service gt510-xtra.timer >/dev/null 2>&1
 	# Wi-Fi tablet: no modem, no printing, no mDNS, no firmware-update daemon.
 	for u in ModemManager.service q6voiced.service cups.service cups.socket cups.path \
 		avahi-daemon.service avahi-daemon.socket fwupd.service; do
@@ -40,9 +40,14 @@ if [ -d /var/lib/greetd/.config ] && [ "$(stat -c %u /var/lib/greetd/.config)" =
 fi
 # RetroArch defaults for new users (see /usr/libexec/gt510-retroarch-defaults).
 /usr/libexec/gt510-retroarch-defaults
-# Back touch key -> Escape (61-gt510-back-escape.hwdb): rebuild hwdb, re-apply the keymap now.
-systemd-hwdb update >/dev/null 2>&1 || udevadm hwdb --update >/dev/null 2>&1
-udevadm trigger --action=change --subsystem-match=input >/dev/null 2>&1
+# Back touch key -> Escape (61-gt510-back-escape.hwdb): rebuild hwdb and re-apply the keymap only when that file
+# changed: a full hwdb compile is slow on this SoC and stutters whatever runs (ISSUES 31).
+h=/etc/udev/hwdb.d/61-gt510-back-escape.hwdb stamp=/var/lib/gt510/hwdb.sha256
+if [ "$(sha256sum "$h" 2>/dev/null)" != "$(cat "$stamp" 2>/dev/null)" ]; then
+	systemd-hwdb update >/dev/null 2>&1 || udevadm hwdb --update >/dev/null 2>&1
+	udevadm trigger --action=change --subsystem-match=input >/dev/null 2>&1
+	mkdir -p /var/lib/gt510 && sha256sum "$h" > "$stamp"
+fi
 # Unofficial build branding; a new boot splash needs a new initramfs (skipped in image builds before the kernel).
 if [ "$(/usr/libexec/gt510-rebrand)" = splash-changed ] && ls /boot/vmlinuz* >/dev/null 2>&1; then
 	mkinitfs >/dev/null 2>&1 || true

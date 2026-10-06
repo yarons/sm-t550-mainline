@@ -235,9 +235,18 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    binds v3 and drops implicit → no zero-copy. Not fixed (low value: Showtime uses gtk4paintablesink). (d) OPEN:
    Showtime on Venus shows only 10 fps (planefps plane-0 composited), 71× "too many pending frames": main thread
    blocked 62 % in MSM_WAIT_FENCE (40-60 ms per frame) → GTK renders the 1080p NV12 frames itself on the GPU instead
-   of offloading them to phoc (gst-launch → gtk4paintablesink: 30 fps). TODO: why no offload (GSK_DEBUG=offload),
-   CPU/battery, packages/showtime, kernel r38 INSTALLED 2026-10-06 09:17 (0129+0130), upstream candidates. Details:
-   CONTINUATION-PROMPT IN FLIGHT; tools video/.
+   of offloading them to phoc (gst-launch → gtk4paintablesink showed 10 fps on screen too; its "30 fps" was the sink's
+   count). Cause: GTK's colorstate rule (BT.709 not offloaded without colour management) → see (e). TODO was:
+   CPU/battery, packages/showtime, kernel r38 INSTALLED 2026-10-06 09:17 (0129+0130), upstream candidates.
+   (e) FIXED 2026-10-06 10:32: gtk4.0 4.24.1-r100 (0103) + gt510-tweaks pin installed → Showtime on Venus shows 29.2
+   fps via offload (was 10), 0 refusals, Showtime 27 % of one core.
+   (f) POWER (video/vidpower.sh, 2026-10-06 11:05, battery, backlight 138 fixed, 1080p30 H.264 4 Mbit/s, 40 s phases;
+   video/traces/vidpower-r39-2026-10-06.txt): idle screen on 468 mA / CPU 19 % of 400 · Venus + offload 658 mA, 24.5 fps
+   shown, CPU 92 % (Showtime 22 % of a core) · Venus, GDK_DISABLE=offload 614 mA but only 10 fps · avdec_h264 + offload
+   993 mA, 25 fps, CPU 211 % (Showtime 170 %) · idle again 463 mA. → playback costs +190 mA over the idle screen with
+   Venus vs +525 mA in software: ~6000 mAh ≈ 9 h vs 6 h of 1080p. Remaining: packages/showtime (the Showtime
+   gtk4paintablesink patch is still a TEST copy in ~/vtest/st). UPSTREAM: prepared 2026-10-06 in upstream/venus/README.md
+   (0129 duplicates David Heidelberg's posted seek patch → review reply with our buf_queue fixup; 0130 new patch).
 22. CLOSED (2026-10-06, nothing to implement) — **Touch-key LEDs** (hardware review #9). Recents/Back are maXTouch
    1664T T15 keys (mainline keycodes KEY_APPSELECT 0x244, KEY_BACK 0x9e). Stock never lit them: Samsung's gt510 driver
    (Galaxy-MSM8916 lineage-17.1 drivers/input/touchscreen/mxt_t/, DT compatible "atmel,mxt_t") has
@@ -278,6 +287,32 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    gt510-tweaks Firefox prefs (force-enabled HW decode; YouTube H.264 only: VP9/AV1 off for MSE) → decode on Venus and
    dmabuf zero-copy into WebRender (no texture upload). Seeks use the patch's capture STREAMOFF/ON flush → needs the
    Venus seek-restart fix (kernel 0129, ISSUES 21). Waiting for Yaron's go (laptop build).
+   ffmpeg r100 BUILT + INSTALLED (2026-10-06 10:07; 55 min LTO link under qemu): h264_v4l2m2m offers drm_prime.
+   Firefox (force-enabled) now decodes on Venus zero-copy ("Using V4L2 DMABufSurface", libavcodec.so.62 mapped, 0
+   session errors) BUT every frame has pts=AV_NOPTS_VALUE: Firefox sets neither pkt_timebase nor time_base, and
+   v4l2_get_timebase() rescales through {0,1} → INT64_MIN → frames "late", 62 flushes, the clip skipped to EOS in
+   ~30 s. FIX packages/ffmpeg 0101 (identity µs timebase fallback) → r101, LTO off; queued "ffmpeg101" on the laptop
+   after 392683's chain (~11:10). Then: fxbench with force-enabled → expect ~25 fps shown, low CPU; then YouTube.
+   ffmpeg r101 built NATIVELY in colima t290 (aarch64, no qemu, LTO off: 6 min; laptop job cancelled) + INSTALLED
+   10:19. **WORKS**: Firefox force-enabled, local 1080p25 H.264: Firefox CPU 57 % (was 410 %; RDD decoder 3 %,
+   Renderer 13 %, the rest bench-profile uBlock IndexedDB), 28.1 fb changes/s, Venus open, pts correct, 0 Venus
+   errors; video/fxseek.sh: 4× wtype Right (+5 s) → pts 18.3 → 46.1 → 51.8 s, 4 flushes, 29.6 fb/s, 0 errors.
+   gt510-tweaks r39 (built in colima, repo seeded with kernel r39/gtk r100/mesa r100 from the laptop) = r38 +
+   gt510-firefox-video.js (/usr/lib/firefox-esr/defaults/pref/: force-enabled, MSE VP9 off, AV1 off) + depends
+   ffmpeg-libavcodec=8.1.2-r101 + e173ce's gt510-rebrand; handed to 392683's kernel r39 install batch.
+   TODO after that: Yaron's YouTube clip (pVaeEK1WC2M) at 1080p in his own Firefox (expect avc1 itag 137 on Venus);
+   memory (1.36 GB, zram) with YouTube's page weight is the remaining risk.
+   YouTube (Yaron, 10:55): plays on Venus but GARBLED (blocks of other frames in moving areas) + colours shifted +
+   green band. Venus itself is bit-exact (framemd5 h264_v4l2m2m copy path vs software: 600/600 identical). Causes
+   (video/ref/firefox-140/: FFmpegVideoDecoder.cpp, FFmpegVideoFramePool.cpp): (1) Firefox calls
+   ReleaseUnusedVAAPIFrames() before every avcodec_receive_frame() and unrefs every frame the compositor has not
+   marked used → the V4L2 capture buffer goes back to Venus while it still waits for display / is on screen
+   (media.video-queue.hw-accel-size=1 did not help); (2) FFmpegDescToVA puts the NV12 UV plane at pitch*frame->height
+   (ffmpeg said 1080, buffer has 1088 rows) and av_frame_apply_cropping() folds any bottom crop away for hw formats.
+   FIX ffmpeg 0102 (r102): released capture buffers wait 8 later releases before QBUF, num_capture_buffers 20→24;
+   DRM PRIME frames report the coded height. Built in colima (repo un-seeded of mesa: the slim local mesa breaks
+   ffmpeg's makedepends via mesa-rusticl). r102 + tweaks r41 (4d591a; pin ffmpeg-libavcodec=8.1.2-r102) INSTALLED
+   11:19 (apk 109 s). Test pending (video/fxshot.sh burst on testsrc2, then YouTube).
 24. ACTIVE (2026-10-06, hardware review #7, session d5c224) — **Full 5 MP stills (rear SR544).** The sensor streams
    2592x1944 at 27.9 fps; /etc/libcamera/configuration.yaml caps the soft ISP output at 1296x972 because 5 MP once
    debayered at 0.7 fps (2026-09-25, before the GPU debayer / Mesa a3xx work). Remeasured on r38 with the cap lifted for
@@ -302,8 +337,21 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    sums only blocks below 240/255 in every channel (awbSum_/awbCount); Awb uses them with the matching black-level
    offset, falls back to all blocks under 1/16 coverage; sum_/histogram (AGC, AF) unchanged. Waits for Yaron's go
    (laptop queue + Lineage build waiting).
+   libcamera r112 INSTALLED 11:17 (Yaron OK), wireplumber@video-capture restarted, camera works. Observation: ON
+   BATTERY (tuned balanced-battery) rear 1296 delivers 8.5 fps vs 25-28 on USB power — same on r111 (A/B in the same
+   scene), sensor at full rate (VBLANK 48, exposure max) → soft-ISP side slower on battery; separate item, not 0110.
    Soft frames were AF, not the GPU: cam runs ~45 frames before AF settles at 28 fps; 150 frames → sharp. 5 MP
    (GPU, 2584x1944) is real native detail; the CPU debayer can't scale and crops the centre instead.
+   DECISION (Yaron 11:25, via e173ce): OPTION 1 = reconfigure on shutter (viewfinder stays <=1080 tall; shutter:
+   stop -> 2584x1944 -> AE/AWB settle -> grab -> back), not a 5 MP viewfinder. Config cap 1296x972 still in place.
+   PLAN (option 1, d5c224): Snapshot/aperture already uses GStreamer camerabin (camera/snapshot/viewfinder.rs) and
+   never sets `image-capture-caps`, so stills = viewfinder caps. camerabin's wrappercamerabinsrc renegotiates the
+   source to image-capture-caps for the shot and back afterwards = reconfigure-on-shutter built in. Steps: (1)
+   prototype in Python (camerabin + 2584x1944 image caps, time shutter→file, check the first frame's exposure: the
+   sensor mode does not change — 1296 output already reads the full 2592x1944 — so AE/AWB state should carry, else
+   drop a few frames); (2) aperture patch: image-capture-caps = largest 4:3 size, viewfinder kept ≤972 tall; (3)
+   config: raise max_output_* (gt510-libcamera.yaml) so 2584x1944 is offered. Snapshot rebuild = Rust (colima).
+
 25. ACTIVE (2026-10-06, session 4d591a) — **A2DP / Bluetooth audio** (hardware review #5). Headset = Yaron's Jabra
    Evolve2 65 (paired by Yaron, now trusted). Sound server is PulseAudio 17 (module-bluez5-discover,
    module-bluetooth-policy, pmOS module-switch-on-connect); PipeWire only serves the camera.
@@ -332,7 +380,17 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    10:00:02 → helper → a2dp_sink 10:00:03.6. Packaging asked of 392683 (r38).
    TRAP: `pactl unload-module module-bluetooth-discover` + reload with headset=ofono at runtime → PA 17 SIGABRT in
    pa_bluetooth_discovery_get (core 09:56:43); never reload BT discovery with new args (so no default.pa.d trick).
-   Still to test: auto-connect after boot (at 392683's r39 reboot).
+   INSTALLED with gt510-tweaks 1-r39 (kernel r39 boot 10:32): PA up with one module-bluetooth-policy auto_switch=0
+   (startup reload of the POLICY module is safe; only discovery reloads crash), gt510-bt-a2dp.service enabled+active.
+   AUTO-CONNECT AFTER BOOT: NO — Jabra on and trusted, still disconnected 2.5 min after boot (BlueZ ReconnectAttempts
+   only covers link loss; the headset gave up while the tablet rebooted). Tablet-side `bluetoothctl connect` at
+   10:35:27 → A2DP + default sink in ~10 s (first avdtp attempt timed out, retry OK). Android reconnects the last
+   headset at boot. Yaron: add it → gt510-bt-a2dp autoconnect(): once per service start (login), after 3/15/45 s,
+   `bluetoothctl connect` every Trusted+Paired device with an Audio Sink UUID that is not connected. Live test (installed
+   helper stopped, Jabra disconnected 10:48:28): attempt 1 refused (headset blocks reconnects just after a host
+   disconnect — test artefact), attempt 2 → connected 10:49:05 → a2dp_sink + default sink. gt510-tweaks 1-r40 (pkgrel
+   only) built in colima t290 (BUILD_RC=0, 10:50) and INSTALLED 10:53 (plain apk add, 1/1 upgraded; triggers take ~3 min);
+   helper restarted, Jabra on a2dp_sink. Boot-time auto-connect itself is verified at the next reboot.
 26. ACTIVE (2026-10-06, hardware review #6, session 392683) — **Venus encoder ignores the target bitrate.** ROOT CAUSE:
    the HFI 1.x firmware budgets bits from the INPUT BUFFER TIMESTAMPS, and GStreamer's v4l2 encoders replace PTS with
    frame_number × 1 s (ETB timestamps 0, 1000000, 2000000 µs — kprobe trace video/traces/et-gst.txt) → the firmware
@@ -345,14 +403,16 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    noise VBR overshoots at the start, then pays back), 1152x864 bars 4.00 (4); S_PARM 15 → budget follows. Notes:
    stream is tagged level 1.0 unless userspace sets a level (GStreamer sets H264_LEVEL 0) — cosmetic, ffmpeg warns;
    only one IDR per stream with GStreamer defaults (gop not applied?) — not checked. Tools: video/{encbench.sh,
-   enctrace.sh,h264frames.py,snaprec.sh,uitap.py}. r39 = r38 + 0131 queued (Yaron). SNAPSHOT RECORDING with 0131
+   enctrace.sh,h264frames.py,snaprec.sh,uitap.py}. **Kernel r39 = r38 + 0131 INSTALLED 2026-10-06 10:32** (packaged
+   venus_enc CED380CB…, taint 0): bars 2.00 Mbit/s (2 VBR). SNAPSHOT RECORDING with 0131
    (video/snaprec.sh: video mode, shutter tapped through a uinput touchscreen clone — Snapshot's win.take-picture is
    not on D-Bus and has no key; tap position from the wlr-randr transform): 1152x864 Baseline, VIDEO 0.78 Mbit/s
    + AAC 56 kbit/s, 23.7 fps, 20 s, no Venus errors (was ~16 Mbit/s). Cause: aperture (viewfinder.rs:909-957) gives
    x264enc/openh264enc/va*/vulkan/vp8enc DEFAULT_BITRATE 2048 kbit/s but has NO entry for v4l2h264enc → driver
    default video_bitrate 1 Mbit/s now really applies. Proposed: packages/snapshot 0103 adding v4l2h264enc with
-   extra-controls "controls,video_bitrate=2097152" (= upstream's 2 Mbit/s; upstreamable) — Yaron decides. TODO:
-   upstream candidate with 0107/0109/0110/0111.
+   extra-controls "controls,video_bitrate=2097152" (= upstream's 2 Mbit/s; upstreamable) — Yaron: yes; snapshot
+   51.0-r113 INSTALLED 11:21; first recording ~1.6-2.7 Mbit/s (file not finalised — clean re-check pending).
+   UPSTREAM: 5-patch series 0107/0109/0110/0111/0131 prepared in upstream/venus/ (Yaron signs off and sends).
 27. DONE (2026-10-06 10:08, session 57d516) — **Spec cross-check** (Yaron pasted a web spec sheet "for GT510"). That
    sheet is the SM-T510 (Tab A 10.1 2019, Exynos 7904, codename gta3xlwifi), NOT our SM-T550 (codename gt510, APQ8016)
    — the codename/model clash. Real SM-T550 rows (GSMArena) vs the tablet, read-only checks 09:54:
@@ -361,7 +421,8 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    (input device present; parked by Yaron) · Wi-Fi a/b/g/n dual band (2 bands, no VHT = correct) · BT 4.1 A2DP
    (ISSUES 25) · microUSB 2.0 (OTG, CDP/DCP/SDP) · accelerometer (+ cm3323 light + hall, no gyro/proximity) · battery
    6000 mAh (gauge design 5550, learned full 5424 mAh). Positioning: GSMArena says GPS/GLONASS on CELLULAR models only
-   → hardware review #8 (GPS fix) may have no antenna on the Wi-Fi T550; check before any kernel work.
+   → hardware review #8 (GPS fix) may have no antenna on the Wi-Fi T550; check before any kernel work. CHECKED: stock
+   T550 firmware declares android.hardware.location.gps → antenna very likely present (ISSUES 29 sub-note).
    OPEN: "dual speakers" vs ONE max98357a node in the DT (QUAT MI2S SD1, sdmode GPIO 55). audio/tools/spkchan.sh
    (1 kHz on L / R / both / L−R to the Speaker sink, Mic1 1 kHz band): quiet −77.8, left −51.0, right −37.3, both
    −31.6, anti(L−R) −37.6 dB → both channels reach the speaker(s); not a single (L+R)/2 mono amp (L−R would cancel)
@@ -377,6 +438,22 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    BOTTOM edge. In portrait: L = bottom-left, R = bottom-right → channel order CORRECT. Landscape stacks them
    vertically (no stereo image possible); only 180° portrait would be reversed. NO CHANGE (no rotation swap).
    Cosmetic: Bluetooth advertises "Qualcomm msm8916-based device" (other devices see that name when pairing).
+   FIXED (10:35, Yaron asked): source = /etc/machine-info from device-qcom-msm8916 (deviceinfo_name/manufacturer of
+   the generic port: PRETTY_HOSTNAME + HARDWARE_VENDOR/MODEL); bluetoothd's hostname plugin advertises
+   PRETTY_HOSTNAME, Settings > About shows vendor/model. gt510-rebrand now seds ONLY those exact defaults →
+   PRETTY_HOSTNAME="Galaxy Tab A 9.7", HARDWARE_VENDOR=Samsung, HARDWARE_MODEL="Galaxy Tab A 9.7 (SM-T550)" (vendor
+   matched quoted or unquoted: hostnamed rewrites the file without quotes); a user-set name is kept. Tested on the
+   tablet's busybox sed (pristine + hostnamed-rewritten + user-name files). Ships in gt510-tweaks r39 (d5c224's bump;
+   r38 was already built; file synced to the laptop, md5 7a85462c). LIVE on the tablet: machine-info fixed via
+   hostnamectl --pretty + the same sed; hostnamectl shows the new values. bluetoothd (up since 09:17) still says the
+   old name: BlueZ's hostname plugin (plugins/hostname.c property watch) did not get the change. Likely cause, not
+   verified: hostnamed exits when idle, so the watch is stale. The new name applies at the next bluetoothd start
+   (planned r39 reboot, or `systemctl restart bluetooth`, which drops the Jabra).
+   r39 BUILT (d5c224), staged on the tablet in ~/tweaks-r39/; verified: the APK's /usr/libexec/gt510-rebrand md5 =
+   7a85462c. 392683 installed it in the kernel r39 batch (one reboot 10:32). VERIFIED 10:56 (57d516, read-only):
+   bluetoothd started 10:32:41 → `bluetoothctl show` Name + Alias = "Galaxy Tab A 9.7"; hostnamectl Pretty "Galaxy
+   Tab A 9.7", Vendor Samsung, Model "Galaxy Tab A 9.7 (SM-T550)"; installed gt510-tweaks is already r40 with the same
+   gt510-rebrand (md5 7a85462c; its re-run left the values unchanged); Jabra reconnected by itself. DONE.
 28. ACTIVE (2026-10-06, hardware review #10, session d5c224; research only, nothing changed) — **CPR: per-chip CPU
    voltages.** Today (0113, r21+) CPR runs "qcom,force-ceiling-voltage": every corner at its ceiling, fuses ignored —
    200/400 MHz 1.05 V, 533-998.4 MHz 1.1625 V (gt510: 998.4 on NOM), 1.094-1.2096 GHz 1.35 V. The mainline
@@ -398,6 +475,77 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    GPRMC, GPGSA, GNGSA, GPVTG, GLGSV), all empty: no GPGSV at all, one blank GLGSV entry, RMC "V", engine clock unset
    (GNS 16:09:09 vs 07:05 UTC) → no satellites indoors, as expected. Earlier notes conflict: history "GPS (Yaron
    confirmed a fix)" vs public README "no outdoor fix tested"; GSMArena lists GPS only for cellular SKUs (ISSUES 27).
-   NEXT: outdoor/open-sky run with gps/gnsslog.py under systemd-inhibit (logs to /tmp/gnss-outdoor.log on the tablet,
-   position rounded to ~100 m): satellites with SNR → antenna path exists; TTFF without XTRA assistance. Tools:
-   gps/{gpswatch.py,gnsslog.py,qrtrlookup.py}.
+   OUTDOOR RESULT (10:10-10:24, Yaron outside, gps/gnsslog.py under systemd-inhibit): GPS WORKS. Cold start (engine
+   clock unset, no XTRA/time injection): nothing for ~11 min, first satellites at 669 s, FIRST 3D FIX AT 714 s
+   (11.9 min); 60 s later 12 seen (GPS gnssid 0 + GLONASS 6), 5 used, eph 74 → 28.5 m. e173ce re-read the log: first
+   satellites at 628 s (8 at once — maybe when Yaron stepped outside; unknown), GPS periodically drops out of gpsd's
+   sky view (GLONASS-only samples), real SNRs only 17-30 dB-Hz (open sky ~35-45) → antenna works but marginal. → The
+   Wi-Fi T550 HAS a working GNSS antenna (GSMArena's "cellular only" is wrong; matches e173ce's stock-partition
+   evidence). Oddity: gpsd reports SNR 237 and 64 for two satellites (impossible dB-Hz; likely a GSV signal-ID/field
+   quirk in the PDS NMEA). Position stays only in /tmp/gnss-outdoor.log on the tablet (never copied here).
+   XTRA (Yaron: add it). Modem LOC "predicted orbits source" = xtrapath{2,3,1}.izatcloud.net/xtra3grc.bin (~24-27 KB,
+   refreshed several times a day); its stored XTRA was from 2026-09-24 (168 h validity → expired). qmicli 1.39 has
+   --loc-inject-time but no XTRA-data injection → gps/gt510-xtra-inject (Python, QRTR → LOC 0x0035 Inject Predicted
+   Orbits Data, 1024-byte parts, format 0 = XTRA; layout from libqmi qmi-service-loc.json): 23676 B in 24 parts, all
+   accepted → validity 2026-10-06T07:00Z +168 h. Packaged in gt510-tweaks 1-r41 (built colima 10:58): /usr/libexec/
+   gt510-xtra (wait for LOC, download if cache >20 h old into /var/cache/gt510-xtra, inject UTC time if NTP-synced,
+   inject XTRA if <7 days old; 1.1 s) + gt510-xtra.{service,timer} (1 min after boot, then every 8 h), depends
+   python3 qmi-utils. NEXT: fair TTFF test = qmicli --loc-delete-assistance-data, run gt510-xtra, then outdoors.
+   Tools: gps/{gpswatch.py,gnsslog.py,qrtrlookup.py,gt510-xtra-inject}.
+   ANTENNA DESK CHECK (session 57d516, 10:15, nothing on the tablet changed): VERY LIKELY PRESENT. Stock system
+   mmcblk0p25 (NMF26X.T550XXU1CQL5, ro.product.model=SM-T550; mounted ro,noload, unmounted) declares
+   android.hardware.location.gps (etc/permissions/android.hardware.location.gps.xml) and ships the full Qualcomm loc
+   stack (gps.default.so, flp.default.so, libloc_api_v02/libloc_eng/libizat_core/liblbs_core, com.qualcomm.location).
+   Samsung strips telephony from Wi-Fi builds; a declared .gps feature without a receiver would fail CTS → GSMArena's
+   "cellular only" is probably wrong for the T550. No external LNA / antenna-switch GPIO: none in downstream gt510wifi
+   r07 DT, gt510lte dtsi or msm8916.dtsi, none in gps/sap/izat.conf (RF front end = modem RFC; nothing for Linux).
+   Stock assistance config: XTRA_SERVER_1..3 = http://xtrapath{1,2,3}.izatcloud.net/xtra2.bin, NTP_SERVER =
+   time.izatcloud.net, SUPL_MODE=3, CAPABILITIES=0x37, NMEA_PROVIDER=1. Cold start without XTRA/time injection →
+   allow ≥15 min open sky before calling it dead. Proof still = the outdoor run (satellites with SNR).
+30. ACTIVE (2026-10-06, hardware review #11, session 4d591a) — **Off-mode charging** (charger plugged into a powered-off
+   tablet). Desk research (tablet outdoors for ISSUES 29):
+   - lk2nd forwards the Samsung bootloader's cmdline (lk2nd/device/device.c:215 concat_cmdline) and its own
+     " androidboot.mode=charger" pause (app/aboot/aboot.c:610, gated by charger_screen_enabled=0 by default) ONLY for
+     Android-style boots: GENERATE_CMDLINE_ONLY_FOR_ANDROID (aboot.c:1088) passes extlinux cmdlines verbatim. Our boot
+     cmdline (power/dmesg-r33-lidsuspend.txt) has no androidboot.* at all → nothing tells Linux it was a charger boot.
+   - Mainline qcom-pon (drivers/power/reset/qcom-pon.c) only does reboot-mode; no PON-reason report. Readable from
+     userspace via regmap debugfs (pm8916 PON_REASON1 0x808, WARM_RESET_REASON1 0x80A, POFF_REASON1 0x80C; read-only).
+   - pmOS: charging-sdl (initramfs charge screen on androidboot.mode=charger) is gone from current pmaports; no
+     replacement → a charger-triggered power-on most likely boots straight into Phosh.
+   TO MEASURE (needs the tablet + Yaron; combine with 392683's r39 reboot): (1) `poweroff` with the charger attached:
+   stays off, or powers back on? (2) off + unplugged, plug charger: what boots, how long, PON_REASON1 bits;
+   (3) if it stays off: does the MAX77849 still charge (gauge before/after). Fix options after that: a pmOS initramfs
+   charge mode (PON reason USB_CHG/CBL and not KPDPWR → battery % on screen, power key continues boot, unplug →
+   poweroff; needs charger + gauge modules in the initramfs) or accept "charger boots the OS".
+   Tool: power/ponreason.sh (root; reads ONLY PMIC regmap 0-00 regs 0x808/0x80A/0x80C/0x80D by seeking 9-byte lines,
+   decodes PON/POFF reasons, prints cmdline androidboot.* and power_supply state). Baseline 11:17 (boot = 10:32 `reboot`
+   with USB attached): PON_REASON1 0x11 = HARD_RESET + USB_CHG, POFF_REASON1 0x02 = PS_HOLD, cmdline has no androidboot.*,
+   battery 81 % discharging −597 mA (charger offline). Expect a charger-only power-on to read USB_CHG without HARD_RESET
+   and KPDPWR_N (= lk2nd's target_pause_for_battery_charge condition).
+   TEST PLAN (~10 min, tablet unavailable to other sessions; Yaron watches): charger plugged, run ponreason → (A)
+   `systemctl poweroff` → 60 s: stays dark or powers back on (what shows: Samsung logo / lk2nd / pmOS splash)? If it
+   boots: ponreason. (B) if dark: 5 min on the charger, unplug 10 s, plug in → boots? what shows, how long; ponreason +
+   battery vs before. (C) if nothing boots: power key → ponreason (KPDPWR) + battery: did it charge while off?
+31. OPEN (2026-10-06, session 4d591a) — **gt510-tweaks upgrade burns ~3 min of CPU** (r40 install 10:50-10:53: apk.log
+   spends it in post-upgrade/triggers; overlapped Yaron's YouTube test → likely the early stutter d5c224 saw).
+   Suspects (post-upgrade): unconditional `systemd-hwdb update` (full hwdb.bin recompile, for one 61-gt510 hwdb file),
+   `udevadm trigger --subsystem-match=input`, a dozen `systemctl --global` calls, + postmarketos-base-systemd trigger.
+   r40 transaction (apk.log): post-upgrade `systemd-hwdb update` → systemd-262-r3.trigger (watches
+   /usr/lib/udev/hwdb.d, rules.d, systemd/{system,user}, …) runs `systemd-hwdb update` AGAIN + daemon-reload + reloads
+   marked system/user services → gtk icon cache → postmarketos-mkinitfs trigger (watches /usr/lib/udev,
+   /usr/share/plymouth, …) regenerates the initramfs (10:52:34-10:52:51 = 17 s + boot-deploy). So most of the time sits in
+   the two hwdb compiles + reloads before mkinitfs (to confirm by timing one `systemd-hwdb update` on an idle tablet).
+   FIX PREPARED (Yaron asked; in r41 sources, not yet built): hwdb file → /etc/udev/hwdb.d (read by systemd-hwdb,
+   watched by no trigger); post-upgrade recompiles + re-applies the keymap only when its sha256 differs from
+   /var/lib/gt510/hwdb.sha256 (post-install writes the stamp). Remaining per-upgrade cost: mkinitfs (61-gt510-accel.rules
+   in /usr/lib/udev + plymouth theme) and systemd reloads; next candidates: rules → /etc/udev/rules.d, splash theme →
+   own package. Build note: d5c224 keeps colima's mesa r100 seed in dist/colima/seed/ (removed from the repo because it
+   breaks ffmpeg builds); tweaks builds need re-seed → build → un-seed. Until fixed: never install tweaks while Yaron
+   uses the tablet.
+32. OPEN (2026-10-06 11:30, added by e173ce at Yaron's request; unassigned) — **Rear camera slow on battery.**
+   Found by d5c224 during ISSUES 24: on battery (tuned profile balanced-battery) the rear camera at 1296x972
+   delivers 8.5 fps vs 25-28 fps on USB power, same scene. Same on libcamera r111 (A/B), so not 0110's AWB change.
+   The sensor runs at full rate (VBLANK 48, exposure at max), so the loss is on the soft-ISP side (GPU debayer +
+   CPU stats). Leads, NOT checked yet: what the battery tuned profile changes (cpufreq governor/max, GPU devfreq
+   min/governor, a3xx runtime PM); compare scaling_cur_freq + GPU devfreq cur_freq and per-frame ISP time on battery
+   vs USB with the same scene. Also check Snapshot's preview fps on battery (users see this, not only `cam`).

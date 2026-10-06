@@ -1,0 +1,59 @@
+From de81654d214776a030688b5b6e8485687fd97fb0 Mon Sep 17 00:00:00 2001
+From: Yaron Shahrabani <EMAIL>
+Date: Tue, 6 Oct 2026 11:25:17 +0300
+Subject: [PATCH 0/5] media: venus: make the HFI 1.x (MSM8916) encoder usable
+
+The Venus encoder on MSM8916 (HFI 1.x, firmware VIDEO.VE.1.8) cannot be
+used with current kernels: session setup fails on a property only newer
+HFI versions know (patch 1). With that out of the way, GStreamer's
+v4l2h264enc still made the firmware abort within the first frames,
+because of three things the HFI 1.x firmware expects and the driver does
+not provide: its own input buffer size (2), its own frame size as the
+filled length (3), and no buffers added with VIDIOC_CREATE_BUFS while
+streaming (4). Once encodes ran, the output was 4 to 14 times the target
+bitrate, because the firmware budgets bits from the buffer timestamps,
+which GStreamer uses as frame numbers (5).
+
+Patches 1, 4 and 5 only change HFI 1.x. Patches 2 and 3 apply to all
+encoder sessions, but they only ever raise a size to the value the
+firmware itself reports; I could only test them on HFI 1.x.
+
+Tested on a Samsung Galaxy Tab A 9.7 (SM-T550, APQ8016) with a kernel
+based on msm8916-mainline 7.3-rc2, whose venus driver files are identical
+to v7.3-rc6 apart from this series, using GStreamer 1.28.7
+(videotestsrc ! v4l2h264enc), v4l2-ctl and GNOME Snapshot recording the
+camera at 1152x864:
+- before: VIDIOC_REQBUFS fails with -EINVAL; with patch 1 only, the
+  firmware aborts ("Err_Fatal - venus/utils/src/vbuffer.c:1322") on the
+  first frames; with patches 1-4, encodes run at 4-14x the target.
+- after: 640x480 test bars 2.00 Mbit/s at a 2 Mbit/s VBR target, noise
+  1.95 Mbit/s (2 Mbit/s CBR) and 8.14 Mbit/s (8 Mbit/s VBR), 1152x864
+  bars 4.00 Mbit/s (4 Mbit/s VBR); no firmware errors.
+Not tested: other HFI versions, and a plain mainline kernel.
+
+Patch 1 returns -ENOTSUPP like the other properties hfi_cmds.c rejects,
+since venus_session_set_property() skips exactly that error (checkpatch
+suggests EOPNOTSUPP). The Fixes: commit ids were checked against
+mainline; checkpatch cannot see them in my tree.
+
+The fixes were developed with an AI assistant (see the Assisted-by
+tags); I reviewed and tested them and take responsibility for them.
+
+Yaron Shahrabani (5):
+  media: venus: hfi_cmds: skip the H.264 8x8 transform property on HFI
+    1.x
+  media: venus: venc: honour the firmware input buffer size
+  media: venus: helpers: report the full frame size for encoder input
+  media: venus: venc: do not offer VIDIOC_CREATE_BUFS on HFI 1.x
+  media: venus: venc: rate control from the frame rate on HFI 1.x
+
+ drivers/media/platform/qcom/venus/helpers.c  | 12 +++++
+ drivers/media/platform/qcom/venus/hfi_cmds.c |  8 ++++
+ drivers/media/platform/qcom/venus/venc.c     | 47 ++++++++++++++++++--
+ 3 files changed, 63 insertions(+), 4 deletions(-)
+
+base-commit: 2c3418fffa9d037b2038a6db48be63f9e2291806
+
+-- 
+2.54.0 (Apple Git-157)
+

@@ -1,0 +1,10 @@
+[Unit]
+Description=Refresh GNSS XTRA assistance data (after boot, then every 8 h)
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=8h
+RandomizedDelaySec=10min
+
+[Install]
+WantedBy=timers.target

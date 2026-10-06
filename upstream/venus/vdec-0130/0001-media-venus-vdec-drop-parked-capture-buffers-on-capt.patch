@@ -1,0 +1,91 @@
+From cf45559b52d0398b983101c00911bfc9e531ad1d Mon Sep 17 00:00:00 2001
+From: Yaron Shahrabani <EMAIL>
+Date: Tue, 6 Oct 2026 08:31:00 +0000
+Subject: [PATCH] media: venus: vdec: drop parked capture buffers on capture
+ STREAMOFF
+
+A capture buffer that comes back from the firmware with
+HFI_BUFFERFLAG_READONLY is still used as a reference frame. If userspace
+queues it again before the firmware releases it,
+venus_helper_vb2_buf_queue() parks it on inst->delayed_process, and the
+delayed work submits it once the RELEASE_BUFFER_REFERENCE event arrives.
+
+On capture STREAMOFF all capture buffers are returned to userspace, but
+the parked ones stay linked on delayed_process. After the next STREAMON
+(a seek), the first RELEASE event makes the delayed work submit such a
+stale entry while userspace owns the buffer, and when userspace queues
+it again it reaches the firmware twice. On MSM8916 (firmware
+VIDEO.VE.1.8) every seek in a GStreamer playbin then stopped a few
+frames later with "session error: event id:1004"
+(HFI_ERR_SESSION_INVALID_SESSION_ID). An ftrace/kprobe trace showed
+buffer 1 parked during preroll, submitted from delayed_process_buf_func()
+105 ms after the seek, queued again by userspace 41 ms later, and the
+session error 0.4 ms after that.
+
+Unlink the parked buffers when capture is stopped. A buffer that is
+still READONLY when it is queued again is parked again by buf_queue.
+
+Fixes: af2c3834c8ca ("[media] media: venus: adding core part and helper functions")
+Assisted-by: claude-opus-5-5
+---
+Found while testing David Heidelberg's "media: venus: vdec: Start
+capture after a seek that streams CAPTURE first" (posted 2026-09-28,
+Message-Id <20260928-venus-vdec-eos-v1-2-6e9eb3ce9849@ixit.cz>), which is
+what lets seeks reach this path on MSM8916 at all; this patch does not
+depend on it and applies to v7.3-rc6. It may conflict trivially with
+"media: venus: vdec: Clear streamon flags on streaming errors" (also
+under review), which touches the same function.
+
+Tested on a Samsung Galaxy Tab A 9.7 (SM-T550, MSM8916, VIDEO.VE.1.8)
+with a msm8916-mainline 7.3-rc2 based kernel (vdec.c identical to
+v7.3-rc6 plus the patch above and the fixup I sent in reply to it):
+flushing seeks to 0 s and 10 s in a 1080p H.264 clip with GStreamer
+playbin3 stop a few frames later with "session error: event id:1004"
+without this patch, and play on (3/3 and 2/2) with it, with no firmware
+errors. Seeking in Firefox (FFmpeg h264_v4l2m2m) also works.
+Not tested: other HFI versions, and a plain mainline kernel.
+
+The stale entries are also on the list if userspace frees the buffers
+after STREAMOFF; I have not seen that go wrong, and unlinking on
+STREAMOFF closes that window too.
+
+This was developed with an AI assistant (see the Assisted-by tag); I
+reviewed and tested it and take responsibility for it.
+
+ drivers/media/platform/qcom/venus/vdec.c | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/media/platform/qcom/venus/vdec.c b/drivers/media/platform/qcom/venus/vdec.c
+index 6a43ea1..5d70012 100644
+--- a/drivers/media/platform/qcom/venus/vdec.c
++++ b/drivers/media/platform/qcom/venus/vdec.c
+@@ -1288,10 +1288,22 @@ static void vdec_stop_streaming(struct vb2_queue *q)
+ 
+ 	mutex_lock(&inst->lock);
+ 
+-	if (q->type == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE)
++	if (q->type == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE) {
++		struct venus_buffer *buf, *n;
++
+ 		ret = vdec_stop_capture(inst);
+-	else
++
++		/*
++		 * Capture buffers parked until the firmware releases them are
++		 * handed back to userspace below. Unlink them, or the delayed
++		 * work submits them again after the next STREAMON, while
++		 * userspace owns them (and they are queued a second time).
++		 */
++		list_for_each_entry_safe(buf, n, &inst->delayed_process, ref_list)
++			list_del_init(&buf->ref_list);
++	} else {
+ 		ret = vdec_stop_output(inst);
++	}
+ 
+ 	venus_helper_buffers_done(inst, q->type, VB2_BUF_STATE_ERROR);
+ 
+base-commit: 2c3418fffa9d037b2038a6db48be63f9e2291806
+
+-- 
+2.54.0 (Apple Git-157)
+

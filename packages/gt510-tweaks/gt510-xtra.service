@@ -1,0 +1,8 @@
+[Unit]
+Description=GNSS assistance: download and inject Qualcomm XTRA data into the modem
+Wants=network-online.target
+After=network-online.target rmtfs.service time-sync.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/gt510-xtra

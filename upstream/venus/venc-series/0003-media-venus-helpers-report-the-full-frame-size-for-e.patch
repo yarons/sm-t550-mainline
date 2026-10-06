@@ -1,0 +1,51 @@
+From 05734dbe9a80fb87d16b6e7035e30a5de1544c0b Mon Sep 17 00:00:00 2001
+From: Yaron Shahrabani <EMAIL>
+Date: Tue, 6 Oct 2026 08:30:03 +0000
+Subject: [PATCH 3/5] media: venus: helpers: report the full frame size for
+ encoder input
+
+Clients such as GStreamer set bytesused of a raw NV12 input frame to
+the visible image size (460800 bytes for 640x480), while the HFI 1.x
+firmware (MSM8916, VIDEO.VE.1.8) expects at least its own frame size
+including the stride and scanline padding (460928 bytes) and aborts the
+session ("Err_Fatal - venus/utils/src/vbuffer.c:1322") when the filled
+length is shorter. v4l2-ctl, which fills the whole buffer, is not
+affected.
+
+For encoder input buffers, pass the firmware frame size as the filled
+length when the payload is shorter but the buffer is large enough.
+
+Fixes: aaaa93eda64b ("[media] media: venus: venc: add video encoder files")
+Assisted-by: claude-opus-5-5
+---
+ drivers/media/platform/qcom/venus/helpers.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/drivers/media/platform/qcom/venus/helpers.c b/drivers/media/platform/qcom/venus/helpers.c
+index 59eee3d..0649ddb 100644
+--- a/drivers/media/platform/qcom/venus/helpers.c
++++ b/drivers/media/platform/qcom/venus/helpers.c
+@@ -516,6 +516,18 @@ session_process_buf(struct venus_inst *inst, struct vb2_v4l2_buffer *vbuf)
+ 		fdata.filled_len = vb2_get_plane_payload(vb, 0);
+ 		fdata.offset = vb->planes[0].data_offset;
+ 
++		/*
++		 * Userspace counts only the visible pixels of a raw frame
++		 * (e.g. 460800 bytes for 640x480 NV12), but the HFI 1.x firmware
++		 * checks the filled length against its own frame size including
++		 * the stride/scanline padding (460928 here) and aborts the
++		 * session when it is shorter. Report the full frame.
++		 */
++		if (inst->session_type == VIDC_SESSION_TYPE_ENC &&
++		    fdata.filled_len && fdata.filled_len < inst->input_buf_size &&
++		    inst->input_buf_size <= fdata.alloc_len)
++			fdata.filled_len = inst->input_buf_size;
++
+ 		if (vbuf->flags & V4L2_BUF_FLAG_LAST || !fdata.filled_len)
+ 			fdata.flags |= HFI_BUFFERFLAG_EOS;
+ 
+base-commit: 2c3418fffa9d037b2038a6db48be63f9e2291806
+
+-- 
+2.54.0 (Apple Git-157)
+

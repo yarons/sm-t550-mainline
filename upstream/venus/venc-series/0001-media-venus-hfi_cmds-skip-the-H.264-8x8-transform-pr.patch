@@ -1,0 +1,47 @@
+From 03e08e37017bafe30168d9541824034d93039b4f Mon Sep 17 00:00:00 2001
+From: Yaron Shahrabani <EMAIL>
+Date: Tue, 6 Oct 2026 08:30:01 +0000
+Subject: [PATCH 1/5] media: venus: hfi_cmds: skip the H.264 8x8 transform
+ property on HFI 1.x
+
+venc_set_properties() sets HFI_PROPERTY_PARAM_VENC_H264_TRANSFORM_8X8
+for every H.264 session, but only the HFI 4XX and 6XX packet builders
+know that property. On HFI 1.x (MSM8916, firmware VIDEO.VE.1.8)
+pkt_session_set_property_1x() falls through to its default -EINVAL,
+venc_init_session() fails and VIDIOC_REQBUFS returns -EINVAL, so the
+encoder cannot be used at all.
+
+Return -ENOTSUPP for the property on HFI 1.x, which
+venus_session_set_property() already treats as "not supported, skip it",
+and leave the choice of transform to the firmware.
+
+Fixes: bfee75f73c37 ("media: venus: venc: add support for V4L2_CID_MPEG_VIDEO_H264_8X8_TRANSFORM control")
+Assisted-by: claude-opus-5-5
+---
+ drivers/media/platform/qcom/venus/hfi_cmds.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/drivers/media/platform/qcom/venus/hfi_cmds.c b/drivers/media/platform/qcom/venus/hfi_cmds.c
+index 3ae0630..d45f7f5 100644
+--- a/drivers/media/platform/qcom/venus/hfi_cmds.c
++++ b/drivers/media/platform/qcom/venus/hfi_cmds.c
+@@ -1080,6 +1080,14 @@ static int pkt_session_set_property_1x(struct hfi_session_set_property_pkt *pkt,
+ 	case HFI_PROPERTY_PARAM_CAPABILITY_SUPPORTED:
+ 	case HFI_PROPERTY_PARAM_NAL_STREAM_FORMAT_SUPPORTED:
+ 	case HFI_PROPERTY_PARAM_MULTI_VIEW_FORMAT:
++	case HFI_PROPERTY_PARAM_VENC_H264_TRANSFORM_8X8:
++		/*
++		 * Only HFI 4XX and later know this property. The encoder sets it
++		 * unconditionally for H.264, and -EINVAL here tears the whole
++		 * session down, so report it as unsupported and let the firmware
++		 * pick the transform itself.
++		 */
++		return -ENOTSUPP;
+ 	case HFI_PROPERTY_PARAM_MAX_SEQUENCE_HEADER_SIZE:
+ 	case HFI_PROPERTY_PARAM_CODEC_SUPPORTED:
+ 	case HFI_PROPERTY_PARAM_VDEC_MULTI_VIEW_SELECT:
+base-commit: 2c3418fffa9d037b2038a6db48be63f9e2291806
+
+-- 
+2.54.0 (Apple Git-157)
+

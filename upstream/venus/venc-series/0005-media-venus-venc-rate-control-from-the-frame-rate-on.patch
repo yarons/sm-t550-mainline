@@ -1,0 +1,57 @@
+From de81654d214776a030688b5b6e8485687fd97fb0 Mon Sep 17 00:00:00 2001
+From: Yaron Shahrabani <EMAIL>
+Date: Tue, 6 Oct 2026 08:30:05 +0000
+Subject: [PATCH 5/5] media: venus: venc: rate control from the frame rate on
+ HFI 1.x
+
+The HFI 1.x firmware (MSM8916, VIDEO.VE.1.8) budgets the bits of each
+frame from the input buffer timestamps unless told otherwise. The driver
+passes the V4L2 timestamps through, but those are opaque cookies to a
+stateful encoder: GStreamer's v4l2 encoders, for one, set them to the
+frame number in seconds. The firmware then sees one frame per second and
+gives every frame the budget of a whole second. At a 2 Mbit/s VBR target
+for 640x480, GStreamer got 7.4 Mbit/s on test bars and 25 Mbit/s on
+noise. v4l2-ctl, which queues real timestamps faster than real time,
+undershot instead. Neither S_PARM, the H.264 level nor the VUI timing
+changed the result.
+
+Send HFI_PROPERTY_PARAM_VENC_DISABLE_RC_TIMESTAMP, which the 1.x packet
+builder already handles, so that the firmware uses the frame rate set
+through VIDIOC_S_PARM, as the stateful encoder interface intends.
+
+Fixes: aaaa93eda64b ("[media] media: venus: venc: add video encoder files")
+Assisted-by: claude-opus-5-5
+---
+ drivers/media/platform/qcom/venus/venc.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/drivers/media/platform/qcom/venus/venc.c b/drivers/media/platform/qcom/venus/venc.c
+index 0174e6d..4a2928f 100644
+--- a/drivers/media/platform/qcom/venus/venc.c
++++ b/drivers/media/platform/qcom/venus/venc.c
+@@ -852,6 +852,20 @@ static int venc_set_properties(struct venus_inst *inst)
+ 	if (ret)
+ 		return ret;
+ 
++	/*
++	 * Budget the bits from the frame rate (S_PARM), not from the buffer
++	 * timestamps: they are opaque cookies to the driver, and e.g.
++	 * GStreamer's v4l2 encoders use frame numbers in seconds, which made
++	 * the HFI 1.x firmware overshoot the target bitrate 4-14 times.
++	 */
++	if (IS_V1(inst->core)) {
++		ptype = HFI_PROPERTY_PARAM_VENC_DISABLE_RC_TIMESTAMP;
++		en.enable = 1;
++		ret = hfi_session_set_property(inst, ptype, &en);
++		if (ret)
++			return ret;
++	}
++
+ 	if (rate_control == HFI_RATE_CONTROL_CQ && ctr->const_quality) {
+ 		struct hfi_heic_frame_quality quality = {};
+ 
+base-commit: 2c3418fffa9d037b2038a6db48be63f9e2291806
+
+-- 
+2.54.0 (Apple Git-157)
+

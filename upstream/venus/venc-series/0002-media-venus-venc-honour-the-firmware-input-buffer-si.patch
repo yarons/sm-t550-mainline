@@ -1,0 +1,79 @@
+From 5390552c1cd887f6d21ad919b659effe8b89b1c2 Mon Sep 17 00:00:00 2001
+From: Yaron Shahrabani <EMAIL>
+Date: Tue, 6 Oct 2026 08:30:02 +0000
+Subject: [PATCH 2/5] media: venus: venc: honour the firmware input buffer size
+
+venc_queue_setup() sizes the raw input buffers with
+venus_helper_get_framesz() only. The HFI 1.x firmware (MSM8916,
+VIDEO.VE.1.8) reports a slightly larger HFI_BUFFER_INPUT requirement,
+128 bytes more (e.g. 147584 instead of 147456 bytes for 320x240 NV12),
+and aborts the session with "Err_Fatal - venus/utils/src/vbuffer.c:1322"
+as soon as a smaller buffer is queued.
+
+Return the firmware size from venc_out_num_buffers() as well and use
+the larger of the two sizes.
+
+Fixes: aaaa93eda64b ("[media] media: venus: venc: add video encoder files")
+Assisted-by: claude-opus-5-5
+---
+ drivers/media/platform/qcom/venus/venc.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/media/platform/qcom/venus/venc.c b/drivers/media/platform/qcom/venus/venc.c
+index 79acf7c..b497ee2 100644
+--- a/drivers/media/platform/qcom/venus/venc.c
++++ b/drivers/media/platform/qcom/venus/venc.c
+@@ -1064,7 +1064,8 @@ deinit:
+ 	return ret;
+ }
+ 
+-static int venc_out_num_buffers(struct venus_inst *inst, unsigned int *num)
++static int venc_out_num_buffers(struct venus_inst *inst, unsigned int *num,
++				unsigned int *size)
+ {
+ 	struct hfi_buffer_requirements bufreq;
+ 	int ret;
+@@ -1074,6 +1075,7 @@ static int venc_out_num_buffers(struct venus_inst *inst, unsigned int *num)
+ 		return ret;
+ 
+ 	*num = bufreq.count_actual;
++	*size = bufreq.size;
+ 
+ 	return 0;
+ }
+@@ -1084,7 +1086,7 @@ static int venc_queue_setup(struct vb2_queue *q,
+ {
+ 	struct venus_inst *inst = vb2_get_drv_priv(q);
+ 	struct venus_core *core = inst->core;
+-	unsigned int num, min = 4;
++	unsigned int num, min = 4, fw_size = 0;
+ 	int ret;
+ 
+ 	if (*num_planes) {
+@@ -1136,7 +1138,7 @@ static int venc_queue_setup(struct vb2_queue *q,
+ 	case V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE:
+ 		*num_planes = inst->fmt_out->num_planes;
+ 
+-		ret = venc_out_num_buffers(inst, &num);
++		ret = venc_out_num_buffers(inst, &num, &fw_size);
+ 		if (ret)
+ 			break;
+ 
+@@ -1147,6 +1149,12 @@ static int venc_queue_setup(struct vb2_queue *q,
+ 		sizes[0] = venus_helper_get_framesz(inst->fmt_out->pixfmt,
+ 						    inst->out_width,
+ 						    inst->out_height);
++		/*
++		 * The firmware may ask for more than the plain frame size
++		 * (HFI 1.x wants 128 extra bytes) and aborts the session
++		 * when a smaller input buffer is queued.
++		 */
++		sizes[0] = max(sizes[0], fw_size);
+ 		inst->input_buf_size = sizes[0];
+ 		break;
+ 	case V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE:
+base-commit: 2c3418fffa9d037b2038a6db48be63f9e2291806
+
+-- 
+2.54.0 (Apple Git-157)
+

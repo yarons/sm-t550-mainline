@@ -37,3 +37,8 @@ conversion: msm_gem_close() tears down BO mappings in the GPU's single global VM
 a client's freed/closed window buffer reads a dead iova). Our kernel r32 carries both patches verbatim (0123/0124).
 Reply-all to 2/2 with `tested-by-172617.txt` (fault storms: caught after 20 and 57 app launches without it, 0 in 180
 with it; kprobe check that no BO is kept alive by the deferred teardown).
+
+## 4. Venus (video codec): see venus/README.md (2026-10-06)
+A. reply to David Heidelberg's seek patch (duplicate of our 0129, missing our double-submit fix) with a fixup;
+B. new patch for our 0130 (stale parked capture buffers); C. new 5-patch series for the HFI 1.x encoder (0107,
+0109, 0110, 0111, 0131). All formatted against mainline 2c3418fffa9d, checkpatch-clean apart from expected items.
