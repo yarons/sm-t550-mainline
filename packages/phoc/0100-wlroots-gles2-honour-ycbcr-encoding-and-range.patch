@@ -1,0 +1,221 @@
+From: gt510 <gt510@localhost>
+Subject: wlroots: render/gles2: honour color encoding and range of YUV textures
+
+The GLES2 renderer ignored wlr_render_texture_options.color_encoding and
+.color_range and advertised no color encodings, so a compositor could not
+offer wp_color_representation_v1 coefficients and every external YUV
+dmabuf was converted with the driver default (BT.601, narrow range in
+Mesa). HD video (BT.709) showed with shifted colors.
+
+EGL_EXT_image_dma_buf_import carries the conversion as hints
+(EGL_YUV_COLOR_SPACE_HINT_EXT, EGL_SAMPLE_RANGE_HINT_EXT) at EGLImage
+creation. Pass them through wlr_egl_create_image_from_dmabuf(), remember on
+the wlr_gles2_buffer which hints its image was created with, and when an
+external texture is drawn with another encoding or range, create a new
+image with the right hints and bind it to the buffer's texture (once per
+buffer, since clients keep the representation of a buffer). Identity or
+unknown encodings mean no hints (driver default), so RGB buffers are left
+alone. Advertise BT.601, BT.709 and BT.2020 when GL_OES_EGL_image_external
+is available.
+
+Checked against Mesa 26.2: st/mesa takes the hints from the EGLImage into
+the external sampler key (bt709/bt2020/yuv_full_range) for formats it
+lowers to per-plane sampling, e.g. NV12 on Adreno 3xx (freedreno a3xx has
+no native NV12 sampler).
+---
+--- a/subprojects/wlroots-0.20.x/include/render/egl.h
++++ b/subprojects/wlroots-0.20.x/include/render/egl.h
+@@ -1,6 +1,7 @@
+ #ifndef RENDER_EGL_H
+ #define RENDER_EGL_H
+ 
++#include <wlr/render/color.h>
+ #include <wlr/render/egl.h>
+ 
+ struct wlr_egl {
+@@ -72,9 +73,13 @@
+ /**
+  * Creates an EGL image from the given dmabuf attributes. Check usability
+  * of the dmabuf with wlr_egl_check_import_dmabuf once first.
++ *
++ * The color encoding and range are passed to the driver as hints for the
++ * YCbCr to RGB conversion of YUV formats; NONE leaves the driver default.
+  */
+ EGLImageKHR wlr_egl_create_image_from_dmabuf(struct wlr_egl *egl,
+-	struct wlr_dmabuf_attributes *attributes, bool *external_only);
++	struct wlr_dmabuf_attributes *attributes, enum wlr_color_encoding encoding,
++	enum wlr_color_range range, bool *external_only);
+ 
+ /**
+  * Get DMA-BUF formats suitable for sampling usage.
+--- a/subprojects/wlroots-0.20.x/include/render/gles2.h
++++ b/subprojects/wlroots-0.20.x/include/render/gles2.h
+@@ -103,6 +103,9 @@
+ 	struct wlr_gles2_renderer *renderer;
+ 	struct wl_list link; // wlr_gles2_renderer.buffers
+ 	bool external_only;
++	// YCbCr conversion hints the EGLImage was created with
++	enum wlr_color_encoding color_encoding;
++	enum wlr_color_range color_range;
+ 
+ 	EGLImageKHR image;
+ 	GLuint rbo;
+@@ -157,6 +160,8 @@
+ 	struct wlr_render_timer *timer);
+ struct wlr_gles2_texture *gles2_get_texture(
+ 	struct wlr_texture *wlr_texture);
++void gles2_buffer_set_ycbcr(struct wlr_gles2_buffer *buffer,
++	enum wlr_color_encoding encoding, enum wlr_color_range range);
+ struct wlr_gles2_buffer *gles2_buffer_get_or_create(struct wlr_gles2_renderer *renderer,
+ 	struct wlr_buffer *wlr_buffer);
+ 
+--- a/subprojects/wlroots-0.20.x/render/egl.c
++++ b/subprojects/wlroots-0.20.x/render/egl.c
+@@ -733,7 +733,8 @@
+ }
+ 
+ EGLImageKHR wlr_egl_create_image_from_dmabuf(struct wlr_egl *egl,
+-		struct wlr_dmabuf_attributes *attributes, bool *external_only) {
++		struct wlr_dmabuf_attributes *attributes, enum wlr_color_encoding encoding,
++		enum wlr_color_range range, bool *external_only) {
+ 	if (!egl->exts.KHR_image_base || !egl->exts.EXT_image_dma_buf_import) {
+ 		wlr_log(WLR_ERROR, "dmabuf import extension not present");
+ 		return NULL;
+@@ -747,7 +748,7 @@
+ 	}
+ 
+ 	unsigned int atti = 0;
+-	EGLint attribs[50];
++	EGLint attribs[54];
+ 	attribs[atti++] = EGL_WIDTH;
+ 	attribs[atti++] = attributes->width;
+ 	attribs[atti++] = EGL_HEIGHT;
+@@ -805,6 +806,36 @@
+ 		}
+ 	}
+ 
++	// YCbCr to RGB conversion hints, part of EGL_EXT_image_dma_buf_import
++	switch (encoding) {
++	case WLR_COLOR_ENCODING_BT601:
++		attribs[atti++] = EGL_YUV_COLOR_SPACE_HINT_EXT;
++		attribs[atti++] = EGL_ITU_REC601_EXT;
++		break;
++	case WLR_COLOR_ENCODING_BT709:
++		attribs[atti++] = EGL_YUV_COLOR_SPACE_HINT_EXT;
++		attribs[atti++] = EGL_ITU_REC709_EXT;
++		break;
++	case WLR_COLOR_ENCODING_BT2020:
++		attribs[atti++] = EGL_YUV_COLOR_SPACE_HINT_EXT;
++		attribs[atti++] = EGL_ITU_REC2020_EXT;
++		break;
++	default:
++		break;
++	}
++	switch (range) {
++	case WLR_COLOR_RANGE_LIMITED:
++		attribs[atti++] = EGL_SAMPLE_RANGE_HINT_EXT;
++		attribs[atti++] = EGL_YUV_NARROW_RANGE_EXT;
++		break;
++	case WLR_COLOR_RANGE_FULL:
++		attribs[atti++] = EGL_SAMPLE_RANGE_HINT_EXT;
++		attribs[atti++] = EGL_YUV_FULL_RANGE_EXT;
++		break;
++	case WLR_COLOR_RANGE_NONE:
++		break;
++	}
++
+ 	// Our clients don't expect our usage to trash the buffer contents
+ 	attribs[atti++] = EGL_IMAGE_PRESERVED_KHR;
+ 	attribs[atti++] = EGL_TRUE;
+--- a/subprojects/wlroots-0.20.x/render/gles2/pass.c
++++ b/subprojects/wlroots-0.20.x/render/gles2/pass.c
+@@ -185,6 +185,10 @@
+ 		// GL_OES_EGL_image_external
+ 		assert(renderer->exts.OES_egl_image_external);
+ 		shader = &renderer->shaders.tex_ext;
++		if (texture->buffer != NULL) {
++			gles2_buffer_set_ycbcr(texture->buffer,
++				options->color_encoding, options->color_range);
++		}
+ 		break;
+ 	default:
+ 		abort();
+--- a/subprojects/wlroots-0.20.x/render/gles2/renderer.c
++++ b/subprojects/wlroots-0.20.x/render/gles2/renderer.c
+@@ -119,6 +119,56 @@
+ 	pop_gles2_debug(buffer->renderer);
+ 
+ 	return buffer->fbo;
++}
++
++/*
++ * Drivers convert external YUV images to RGB while sampling, with the matrix
++ * and range given as hints when the EGLImage is created. Re-create the image
++ * when a texture is drawn with a different color encoding or range than the
++ * one it was imported with (normally once per buffer).
++ */
++void gles2_buffer_set_ycbcr(struct wlr_gles2_buffer *buffer,
++		enum wlr_color_encoding encoding, enum wlr_color_range range) {
++	struct wlr_gles2_renderer *renderer = buffer->renderer;
++
++	switch (encoding) {
++	case WLR_COLOR_ENCODING_BT601:
++	case WLR_COLOR_ENCODING_BT709:
++	case WLR_COLOR_ENCODING_BT2020:
++		break;
++	default:
++		// Identity (RGB) or unknown: no hints, driver default
++		encoding = WLR_COLOR_ENCODING_NONE;
++		range = WLR_COLOR_RANGE_NONE;
++		break;
++	}
++
++	if (!buffer->external_only || !buffer->tex ||
++			(buffer->color_encoding == encoding && buffer->color_range == range)) {
++		return;
++	}
++	// Don't retry a failed import on every frame
++	buffer->color_encoding = encoding;
++	buffer->color_range = range;
++
++	struct wlr_dmabuf_attributes dmabuf = {0};
++	if (!wlr_buffer_get_dmabuf(buffer->buffer, &dmabuf)) {
++		return;
++	}
++
++	bool external_only;
++	EGLImageKHR image = wlr_egl_create_image_from_dmabuf(renderer->egl,
++		&dmabuf, encoding, range, &external_only);
++	if (image == EGL_NO_IMAGE_KHR) {
++		return;
++	}
++
++	glBindTexture(GL_TEXTURE_EXTERNAL_OES, buffer->tex);
++	renderer->procs.glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, image);
++	glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
++
++	wlr_egl_destroy_image(renderer->egl, buffer->image);
++	buffer->image = image;
+ }
+ 
+ struct wlr_gles2_buffer *gles2_buffer_get_or_create(struct wlr_gles2_renderer *renderer,
+@@ -144,7 +194,8 @@
+ 	}
+ 
+ 	buffer->image = wlr_egl_create_image_from_dmabuf(renderer->egl,
+-		&dmabuf, &buffer->external_only);
++		&dmabuf, WLR_COLOR_ENCODING_NONE, WLR_COLOR_RANGE_NONE,
++		&buffer->external_only);
+ 	if (buffer->image == EGL_NO_IMAGE_KHR) {
+ 		goto error_buffer;
+ 	}
+@@ -581,6 +632,9 @@
+ 		renderer->exts.OES_egl_image_external = true;
+ 		load_gl_proc(&renderer->procs.glEGLImageTargetTexture2DOES,
+ 			"glEGLImageTargetTexture2DOES");
++		// Passed to the driver as EGL_EXT_image_dma_buf_import hints
++		renderer->wlr_renderer.color_encodings = WLR_COLOR_ENCODING_BT601 |
++			WLR_COLOR_ENCODING_BT709 | WLR_COLOR_ENCODING_BT2020;
+ 	}
+ 
+ 	if (check_gl_ext(exts_str, "GL_OES_EGL_image")) {

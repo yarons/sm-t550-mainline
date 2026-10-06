@@ -8,11 +8,18 @@ Paste this into a new session to continue. Everything lives in `~/workspace/gt51
   this file verbatim (the last one = "as of 2026-10-01 18:10"). Read the relevant part before re-investigating.
 - Memory: `samsung-t550-gt510.md`, `upstream-ai-policies.md`, `check-ai-policy-before-upstreaming.md`.
 
-## VIDEO / VENUS (hardware review #4 + #6, session 392683) — STATE 2026-10-06 14:05
+## VIDEO / VENUS (hardware review #4 + #6, session 392683 → its continuation d0acb3) — STATE 2026-10-06 14:55
+(ISSUES 21 + 26 DONE; 21 (g) BT.709 colours IN FLIGHT). Session d0acb3 is the forked continuation of 392683 (same
+work, same notes); d5c224 (14:41) and e173ce (14:52) were told to message d0acb3 for video/Venus; 4d591a not yet.
 The chronological log of today's work is archived verbatim at the end of CONTINUATION-PROMPT.2026-09-27-history.md
 ("Archived 2026-10-06 13:25"). ISSUES 21 (decode/playback) and 26 (encoder) carry the findings.
 
-INSTALLED on the tablet and verified:
+INSTALLED on the tablet (14:12, read back with apk info): kernel r39 (#40, taint 0), gtk4.0 4.24.1-r100, showtime
+50.0-r100, snapshot 51.0-r115, libcamera 99990.7.2-r113 (d5c224, 15:10; r112 = its AWB fix), ffmpeg-libavcodec 8.1.2-r104 (d5c224's
+Firefox fixes), mesa 26.2.4-r100, gt510-tweaks 1-r43 (d5c224: pins gtk4.0=4.24.1-r100, showtime=50.0-r100, ffmpeg
+via ffmpeg-libavcodec>=8.1.2-r103 + ffmpeg-libavutil<8.1.3). Snapshot is NOT pinned (Alpine 51.x would replace r115).
+
+Verified details:
 - Kernel **r39** (#40) = r37 + 0129 + 0130 (Venus decoder seeks: capture buffers queued during a seek reach the
   firmware once; parked READONLY buffers are unlinked on capture STREAMOFF) + 0131 (Venus 1.x encoder rate control
   from S_PARM instead of buffer timestamps). Taint 0; venus_dec CEEE21FD…, venus_enc CED380CB…. Venus node numbers move
@@ -21,8 +28,7 @@ INSTALLED on the tablet and verified:
   default colorstate → GTK offloads video to phoc; BT.709 shows with phoc's BT.601 conversion, slight shift).
   gt510-tweaks pins `gtk4.0=4.24.1-r100` (exact; move it on every local gtk rebuild / Alpine bump).
 - **showtime 50.0-r100** (packages/showtime 0100: gtk4paintablesink without glsinkbin; SHOWTIME_GLSINKBIN=1 restores):
-  1080p on Venus 29 fps shown, Showtime 27 % of a core, 0 offload refusals. Pin `showtime=50.0-r100` goes into
-  gt510-tweaks r43 (d5c224 builds it).
+  1080p on Venus 29 fps shown, Showtime 27 % of a core, 0 offload refusals. Pinned by gt510-tweaks r43.
 - **snapshot 51.0-r115** (0103: v4l2h264enc gets DEFAULT_BITRATE 2 Mbit/s; 0104: before each recording the bitrate is
   scaled by negotiated/measured fps, because pipewiresrc fixates 30/1 while the soft-ISP camera delivers ~22-24 fps,
   ~8.5 on battery): rear 1152x864 → 1.89 Mbit/s for 2 (scale 1.22), front 640x480 → 2.13 (scale 1.55). Journal line
@@ -31,7 +37,36 @@ INSTALLED on the tablet and verified:
 - Power, 1080p in Showtime (ISSUES 21 f, video/vidpower.sh): Venus + offload 658 mA / 24.5 fps, software 993 mA,
   idle screen 468 mA (~9 h vs ~6 h of playback).
 
+NEXT (for whoever continues; Yaron decides order):
+0. ISSUES 21 (g) BT.709 colours (Yaron picked it 14:25; research only, NO installs without asking) — see IN FLIGHT.
+1. Upstream (below): Yaron reviews, adds Signed-off-by, sends A, then B, then C.
+2. ISSUES 33 (e173ce took it, Yaron 14:20): Snapshot sometimes opens the front camera with last-camera-id = Back.
+3. Snapshot pin: owned by d5c224/e173ce now. 15:05: snapshot r116 (d5c224's 0105 v1) broke photos (not-negotiated on
+   the shutter) → tablet rolled back to snapshot r115 + tweaks r43 (libcamera r113 stays); r117 (= r116 + e173ce's
+   0106) has the same bug — the pin should go to r118 (0105 v2 + 0106) once it works.
+4. Firefox video stays with d5c224 (ISSUES 23).
+
 IN FLIGHT:
+- **BT.709 colours (ISSUES 21 g)**: offloaded video is converted with BT.601 whatever the clip says. Measured with
+  video/colortest.sh (kmsgrab of the composed frame vs predictions): BT.709 clip = exact BT.601 decode (distance 0 on
+  all six coloured bars; green 191 → 223), BT.601 clip exact. Cause: phoc 0.57 offers no wp_color_representation_v1,
+  and its bundled wlroots 0.20.2 GLES2 renderer ignores color_encoding/range (Vulkan only) → Mesa default BT.601.
+  GTK 4.24.1 already sends the matrix when the global exists (its can_set gate passes for us thanks to gtk 0103 + the
+  global); Mesa 26.2 honours EGL_YUV_COLOR_SPACE_HINT_EXT/EGL_SAMPLE_RANGE_HINT_EXT for NV12 on a3xx (st lowers NV12).
+  FIX: packages/phoc 0.57.0-r100 (Alpine r1 + 0100 wlroots GLES2: hints at dmabuf import, re-import once per buffer
+  when a draw needs another encoding/range, advertise BT.601/709/2020, identity/RGB = no hints; + 0101 phoc:
+  color-representation global next to linux-dmabuf in server.c, per-surface encoding/range in render.c's
+  render_surface_iterator and view_render_to_buffer_iterator). Both apply cleanly to the release tarball (patches made
+  in scratch git trees; note phoc's .gitignore hides subprojects/wlroots-0.*.x). BUILD: colima, last in the queue (see
+  BUILDS: after snapshot r116, tweaks r44, snapshot r117). TEST WITHOUT INSTALLING: extract
+  usr/bin/phoc from the apk to ~/vtest/phoc-r100/ and run `PHOC=~/vtest/phoc-r100/phoc WAIT=12 ~/vtest/colortest.sh
+  run 709 nest709` (and 601): Showtime inside a NESTED phoc (wayland backend) — the nested phoc converts the video.
+  Control done 14:45: nested stock /usr/bin/phoc = BT.601 (distance 0) with GTK offloading (it logged "Setting color
+  state cicp-1/1/1/0"), so the nested method is valid. Expected with r100: BT.709 clip matches BT.709, 601 stays 601.
+  Then ask Yaron about installing (phoc restart = session restart; rollback = Alpine phoc-0.57.0-r1) + a pin in the
+  next gt510-tweaks bump; tell d5c224 to re-check Firefox (phoc newly advertises wp_color_representation_v1).
+  Upstream later (Yaron's call): wlroots MR for the GLES2 part (stale MR 5067 hard-codes BT.709 instead), phoc MR
+  for the global; both projects' AI policies unchecked — check first (memory upstream-ai-policies).
 - **Upstream** (Yaron reviews, signs off, sends; AI never sends): upstream/venus/README.md — A) reply to David
   Heidelberg's posted seek patch (= our 0129 minus the buf_queue gate → double submit) with fixup + Tested-by offer;
   B) 0130 as a new patch (keep the possible-UAF sentence: Yaron); C) encoder series 0107/0109/0110/0111/0131 + cover
@@ -43,7 +78,9 @@ IN FLIGHT:
 
 TOOLS (video/; copies in the tablet's ~/vtest): seektest.py (flushing-seek test), vtrace.sh (function trace +
 kprobes on the decoder), enctrace.sh (HFI properties + ETBs), encbench.sh (bitrate vs PTS/S_PARM/QP), h264frames.py,
-showdiag.sh + threadsample.py (Showtime main-thread profile), vidpower.sh (battery/CPU per playback path),
+showdiag.sh + threadsample.py (Showtime main-thread profile), colortest.sh (gen: BT.709/BT.601 colour-bar clips
+~/vtest/ct709.mp4 + ct601.mp4; run <709|601> <tag>: Showtime + kmsgrab → which matrix the compositor used;
+PHOC=<binary> runs a nested phoc), vidpower.sh (battery/CPU per playback path),
 snaprec.sh + uitap.py (Snapshot recording; shutter tapped through a uinput touchscreen clone, tap point from the
 wlr-randr transform), planefps.py, showbench.sh, decbench.py. Traces: video/traces/.
 
@@ -51,7 +88,10 @@ BUILDS: the laptop is busy with a LineageOS build (session 153de1, from 11:15 fo
 queue's busy check). Build gt510 packages in colima t290 (gt510-pmos image, gt510-pmos-vol, outputs dist/colima/):
 `docker --context colima-t290 run --rm --name gt510-<job> --privileged -v /dev:/dev -v "$HOME/workspace/gt510-pmos:/src:ro"
 -v gt510-pmos-vol:/work -v "$HOME/workspace/gt510-pmos/dist/colima:/dist" -e PMOS_PASSWORD=… gt510-pmos
-/src/pmos-gt510.sh localpkgs-only <pkg>`; one job at a time (announce it). Colima's edge repo is seeded with kernel r39,
+/src/pmos-gt510.sh localpkgs-only <pkg>`; one job at a time (announce it). Queue now (d5c224 14:50): snapshot r116 (running) → d5c224's tweaks r44
+(mesa seeds back for it, out again after) → e173ce's snapshot r117 (not to be installed: has 0105 v1) → r118 (0105 v2 + 0106) + tweaks r45 (pin → r118)
+→ my phoc r100 (~15:40) (`... localpkgs-only
+phoc`, log dist/colima/phoc100.log; no mesa seeds needed). e173ce sends d0acb3 "colima free" after tweaks r45. Colima's edge repo is seeded with kernel r39,
 gtk4.0/-dev/-lang r100 and mesa r100 (the mesa seeds break ffmpeg builds there; Yaron decides on removing them). To
 re-index after seeding: copy as root, then in ONE container `pmbootstrap -y chroot -- true; pmbootstrap -y index`.
   MESA SEEDS REMOVED 2026-10-06 14:02 (Yaron; after d5c224's tweaks r43): the 6 mesa-*26.2.4-r100.apk now sit in
@@ -61,7 +101,7 @@ re-index after seeding: copy as root, then in ONE container `pmbootstrap -y chro
 COORDINATION (shared tablet): d5c224 = Firefox #23, 5 MP stills #24, CPR #28, tweaks r42/r43; 4d591a = A2DP #25, GPS
 #29, off-mode charging #30; e173ce = #27 spec cross-check, #32 camera. Message before any reboot, kernel install,
 camera/Venus/GPU-heavy run or apk add (apk takes a lock: check `pgrep -x apk`); announce public pushes. Public repo
-last pushed 75a77b7 (11:40): assemble-public.sh REPLACES ~/workspace/gt510-public — park .git outside and restore it.
+last pushed 2d9052d (14:15): assemble-public.sh REPLACES ~/workspace/gt510-public — park .git outside and restore it.
 
 TRAPS learned today: a backgrounded `(sleep 1; systemctl reboot) &` over ssh dies with the session — use
 `sudo systemctl reboot --no-block` · fpsdisplaysink counts frames handed to the sink, not shown — use planefps.py ·
@@ -168,7 +208,7 @@ drop parked (READONLY) capture buffers on capture STREAMOFF (ours). REVERTED: 01
   emails/coordinates/the tablet password), move `.git` out and back around it, commit (author Yaron Shahrabani
   <406826+yarons@users.noreply.github.com>, `Co-Authored-By` trailer), scan the diff, push. `review/` is never
   published (it holds the scrub map). Yaron's rules: no photos/raw camera dumps, name yes / email no, GPL-2.0.
-  HEAD 75a77b7 (2026-10-06: upstream/venus hand-off; Venus 0129-0131, gtk4.0/snapshot/libcamera/ffmpeg local patches, notes ISSUES 21-28; before: 06ed139). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
+  HEAD 2d9052d (2026-10-06: showtime/snapshot packages, ffmpeg 0103/0104; before 75a77b7 upstream/venus hand-off; Venus 0129-0131, gtk4.0/snapshot/libcamera/ffmpeg local patches, notes ISSUES 21-28; before: 06ed139). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
 - Release images: `pmos-gt510.sh install-public` (no SSH keys, sshd off, UTC, password 147147) + `release`
   (xz'd sparse userdata image, lk2nd, MANIFEST.txt, SHA256SUMS). gt510-tweaks r35 rebrands the OS on-device
   ("SM-T550 Mainline (unofficial, based on Nura)", ID=nura kept, text plymouth theme sm-t550, Adwaita wallpaper).

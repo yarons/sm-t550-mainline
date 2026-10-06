@@ -1,0 +1,150 @@
+From: gt510 <gt510@localhost>
+Subject: render: support wp_color_representation_v1 for surface textures
+
+Create the color-representation global (with the coefficients the
+renderer supports) and draw each surface texture with the YCbCr encoding
+and range its client set. GTK 4.24 then labels offloaded video subsurfaces
+(e.g. GNOME Showtime, gtk4paintablesink) as BT.709 limited range instead
+of leaving phoc to convert them with the driver default (BT.601). Needs
+the wlroots GLES2 change in 0100 to have any effect on the GLES2 renderer.
+---
+diff --git a/src/render.c b/src/render.c
+index ed8ee26..5cd489b 100644
+--- a/src/render.c
++++ b/src/render.c
+@@ -34,6 +34,7 @@
+ #include <wlr/render/egl.h>
+ #include <wlr/types/wlr_alpha_modifier_v1.h>
+ #include <wlr/types/wlr_buffer.h>
++#include <wlr/types/wlr_color_representation_v1.h>
+ #include <wlr/types/wlr_compositor.h>
+ #include <wlr/types/wlr_linux_dmabuf_v1.h>
+ #include <wlr/util/region.h>
+@@ -198,6 +199,27 @@ phoc_renderer_get_property (GObject    *object,
+ }
+ 
+ 
++static void
++get_surface_color_repr (struct wlr_surface      *surface,
++                        enum wlr_color_encoding *encoding,
++                        enum wlr_color_range    *range)
++{
++  const struct wlr_color_representation_v1_surface_state *repr;
++
++  *encoding = WLR_COLOR_ENCODING_NONE;
++  *range = WLR_COLOR_RANGE_NONE;
++
++  repr = wlr_color_representation_v1_get_surface_state (surface);
++  if (!repr)
++    return;
++
++  if (repr->coefficients != 0)
++    *encoding = wlr_color_representation_v1_color_encoding_to_wlr (repr->coefficients);
++  if (repr->range != 0)
++    *range = wlr_color_representation_v1_color_range_to_wlr (repr->range);
++}
++
++
+ static void
+ render_texture (PhocOutput               *output,
+                 struct wlr_texture       *texture,
+@@ -206,6 +228,8 @@ render_texture (PhocOutput               *output,
+                 const struct wlr_box     *clip_box,
+                 enum wl_output_transform  surface_transform,
+                 float                     alpha,
++                enum wlr_color_encoding   color_encoding,
++                enum wlr_color_range      color_range,
+                 PhocRenderContext        *ctx)
+ {
+   pixman_region32_t damage;
+@@ -229,6 +253,8 @@ render_texture (PhocOutput               *output,
+       .alpha = &alpha,
+       .clip = &damage,
+       .filter_mode = phoc_output_get_texture_filter_mode (ctx->output),
++      .color_encoding = color_encoding,
++      .color_range = color_range,
+     });
+ 
+  buffer_damage_finish:
+@@ -247,6 +273,8 @@ render_surface_iterator (PhocOutput         *output,
+   struct wlr_output *wlr_output = output->wlr_output;
+   float alpha = ctx->alpha;
+   const struct wlr_alpha_modifier_surface_v1_state *alpha_modifier_state;
++  enum wlr_color_encoding color_encoding;
++  enum wlr_color_range color_range;
+ 
+   struct wlr_texture *texture = wlr_surface_get_texture (surface);
+   if (!texture)
+@@ -270,6 +298,8 @@ render_surface_iterator (PhocOutput         *output,
+   if (alpha_modifier_state)
+     alpha *= (float)alpha_modifier_state->multiplier;
+ 
++  get_surface_color_repr (surface, &color_encoding, &color_range);
++
+   render_texture (output,
+                   texture,
+                   &src_box,
+@@ -277,6 +307,8 @@ render_surface_iterator (PhocOutput         *output,
+                   &clip_box,
+                   surface->current.transform,
+                   alpha,
++                  color_encoding,
++                  color_range,
+                   ctx);
+ 
+   wlr_presentation_surface_scanned_out_on_output (surface, wlr_output);
+@@ -408,10 +440,14 @@ view_render_to_buffer_iterator (struct wlr_surface *surface, int sx, int sy, voi
+   struct wlr_box geo;
+   struct wlr_fbox src_box;
+   float alpha = phoc_view_get_alpha (data->view);
++  enum wlr_color_encoding color_encoding;
++  enum wlr_color_range color_range;
+ 
+   if (!wlr_surface_has_buffer (surface))
+     return;
+ 
++  get_surface_color_repr (surface, &color_encoding, &color_range);
++
+   texture = wlr_surface_get_texture (surface);
+   phoc_view_get_geometry (data->view, &geo);
+   wlr_surface_get_buffer_source_box (surface, &src_box);
+@@ -433,6 +469,8 @@ view_render_to_buffer_iterator (struct wlr_surface *surface, int sx, int sy, voi
+       .dst_box = dst_box,
+       .transform = wlr_output_transform_invert (surface->current.transform),
+       .alpha = &alpha,
++      .color_encoding = color_encoding,
++      .color_range = color_range,
+     });
+ }
+ 
+diff --git a/src/server.c b/src/server.c
+index 6d730bb..8aaa78f 100644
+--- a/src/server.c
++++ b/src/server.c
+@@ -25,6 +25,7 @@
+ 
+ #include <glib-unix.h>
+ 
++#include <wlr/types/wlr_color_representation_v1.h>
+ #include <wlr/types/wlr_drm.h>
+ #include <wlr/types/wlr_ext_data_control_v1.h>
+ #include <wlr/types/wlr_ext_image_capture_source_v1.h>
+@@ -41,6 +42,7 @@
+ /* Maximum protocol versions we support */
+ #define PHOC_WL_DISPLAY_VERSION 6
+ #define PHOC_LINUX_DMABUF_VERSION 5
++#define PHOC_COLOR_REPRESENTATION_VERSION 1
+ #define PHOC_XDG_DIALOG_VERSION 1
+ #define PHOC_XDG_SHELL_VERSION 6
+ 
+@@ -469,6 +471,10 @@ phoc_server_initable_init (GInitable    *initable,
+     self->linux_dmabuf_v1 = wlr_linux_dmabuf_v1_create_with_renderer (self->wl_display,
+                                                                       PHOC_LINUX_DMABUF_VERSION,
+                                                                       wlr_renderer);
++    /* Lets clients (e.g. GTK's offloaded video) tell the YCbCr matrix and range */
++    wlr_color_representation_manager_v1_create_with_renderer (self->wl_display,
++                                                              PHOC_COLOR_REPRESENTATION_VERSION,
++                                                              wlr_renderer);
+   } else {
+     g_message ("Linux dmabuf support unavailable");
+   }

@@ -1,15 +1,15 @@
 # SM-T550 cameras on one CAMSS: the rear SR544 is raw Bayer and needs libcamera's
 # soft ISP (GPU debayer); the front SR200PC20 outputs YUV from its own ISP and is
 # passed through by the patched libcamera (packages/libcamera 0100).
-# The soft ISP output is capped at the SR544's fast 1296x972 mode: anything larger
-# (Snapshot asks for 1920x1080) forces the 5 MP mode, which debayers at ~0.7 fps.
+# The soft ISP output is no longer capped (it was 1296x972 while the 5 MP mode debayered
+# at ~0.7 fps; now ~9.5 fps): Snapshot's viewfinder stays small (APERTURE_MAX_HEIGHT in
+# gt510-camera.conf) and full-resolution 2584x1944 stills come from a reconfigure on the
+# shutter (packages/snapshot 0105, packages/libcamera 0111).
 ---
 version: 1
 configuration:
   pipelines:
     simple:
-      max_output_width: 1296
-      max_output_height: 972
       supported_devices:
         - driver: qcom-camss
           software_isp: true

@@ -1,0 +1,166 @@
+From: gt510 <gt510@localhost>
+Subject: aperture: take stills at the camera's full resolution
+
+Pictures were taken from the viewfinder stream, which best_mode() keeps at
+most 1080 lines tall, so a 5 MP camera saved ~1 MP photos. On the shutter,
+switch aperture's own capsfilter (between the camera source and decodebin3)
+to the largest size the camera offers, start camerabin's capture once caps
+of that size arrive, and switch back to the viewfinder caps when the image
+is done (reconfigure on shutter). camerabin's image-capture-caps alone does
+not work: decodebin3 does not pass its renegotiation upstream ("new caps
+equal current ones", then not-negotiated). On the SM-T550 the software ISP
+already reads the sensor's full 2592x1944 mode for the preview, so exposure
+and white balance carry over; a 2584x1944 still takes ~2.5 s.
+
+APERTURE_MAX_HEIGHT=<lines> lowers the viewfinder's height limit (default
+1080), so the preview can stay at its old, cheaper size once larger modes
+are offered.
+---
+diff --git a/aperture/src/utils.rs b/aperture/src/utils.rs
+index 75bd750..1996ffd 100644
+--- a/aperture/src/utils.rs
++++ b/aperture/src/utils.rs
+@@ -29,10 +29,29 @@ pub(crate) mod caps {
+         caps.intersect_with_mode(&crate::SUPPORTED_CAPS, gst::CapsIntersectMode::First)
+     }
+ 
++    /// The largest size (by area) among the fixed sizes in `caps`: the camera's
++    /// full resolution, which stills are taken at.
++    pub(crate) fn largest_size(caps: &gst::Caps) -> Option<Size> {
++        caps.iter()
++            .filter_map(|s| {
++                Some(Size {
++                    width: s.get::<i32>("width").ok()?,
++                    height: s.get::<i32>("height").ok()?,
++                })
++            })
++            .max_by_key(|size| size.width as i64 * size.height as i64)
++    }
++
+     pub(crate) fn best_mode(caps: &gst::Caps) -> Option<Size> {
+         const MIN_WIDTH: i32 = 640;
+         const MIN_HEIGHT: i32 = 480;
+-        const MAX_HEIGHT: i32 = 1080;
++        // APERTURE_MAX_HEIGHT caps the viewfinder height (default 1080), e.g. to keep a
++        // software-ISP preview cheap while full-resolution modes are offered for stills.
++        let max_height: i32 = std::env::var("APERTURE_MAX_HEIGHT")
++            .ok()
++            .and_then(|value| value.trim().parse::<i32>().ok())
++            .filter(|height| *height >= MIN_HEIGHT)
++            .unwrap_or(1080);
+         // APERTURE_OPTIMAL_RATIO="4:3" prefers the sensor's native aspect on devices
+         // whose 16:9 modes are crops of a 4:3 sensor shown on a 4:3 screen.
+         let optimal_ratio: f32 = std::env::var("APERTURE_OPTIMAL_RATIO")
+@@ -62,7 +81,7 @@ pub(crate) mod caps {
+ 
+             let max_width = (height as f32 * optimal_ratio).ceil() as i32;
+             if (MIN_WIDTH..=max_width).contains(&width)
+-                && (MIN_HEIGHT..=MAX_HEIGHT).contains(&height)
++                && (MIN_HEIGHT..=max_height).contains(&height)
+             {
+                 if width == (height as f32 * optimal_ratio) as i32 {
+                     if let Some(Size {
+diff --git a/aperture/src/viewfinder.rs b/aperture/src/viewfinder.rs
+index 4407721..76ffa76 100644
+--- a/aperture/src/viewfinder.rs
++++ b/aperture/src/viewfinder.rs
+@@ -69,6 +69,10 @@ mod imp {
+         pub is_stopping_recording: Cell<bool>,
+         pub is_taking_picture: Cell<bool>,
+         pub is_front_camera: Cell<bool>,
++        /// Caps of aperture's own capsfilter for the viewfinder, and the camera's
++        /// full-resolution caps that pictures are taken at (switched to on the shutter).
++        pub viewfinder_caps: RefCell<Option<gst::Caps>>,
++        pub still_caps: RefCell<Option<gst::Caps>>,
+         pub display_config: OnceCell<gio::DBusProxy>,
+         /// Current preview/capture rotation, readable from streaming threads.
+         pub orientation_degrees: Arc<AtomicU32>,
+@@ -776,7 +780,40 @@ impl Viewfinder {
+         let camerabin = imp.camerabin();
+         camerabin.set_property_from_str("mode", "mode-image");
+         camerabin.set_property("location", location.as_ref().display().to_string());
+-        camerabin.emit_by_name::<()>("start-capture", &[]);
++
++        let still_caps = imp.still_caps.borrow().clone();
++        let still_size = still_caps.as_ref().and_then(|caps| {
++            let s = caps.structure(0)?;
++            Some((s.get::<i32>("width").ok()?, s.get::<i32>("height").ok()?))
++        });
++        match (still_caps, still_size, imp.capsfilter.get()) {
++            (Some(still_caps), Some((width, height)), Some(capsfilter)) => {
++                // decodebin3 does not pass camerabin's renegotiation for its
++                // image-capture-caps upstream, so switch the camera mode with our own
++                // capsfilter and start the capture once the full-resolution caps arrive.
++                let pad = capsfilter.static_pad("src").unwrap();
++                let camerabin = camerabin.clone();
++                pad.add_probe(gst::PadProbeType::EVENT_DOWNSTREAM, move |_, info| {
++                    if let Some(gst::PadProbeData::Event(event)) = &info.data {
++                        if let gst::EventView::Caps(caps) = event.view() {
++                            let s = caps.caps().structure(0);
++                            if s.and_then(|s| s.get::<i32>("width").ok()) == Some(width)
++                                && s.and_then(|s| s.get::<i32>("height").ok()) == Some(height)
++                            {
++                                let camerabin = camerabin.clone();
++                                glib::idle_add_once(move || {
++                                    camerabin.emit_by_name::<()>("start-capture", &[]);
++                                });
++                                return gst::PadProbeReturn::Remove;
++                            }
++                        }
++                    }
++                    gst::PadProbeReturn::Ok
++                });
++                capsfilter.set_property("caps", &still_caps);
++            }
++            _ => camerabin.emit_by_name::<()>("start-capture", &[]),
++        }
+ 
+         Ok(())
+     }
+@@ -1032,7 +1069,17 @@ impl Viewfinder {
+     }
+ 
+     fn on_image_done(&self, file: &gio::File) {
+-        self.imp().is_taking_picture.set(false);
++        let imp = self.imp();
++        imp.is_taking_picture.set(false);
++
++        // Back to the viewfinder mode after a full-resolution still.
++        if imp.still_caps.borrow().is_some() {
++            if let (Some(capsfilter), Some(caps)) =
++                (imp.capsfilter.get(), imp.viewfinder_caps.borrow().as_ref())
++            {
++                capsfilter.set_property("caps", caps);
++            }
++        }
+ 
+         self.emit_picture_done(Some(file));
+     }
+@@ -1492,8 +1539,27 @@ impl Viewfinder {
+         if let Some(capsfilter) = imp.capsfilter.get() {
+             let caps = camera.best_caps();
+             capsfilter.set_property("caps", &caps);
++            imp.viewfinder_caps.replace(Some(caps));
+         }
+ 
++        // Stills at the camera's full resolution: take_picture() switches the source to
++        // these caps and back afterwards, so the preview keeps its (smaller, faster) mode.
++        let still_caps = camera
++            .caps()
++            .and_then(|caps| crate::utils::caps::largest_size(&caps))
++            .map(|size| {
++                gst::Caps::builder("video/x-raw")
++                    .field("width", size.width)
++                    .field("height", size.height)
++                    .build()
++            });
++        log::debug!("Still caps: {still_caps:?}");
++        imp.camerabin().set_property(
++            "image-capture-caps",
++            still_caps.clone().unwrap_or_else(gst::Caps::new_any),
++        );
++        imp.still_caps.replace(still_caps);
++
+         let is_front_camera = !matches!(camera.location(), crate::CameraLocation::Back);
+         imp.is_front_camera.set(is_front_camera);
+ 

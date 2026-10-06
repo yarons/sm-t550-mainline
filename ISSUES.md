@@ -217,7 +217,7 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    listed with a vibra module (GH31-00724A) → connector/motor fault or not fitted on this unit; needs opening the
    tablet. Yaron does not remember whether it ever vibrated on Android. Tools: haptics/ (ffrumble.py, gp2regs.py,
    gp2set.py, tlmm.py, vibmic.sh). Hardware review: #3 done → #4 hardware video decode next.
-21. IN FLIGHT (2026-10-06, session 392683) — **Hardware video decode (Venus)** (hardware review #4). Venus decoder
+21. DONE (2026-10-06 14:15, session 392683; upstream hand-off pending: Yaron sends) — **Hardware video decode (Venus)** (hardware review #4). Venus decoder
    /dev/video5 (H264/VP8/VC1/MPEG-4/MPEG-2/H.263 → NV12) is auto-picked by GStreamer 1.28.7 (v4l2h264dec primary+1):
    1080p decode-only 60 fps at 8 % CPU vs avdec 66 fps at 80 %. Problems found: (a) GNOME Showtime puts glsinkbin in
    front of gtk4paintablesink (GL upload stalls/drops dmabufs here) → local patch video/patch-showtime-play.py
@@ -247,6 +247,19 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    Venus vs +525 mA in software: ~6000 mAh ≈ 9 h vs 6 h of 1080p. packages/showtime 50.0-r100 (0100: gtk4paintablesink
    without glsinkbin, SHOWTIME_GLSINKBIN=1 restores it) created 12:35, building in colima after snapshot r114. UPSTREAM: prepared 2026-10-06 in upstream/venus/README.md
    (0129 duplicates David Heidelberg's posted seek patch → review reply with our buf_queue fixup; 0130 new patch).
+   (g) BT.709 COLOURS (2026-10-06 14:30, session d0acb3 = 392683's continuation, Yaron picked it): offloaded video is
+   converted with BT.601 whatever the clip says. MEASURED (video/colortest.sh: 1080p clips of seven 75 % bars encoded
+   with BT.709 resp. BT.601, played in Showtime, kmsgrab of the composed frame): the BT.709 clip shows exactly the
+   BT.601 decode (distance 0 on all six coloured bars; green 191 → 223, red 191 → 175); the BT.601 clip is exact.
+   CAUSE (sources): GTK 4.24.1 would send the matrix through wp_color_representation_v1, but phoc 0.57 does not
+   offer it, and its wlroots 0.20.2 GLES2 renderer ignores color_encoding/range (only Vulkan uses them; stale wlroots
+   MR 5067 would hard-code BT.709 instead) → Mesa's default for external YUV images = BT.601 narrow. Mesa 26.2 does
+   honour EGL_YUV_COLOR_SPACE_HINT_EXT / EGL_SAMPLE_RANGE_HINT_EXT for NV12 on a3xx (st lowers NV12, external sampler
+   key bt709/yuv_full_range). FIX PREPARED: packages/phoc 0.57.0-r100 = Alpine r1 + 0100 (wlroots GLES2: hints at
+   dmabuf import, re-import once per buffer when a draw asks for another encoding/range, advertise BT.601/709/2020)
+   + 0101 (phoc: color-representation global + per-surface encoding in both render paths). Builds in colima after
+   d5c224's snapshot r116. Installing = phoc restart = session restart: ask Yaron. Watch Firefox (d5c224, ISSUES 23):
+   phoc newly advertises wp_color_representation_v1.
 22. CLOSED (2026-10-06, nothing to implement) — **Touch-key LEDs** (hardware review #9). Recents/Back are maXTouch
    1664T T15 keys (mainline keycodes KEY_APPSELECT 0x244, KEY_BACK 0x9e). Stock never lit them: Samsung's gt510 driver
    (Galaxy-MSM8916 lineage-17.1 drivers/input/touchscreen/mxt_t/, DT compatible "atmel,mxt_t") has
@@ -370,6 +383,29 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    sensor mode does not change — 1296 output already reads the full 2592x1944 — so AE/AWB state should carry, else
    drop a few frames); (2) aperture patch: image-capture-caps = largest 4:3 size, viewfinder kept ≤972 tall; (3)
    config: raise max_output_* (gt510-libcamera.yaml) so 2584x1944 is offered. Snapshot rebuild = Rust (colima).
+   PROTOTYPE WORKS (14:12, camera/rear/camstill.py: camerabin + wrappercamerabinsrc + libcamerasrc, viewfinder
+   1296x972, image-capture-caps 2584x1944, per-process config without the output cap; libcamera-gstreamer r112
+   installed for it): 2 stills at 2584x1944 JPEG (4.4 MB), 2.4-2.7 s shutter→file, YAVG 110 = same as the
+   viewfinder → AE/AWB carry over (same sensor mode); real 5 MP detail at 100 %. NEXT: aperture patch (Snapshot r116 on
+   392683's r115: image-capture-caps = largest 4:3 mode, viewfinder kept ≤972 tall) + raise max_output_* in
+   gt510-libcamera.yaml (tweaks) — Yaron's go before installing.
+   PIPEWIRE LIMIT (14:20): Snapshot sees PipeWire's libcamera node, which offers libcamera's StreamFormats::sizes()
+   = STANDARD sizes inside the range — stock cap: up to 1280x800 / 1152x864 (Snapshot's viewfinder is one of those,
+   not 1296x972); cap lifted (user ~/.config/libcamera/configuration.yaml, moved aside afterwards): up to 2560x1600,
+   largest 4:3 = 2048x1536 — the sensor's 2584x1944 is never offered. aperture: best_caps() only orders the caps
+   (all device caps merged), so camerabin image-capture-caps can renegotiate once the size is offered. Full plan:
+   (1) libcamera: sizes() also lists the range maximum (r113); (2) snapshot 0105 (r116, on 392683's r115; e173ce has
+   0106): image-capture-caps = largest 4:3 size; (3) tweaks: raise max_output_* so 2584x1944 exists (viewfinder stays
+   ≤1080 tall via aperture's best_mode → 1400x1050 or 1152x864). Waiting for Yaron's go.
+   BUILT + TRIED (Yaron's go 14:3x): libcamera r113 (0111: StreamFormats::sizes() also lists the range max →
+   PipeWire now offers 2584x1944), snapshot r116 (0105 v1: camerabin image-capture-caps = largest size;
+   APERTURE_MAX_HEIGHT), tweaks r44 (cap lifted, APERTURE_MAX_HEIGHT=864, pins libcamera>=r113 + snapshot=51.0-r116).
+   On the tablet the viewfinder stayed 1152x864 but the SHUTTER FAILED: decodebin3 in aperture's camera bin does not
+   pass camerabin's renegotiation upstream (pipewiresrc: "new caps equal current ones, skipping", then not-negotiated;
+   camera/rear/snapstill.sh GSTDBG=…). ROLLED BACK to snapshot r115 + tweaks r43 (libcamera r113 kept; photos work,
+   1296x972). 0105 v2 (on disk): take_picture() switches aperture's own capsfilter to the still caps, fires
+   start-capture on the matching caps event, on_image_done() restores the viewfinder caps; e173ce's 0106 applies on
+   top. NEXT: snapshot r118 (0105v2 + 0106) + tweaks r46 (pin r118), then snapstill.sh.
 
 25. ACTIVE (2026-10-06, session 4d591a) — **A2DP / Bluetooth audio** (hardware review #5). Headset = Yaron's Jabra
    Evolve2 65 (paired by Yaron, now trusted). Sound server is PulseAudio 17 (module-bluez5-discover,
@@ -410,7 +446,7 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    disconnect — test artefact), attempt 2 → connected 10:49:05 → a2dp_sink + default sink. gt510-tweaks 1-r40 (pkgrel
    only) built in colima t290 (BUILD_RC=0, 10:50) and INSTALLED 10:53 (plain apk add, 1/1 upgraded; triggers take ~3 min);
    helper restarted, Jabra on a2dp_sink. Boot-time auto-connect itself is verified at the next reboot.
-26. ACTIVE (2026-10-06, hardware review #6, session 392683) — **Venus encoder ignores the target bitrate.** ROOT CAUSE:
+26. DONE (2026-10-06 14:15, hardware review #6, session 392683; upstream pending) — **Venus encoder ignores the target bitrate.** ROOT CAUSE:
    the HFI 1.x firmware budgets bits from the INPUT BUFFER TIMESTAMPS, and GStreamer's v4l2 encoders replace PTS with
    frame_number × 1 s (ETB timestamps 0, 1000000, 2000000 µs — kprobe trace video/traces/et-gst.txt) → the firmware
    gives each frame a whole second's budget (2 Mbit/s target: bars 7.4, noise 25 Mbit/s; old Snapshot ~10x).
@@ -594,4 +630,40 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    Lesson (already in memory: cam -c index flips): select cameras by path; camera/rear/lastframe.sh still
    hard-codes `-c 2` (d5c224 told). cam ran 3x with wireplumber@video-capture up; service + both nodes fine after.
    FIXED 12:2x (Yaron asked): lastframe.sh + awbab.sh (same bug) use `cam -c "$REAR"`, REAR = the camera@28 ID
-   (cam -c takes an ID too); Mac + tablet ~/vtest copies updated; not run yet (Snapshot was open).
+   (cam -c takes an ID too); Mac + tablet ~/vtest copies updated. VERIFIED 14:10 (lastframe.sh 1296 972 fixcheck
+   45): "Using camera …/camera@28", 1296x972-ABGR8888, 45 frames, YAVG 110. awbab.sh same change, not run.
+33. ACTIVE (2026-10-06, session e173ce, from 392683) — **Snapshot sometimes opens the FRONT camera although last-camera-id = Back**
+   (cousin of ISSUES 8, but here both cameras were already enumerated). 14:01:39: `gapplication launch
+   org.gnome.Snapshot` (snapshot r115, tablet up since 11:23, wireplumber@video-capture active, both PipeWire nodes
+   "Built-in Back Camera" / "Built-in Front Camera" present, no other process on a camera) → libcamera "configuring
+   streams: (0) 640x480-NV21/sYCC" = front SR200PC20; gsettings last-camera-id still 'Built-in Back Camera'. Next launch
+   14:03:25, same way → rear (1152x864-XRGB8888). aperture's orientation log says "(front true)" for BOTH, so that flag
+   is useless for diagnosis. Suspect (e173ce): aperture's device provider adds devices asynchronously and the viewfinder
+   starts on whichever camera appears first instead of waiting for the last-camera-id one. Not caused by r115 (it does
+   not touch camera selection). Next: reproduce with a loop of launches (journal "configuring streams"), read aperture's
+   camera selection in viewfinder.rs/device_provider.rs.
+   e173ce 14:1x — MECHANISM (aperture 51.0 source, tarball sha512 verified): DeviceProvider::start_with_default()
+   lists provider.devices() at start; Viewfinder::init() picks default_camera() (last-camera-id via Snapshot's
+   predicate) or camera(0) — but cameras that arrive LATER (bus DeviceAdded) go through the viewfinder's
+   camera_added handler, which starts the FIRST arrival (set_camera) without consulting default_camera(); Snapshot
+   does not save that pick (only set_camera_inner writes last-camera-id) → front opened, setting still Back.
+   camera/snapshot/provtest.py --portal (replays aperture's start through the camera portal like Snapshot:
+   Registry.Register org.gnome.Snapshot + OpenPipeWireRemote → provider fd; opens no camera): 12/12 runs list NO
+   camera at start and deliver Front ~1 ms before Back → aperture would open FRONT; direct PipeWire (no portal):
+   10/10 both listed at start → Back. Real Snapshot (camera/snapshot/picktest.sh, 8 launches 14:17-14:19, debug log
+   via G_MESSAGES_DEBUG=snapshot, removed after): 8/8 REAR, aperture logged "Camera found" Front+Back (both at
+   start). So the front pick happens only when the portal's node permissions land after the provider starts (my
+   replay skips AccessCamera, which seems to give the grants time). FIX PLAN (packages/snapshot 0106, agreed with
+   d5c224 who has 0105/r116): camera_added in Loading/NoCameras starts the default camera at once if it is the
+   arrival, otherwise waits ~300 ms (one timer) and then picks default_camera() or camera(0); Error keeps the old
+   immediate switch. NOTE: the 14:17 loop ran while Yaron's Firefox r104 test was due (d5c224's hold arrived after).
+   0106 WRITTEN 14:4x (Yaron: write it, build after d5c224): packages/snapshot/0106-aperture-wait-for-default-camera.patch
+   (viewfinder.rs: DEFAULT_CAMERA_GRACE_MS 300, default_pick_pending flag, camera_added Loading/NoCameras → default at
+   once else pick_default_camera_soon(); init() partial list → same; Error unchanged). Applies cleanly after d5c224's
+   0105 in APKBUILD order; cargo check -p aperture in alpine:edge (colima t290, throwaway container) printed no
+   errors/warnings (exit code not captured). NOT in APKBUILD yet: r117 = r116 + 0106 after d5c224's colima chain
+   (libcamera r113 → snapshot r116 → tweaks r44); then one localpkgs-only snapshot job, install, picktest + provtest.
+   15:0x: r117 (0105 v1 + 0106) BUILT OK in colima (so 0106 compiles) but NOT installed/pinned: d5c224's 0105 v1 breaks
+   stills (not-negotiated; tablet rolled back to snapshot r115 + tweaks r43). r118 = 0105 v2 + 0106 building
+   (dist/colima/snapshot118.log); gt510-tweaks r45 = r44 + snapshot=51.0-r118 (r45 never built before). Then mesa seeds
+   out + reindex, "colima free" to d0acb3 (phoc), install r118 + r45 together, d5c224 tests stills, I test the pick.

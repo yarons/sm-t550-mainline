@@ -1,0 +1,31 @@
+From: gt510 <gt510@localhost>
+Subject: libcamera: stream: list the range maximum in StreamFormats::sizes()
+
+For a size range, sizes() returns only the common sizes that fit in it. A
+sensor's full resolution behind a software ISP (SM-T550 rear camera:
+2592x1944 in, 2584x1944 out) is never one of them, so applications that
+only see this list, such as PipeWire and through it GNOME Snapshot, cannot
+ask for full-resolution stills. Add the range maximum when it is valid.
+---
+diff --git a/src/libcamera/stream.cpp b/src/libcamera/stream.cpp
+index be0c80c..0fbba79 100644
+--- a/src/libcamera/stream.cpp
++++ b/src/libcamera/stream.cpp
+@@ -222,6 +222,17 @@ std::vector<Size> StreamFormats::sizes(const PixelFormat &pixelformat) const
+ 		for (const Size &size : rangeDiscreteSizes)
+ 			if (limit.contains(size))
+ 				sizes.push_back(size);
++
++		/*
++		 * The largest size of the range is what a sensor's full
++		 * resolution maps to, and it is rarely one of the common
++		 * sizes above (a 2592x1944 sensor behind a software ISP gives
++		 * 2584x1944): offer it too, so applications that only see this
++		 * list (PipeWire) can use the full resolution.
++		 */
++		if (limit.contains(limit.max) &&
++		    std::find(sizes.begin(), sizes.end(), limit.max) == sizes.end())
++			sizes.push_back(limit.max);
+ 	}
+ 
+ 	std::sort(sizes.begin(), sizes.end());

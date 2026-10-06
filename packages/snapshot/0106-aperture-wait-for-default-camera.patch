@@ -1,0 +1,139 @@
+From: gt510 <gt510@localhost>
+Subject: aperture: wait briefly for the default camera instead of starting the first one listed
+
+Through the camera portal, the PipeWire remote Snapshot gets lists no camera when the device provider starts:
+the portal grants the node permissions a moment later, so the cameras arrive one by one as DeviceAdded (on the
+SM-T550 the front ~1 ms before the back). The viewfinder's camera-added handler started the FIRST arrival
+without asking the provider for the default camera, so Snapshot sometimes opened the front camera although
+last-camera-id named the back one (and did not save that pick, so the setting still said Back).
+
+Now a camera that arrives while the viewfinder is loading (or has no camera) is started at once only if it is
+the default camera; otherwise the viewfinder waits DEFAULT_CAMERA_GRACE_MS (300 ms, one timer) and then starts
+the default camera or the first one. init() does the same when only part of the cameras is listed. A camera
+that appears while the viewfinder is in the Error state is still started at once, as before.
+---
+diff --git a/aperture/src/viewfinder.rs b/aperture/src/viewfinder.rs
+index 4407721..40b379c 100644
+--- a/aperture/src/viewfinder.rs
++++ b/aperture/src/viewfinder.rs
+@@ -20,6 +20,9 @@ use crate::code_detector::QrCodeDetector;
+ /// quality and file size. Candidate for a preference.
+ const DEFAULT_BITRATE: u32 = 2048;
+ const PROVIDER_TIMEOUT: u64 = 2;
++/// How long to wait for the app's default camera when cameras show up after the provider started, one at a
++/// time (through the camera portal the node permissions are granted just after the PipeWire remote connects).
++const DEFAULT_CAMERA_GRACE_MS: u64 = 300;
+ 
+ #[derive(Debug)]
+ enum StateChangeState {
+@@ -79,6 +82,8 @@ mod imp {
+         pub camera_pad: RefCell<Option<gst::Pad>>,
+ 
+         pub timeout_handler: RefCell<Option<glib::SourceId>>,
++        /// A delayed default-camera pick is scheduled, see `pick_default_camera_soon`.
++        pub default_pick_pending: Cell<bool>,
+ 
+         pub picture: gtk::Picture,
+         pub offload: gtk::GraphicsOffload,
+@@ -527,15 +532,24 @@ mod imp {
+             devices.connect_camera_added(glib::clone!(
+                 #[weak]
+                 obj,
+-                move |_, camera| {
+-                    if matches!(
+-                        obj.state(),
+-                        ViewfinderState::NoCameras
+-                            | ViewfinderState::Loading
+-                            | ViewfinderState::Error
+-                    ) {
+-                        obj.imp().set_state(ViewfinderState::Ready);
+-                        obj.set_camera(Some(camera.clone()));
++                move |devices, camera| {
++                    match obj.state() {
++                        ViewfinderState::Error => {
++                            obj.imp().set_state(ViewfinderState::Ready);
++                            obj.set_camera(Some(camera.clone()));
++                        }
++                        // Cameras that appear after the provider started arrive one at a time;
++                        // starting the first arrival ignored the app's default camera. Take the
++                        // default at once, otherwise give it a moment to show up.
++                        ViewfinderState::NoCameras | ViewfinderState::Loading => {
++                            if devices.default_camera().as_ref() == Some(camera) {
++                                obj.imp().set_state(ViewfinderState::Ready);
++                                obj.set_camera(Some(camera.clone()));
++                            } else {
++                                obj.pick_default_camera_soon();
++                            }
++                        }
++                        _ => (),
+                     }
+                 }
+             ));
+@@ -1339,14 +1353,23 @@ impl Viewfinder {
+         let imp = self.imp();
+         let devices = imp.devices.get().unwrap();
+ 
+-        if let Some(camera) = devices.default_camera().or_else(|| devices.camera(0))
+-            && matches!(
+-                self.state(),
+-                ViewfinderState::NoCameras | ViewfinderState::Loading | ViewfinderState::Error
+-            )
+-        {
+-            imp.set_state(ViewfinderState::Ready);
+-            self.set_camera(Some(camera));
++        let state = self.state();
++        if matches!(
++            state,
++            ViewfinderState::NoCameras | ViewfinderState::Loading | ViewfinderState::Error
++        ) {
++            if let Some(camera) = devices.default_camera() {
++                imp.set_state(ViewfinderState::Ready);
++                self.set_camera(Some(camera));
++            } else if let Some(camera) = devices.camera(0) {
++                if matches!(state, ViewfinderState::Error) {
++                    imp.set_state(ViewfinderState::Ready);
++                    self.set_camera(Some(camera));
++                } else {
++                    // Only part of the cameras listed so far: the default may still come.
++                    self.pick_default_camera_soon();
++                }
++            }
+         }
+ 
+         glib::timeout_add_local_once(
+@@ -1363,6 +1386,35 @@ impl Viewfinder {
+         );
+     }
+ 
++    /// Starts the default camera, or the first one, after a short grace period unless a camera was
++    /// started meanwhile.
++    fn pick_default_camera_soon(&self) {
++        if self.imp().default_pick_pending.replace(true) {
++            return;
++        }
++        glib::timeout_add_local_once(
++            std::time::Duration::from_millis(DEFAULT_CAMERA_GRACE_MS),
++            glib::clone!(
++                #[weak(rename_to = obj)]
++                self,
++                move || {
++                    let imp = obj.imp();
++                    imp.default_pick_pending.set(false);
++                    let devices = imp.devices.get().unwrap();
++                    if let Some(camera) = devices.default_camera().or_else(|| devices.camera(0))
++                        && matches!(
++                            obj.state(),
++                            ViewfinderState::NoCameras | ViewfinderState::Loading
++                        )
++                    {
++                        imp.set_state(ViewfinderState::Ready);
++                        obj.set_camera(Some(camera));
++                    }
++                }
++            ),
++        );
++    }
++
+     fn create_camera_element(
+         &self,
+         device_src: &gst::Element,

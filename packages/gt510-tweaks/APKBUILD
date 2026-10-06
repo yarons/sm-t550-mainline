@@ -1,7 +1,7 @@
 # Local tweaks for the Samsung Galaxy Tab A 9.7 2015 (SM-T550, gt510wifi) on device-qcom-msm8916.
 pkgname=gt510-tweaks
 pkgver=1
-pkgrel=43
+pkgrel=45
 pkgdesc="SM-T550 (gt510wifi) integration: audio, charger, GPS, rotation, camera, trimmed services; Phosh"
 url="https://postmarketos.org"
 arch="noarch"
@@ -9,7 +9,8 @@ license="GPL-2.0-only"
 options="!check"
 depends="
 	linux-postmarketos-qcom-msm8916>=7.3_rc2-r30
-	libcamera>=99990.7.2-r100
+	libcamera>=99990.7.2-r113
+	snapshot=51.0-r118
 	mesa>=26.2.4-r100
 	mesa-dri-gallium<26.2.5
 	gtk4.0=4.24.1-r100
@@ -53,6 +54,11 @@ depends="
 # freeze ("Got non-DRM-PRIME frame"), with r100-r101 it shows blocks of later frames. Alpine's own 8.1.2 builds are
 # r0-r99 and the next release is 8.1.3+ (libavutil comes from the same build), so only local builds fit; when Alpine moves on, rebuild
 # packages/ffmpeg on the new version first, then move both bounds.
+# libcamera>=99990.7.2-r113 + snapshot=51.0-r118: gt510-libcamera.yaml no longer caps the soft ISP at 1296x972;
+# only libcamera 0111 (full size listed for PipeWire) and snapshot 0105 (stills at full size, APERTURE_MAX_HEIGHT
+# keeps the viewfinder at 1152x864) make that useful, and an older snapshot would run its preview at 1400x1050.
+# snapshot: exact pin so Alpine's next release cannot replace it (it would drop packages/snapshot 0100-0106:
+# rotation, recording bitrate, full-resolution stills, start camera); move it on every local snapshot rebuild.
 # showtime=50.0-r100: the local showtime (packages/showtime 0100) feeds gtk4paintablesink without glsinkbin (Venus
 # 1080p 29 fps vs ~8 fps software / dropped frames with glsinkbin); exact pin so Alpine's next release cannot
 # replace it; move it on every local showtime rebuild.

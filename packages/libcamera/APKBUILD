@@ -5,7 +5,7 @@ maintainer="Robert Mader <robert.mader@collabora.com>"
 pkgname=libcamera
 _pkgver=0.7.2
 pkgver=9999$_pkgver
-pkgrel=112
+pkgrel=113
 pkgdesc="Linux camera framework"
 url="https://libcamera.org/"
 arch="all"
@@ -79,6 +79,7 @@ source="https://gitlab.freedesktop.org/camera/libcamera/-/archive/v$_pkgver/libc
 	0108-egl-avoid-context-leaks.patch
 	0109-gt510-simple-park-lens-on-stop.patch
 	0110-gt510-softisp-awb-skip-saturated.patch
+	0111-gt510-stream-sizes-include-range-max.patch
 	qcam.desktop
 	$_tuning_files
 	"
@@ -213,4 +214,5 @@ ac4e3c742fde4f8e4775bd2afbaaecb18fa49b869eb4309032bae985680f97443353eb384de19a9b
 2ee566653b17d565d2c0de67cbe6ebad25df5aac6051cad78e6bae52016fa2ca0247e964d735ac776b3e0bd447ead9c4fcb26cd7629228cdba3ceb91b46f378f  s5k3l6xx.yaml
 d59020e62520ee622282c85ce7bcdfe453c99becf48cc1005c5f8a4bb8b2511b19c89f38fb3c994e7c6a79d1f84e2ed5f5a09b4c5bdc1dc4a44b071dbccf0d44  s5kjn1.yaml
 9f4614abc064560d431c9e1cf172940b6e03cd03710576ee11e992a56e46f579a642aa2f14244e4e0b38cc6e788d582aeec0c51a95f9630d4bd0521861250b85  0110-gt510-softisp-awb-skip-saturated.patch
+59ae8f47a49c4c25725087ba76888b963d9b11e19beb2391218a3a0376412789495686d1e52855d53e47b6eba80fc7ddebd358a577dde6b2bb779a85ee425daf  0111-gt510-stream-sizes-include-range-max.patch
 "
