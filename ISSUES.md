@@ -207,3 +207,13 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    tablet's ~/{micloop2,mictone,micband,micfmt,tonemeas}.sh + goertzel.py/tonetrack.py (analysis in RAM only).
    VERIFIED on r37 (#38, laptop build 3 min) without poking: f143 = 0x10 after boot, tone band -77.1 dB (r36 -17.4),
    rest -62 dB, loopback beep +36 dB, untainted. Secondary mic (AMIC3) and headset mic untested.
+20. CLOSED (2026-10-05, hardware) — **Vibration motor does not move.** Software path verified against Samsung's
+   ss_vibrator.c (CHIP_ISAXXX, GP2 clock on GPIO 50 + enable GPIO 76; gt510 M=3/N=140 = 25.7 kHz, ~98 % duty, set
+   once at probe; on/off = GPIO 76 + pin mux). Mainline: pwm-vibrator on clk-pwm (GCC_GP2_CLK, 10 kHz, 75 %) +
+   motor_vdd fixed regulator on GPIO 76; feedbackd tags it (FEEDBACKD_TYPE=vibra, uaccess). Checked during effects:
+   regulator on, GPIO 76 pad high (TLMM in=1), GP2 CBCR/RCGR on with the expected M/N/D (/dev/mem), GPIO 50 muxed to
+   gcc_gp2_clk_a. Drove 10 kHz 75 %, 25.7 kHz 98 % / 75 % / 50 % / 2 %, and GPIO 50 static high: Yaron felt nothing in
+   any test, and the mic (motor sits in the display frame) shows no 80-400 Hz rise (-64 dB in every mode). SM-T550 is
+   listed with a vibra module (GH31-00724A) → connector/motor fault or not fitted on this unit; needs opening the
+   tablet. Yaron does not remember whether it ever vibrated on Android. Tools: haptics/ (ffrumble.py, gp2regs.py,
+   gp2set.py, tlmm.py, vibmic.sh). Hardware review: #3 done → #4 hardware video decode next.

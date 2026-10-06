@@ -8,6 +8,86 @@ Paste this into a new session to continue. Everything lives in `~/workspace/gt51
   this file verbatim (the last one = "as of 2026-10-01 18:10"). Read the relevant part before re-investigating.
 - Memory: `samsung-t550-gt510.md`, `upstream-ai-policies.md`, `check-ai-policy-before-upstreaming.md`.
 
+## IN FLIGHT (2026-10-06 08:30) — hardware review #4: hardware video decoding (ISSUES 21, not yet written there)
+Findings so far (tools in video/ + on the tablet in ~/vtest: t1280x720.mp4 / t1920x1080.mp4 = 20 s testsrc2 H.264
+High 4 Mbit/s made with ffmpeg libx264, decbench.py, showbench.sh, planefps.py):
+- Venus decoder = /dev/video5 (v4l2-ctl: H264, VP8, VC1, MPEG-4/XviD, MPEG-2, H.263 → NV12). GStreamer 1.28.7
+  v4l2h264dec has rank primary+1 (auto-picked). Decode-only (decbench.py, sync=false): 1080p HW 60 fps at 8 % system
+  CPU vs avdec_h264 66 fps at 80 %; 720p HW 85 fps / 28 % vs SW 128 / 84 %. Real time (fakesink sync=true): 593
+  rendered, 0 dropped, 30 fps. Decoder caps: DMABuf DMA_DRM drm-format=NV12 (no modifier) 1920x1088 (coded height).
+- GNOME Showtime 50 (the only player) builds GstPlay with glsinkbin(sink=gtk4paintablesink) whenever the paintable
+  has a GL context (always here: GSK_RENDERER=gl) — /usr/lib/python3.14/site-packages/showtime/play.py:24-38.
+  With Venus it shows the first frame and stays "Stopped" (MPRIS); with SW decode it plays at ~8 fps shown, 116 % CPU.
+- gst-launch, 14 s each, fpsdisplaysink: v4l2h264dec → gtk4paintablesink DIRECT = 338 rendered / 0 dropped / 30 fps
+  (GTK imports the NV12 dmabufs itself); v4l2h264dec → glsinkbin → gtk4paintablesink = 175 / 55 dropped (slow start);
+  avdec → glsinkbin = 1.7 fps. glimagesink with Venus: ~4 s start + 33 drops, then 24-26 fps. waylandsink: phoc's
+  dmabuf format list arrives EMPTY in GStreamer (drm-format={}) → only RGB wl_shm → playbin inserts videoconvert →
+  CPU reads uncached dmabufs → "A lot of buffers are being dropped".
+- Not the cause (checked): timestamps (identical HW/SW), CMA (16 MB, only 2.5 MB free, but Venus is behind the IOMMU;
+  no allocation errors), GTK patch 0102 (GTK imports the buffers fine).
+- Showtime patch (Yaron: "go ahead with the Showtime patch"), TEST stage — not packaged yet:
+  video/patch-showtime-play.py patches play.py to use gtk4paintablesink directly unless SHOWTIME_GLSINKBIN=1.
+  Patched copy on the tablet: ~/vtest/st/showtime, run with PYTHONPATH=/home/user/vtest/st (showbench.sh takes env).
+  SW decode with it: 27 fps shown at 61 % CPU (stock glsinkbin: ~8 fps, 116 %).
+- Venus in Showtime stalled on GstPlay's initial flushing seek to 0 → **kernel/0129** (NEW, in no kernel build yet;
+  applied to the colima kdev tree): vdec_start_output SEEK branch — if capture was re-STREAMON'd while output was
+  off (STREAMOFF both, STREAMON cap, STREAMON out) streamon_cap is 0, so no capture buffers were ever given to the
+  firmware → queue_dpb_bufs + process_initial_cap_bufs + streamon_cap=1. Test module kernel/out/venus-dec.ko =
+  tablet ~/venus-dec-0129.ko (`sudo modprobe -r venus_dec && sudo insmod ~/venus-dec-0129.ko`; taints 12288;
+  reboot or modprobe -r + modprobe restores the packaged one). video/seektest.py: seek to 0 now done in 0.11 s and
+  plays (position 5.01 s after 5 s). **Mid-stream seek still stalls**: seek to 10 s → ASYNC_DONE, capture DQBUFs
+  continue (strace), GStreamer logs "dropping frame 0:00:09.033…" then nothing; position frozen at 8.43 s
+  (config-interval=-1 no help). Unsolved — track separately.
+- LATEST (08:28, fresh insmod of the 0129 module, patched Showtime, 1080p clip): Venus opened (4 fds), Showtime CPU
+  30 %, but only 8.8 fb changes/s on plane-0 (XR24 768x1024 = composited, no overlay plane) and MPRIS not found
+  within 5 s (mpris=none). GST log: 32× gtk4paintablesink "Have too many pending frames" (imp.rs:854 show_frame)
+  → GTK/compositor not consuming frames fast enough (frame callbacks?) — NEXT to investigate (vs gst-launch
+  v4l2h264dec ! gtk4paintablesink = 30 fps, 0 dropped). Kernel log also shows `qcom-venus … session error: event
+  id:1004` = HFI_ERR_SESSION_INVALID_SESSION_ID (video/ref/hfi_helper.h:39), repeated ~1/s, 4× around that run
+  (likely at teardown — pkill showtime — check whether stock venus_dec does the same before blaming 0129). An
+  earlier run right after the mid-seek tests fell back to SW decode (venus fds=0).
+- NEXT: (1) "too many pending frames" in Showtime vs gst-launch; (2) 1004 errors stock vs 0129; (3) mid-stream seek;
+  (4) GtkGraphicsOffload (does phoc put the NV12 subsurface on an overlay plane? planefps shows only plane-0), CPU,
+  battery; (5) package packages/showtime (Alpine showtime + patch, pkgrel ≥100) and decide 0129 → kernel r38 (ask
+  Yaron before building/installing); (6) write ISSUES 21. Later: waylandsink empty dmabuf formats (phoc
+  linux-dmabuf feedback), ~4 s Venus start in GL paths.
+- Tablet: unlocked + on USB power for this (it auto-locks after suspend now — Phosh lock on resume, gt510-tweaks
+  disables lock only on blank; to check). Wi-Fi LAN-IP (./gw). Laptop keep-awake expired (it sleeps).
+  Test module 0129 is LOADED on the tablet right now.
+- NOT PUSHED since fbcaa52: ISSUES 20 (vibration = hardware, closed) + haptics/ tools, video/ tools (decbench,
+  showbench, planefps, seektest, patch-showtime-play, ref/), kernel/0129, this file.
+- HANDED OFF 2026-10-06 08:35 from session d5c224 to session 392683 (Yaron's call).
+- 0129 v1 CRASHES THE FIRMWARE (session 392683, 08:40): dmesg since the v1 insmod = 7× `SFR … Err_Fatal
+  vbuffer.c:623` + `no valid instance(session_id:dead)` + "system error (recovered)", 48× 1004; NONE before the insmod
+  (stock module). The 08:32 Showtime run died on it ("poll error 1: Resource busy" → Stopped). Cause: capture buffers
+  QBUF'd after capture STREAMON already go to the firmware (venus_helper_vb2_buf_queue: start_streaming_called), and v1's
+  process_initial_cap_bufs at output STREAMON resubmits the whole m2m list → double FTB. v1 saved as
+  video/venus-0129-v1-double-submit.patch. kernel/0129 is now **v2** (submit only the pre-STREAMON buffers, in
+  vdec_start_capture when SEEK + output off; tablet ~/venus-dec-0129v2.ko LOADED, kdev tree has v2): no crash, but
+  seektest seek 0 now STALLS (0.10 s after 5 s; v1 reached 5.01) and seek 10 stalls at 8.40, 1004 errors → Venus 1.8
+  seems to reject FTBs sent after the flush before any ETB. NEXT for 0129 v3: v1's placement (output STREAMON) + make
+  buf_queue NOT submit capture buffers while SEEK && !streamon_out (then nothing is sent twice). Mid-stream seek lead:
+  READONLY (firmware-held reference) buffers stay flagged + linked in delayed_process across STREAMOFF; re-queued after
+  the seek they are parked again (double list_add) and never reach the firmware → starvation after ~20 frames. Check
+  with kprobes on venus_helper_acquire_buf_ref/release_buf_ref; fix = clear READONLY + list_del_init on capture
+  STREAMOFF/flush. video/{showdiag.sh,threadsample.py} = per-thread CPU, main-thread kernel stack, strace, perf of a
+  playing Showtime (needs ~/vtest/t1920x1080-100s.mp4 = 5× loop of the 20 s clip).
+- WAYLANDSINK EMPTY drm-format = SOLVED (research, no change made): phoc's bundled wlroots 0.20.2
+  (types/wlr_linux_dmabuf_v1.c linux_dmabuf_send_modifiers) sends v3 clients ONLY DRM_FORMAT_MOD_INVALID when a format's
+  set is exactly {INVALID, LINEAR} (XWayland workaround, xserver#1166, still open). a3xx Mesa/EGL reports only LINEAR
+  (checked: eglQueryDmaBufModifiersEXT NV12/XR24/AR24/YUYV → 0x0), so all 67 formats go out INVALID-only (WAYLAND_DEBUG:
+  67/67 modifier events = 0x00ffffffffffffff). GStreamer 1.28.7 (and main) binds zwp_linux_dmabuf_v1 v3 and drops
+  INVALID on purpose (gstwldisplay.c:257) → {}. The v4 feedback has both (GDK_DEBUG=dmabuf: 134 entries, NV12:0 +
+  NV12:INVALID) — that is why GTK offload works. Fix options: phoc local package with a wlroots patch dropping that
+  workaround (small; Xwayland risk low here: GBM supports LINEAR) or GStreamer v4 feedback (upstream draft MR !5040).
+  Value low: Showtime uses gtk4paintablesink; waylandsink is only picked by explicit pipelines. Sources: video/ref/.
+
+## Hardware review results so far (ISSUES 18-20)
+#1 wake from Home/cover DONE (r36/0127; cover untested, no magnetic cover) · #2 mic DONE (r37/0128 16 kHz tone) ·
+#3 vibration CLOSED = hardware (every drive reaches the pins; motor does not move; mic confirms) · #4 IN FLIGHT ·
+then #5 A2DP, #6 venus encoder bitrate, #7 5 MP stills, #8 GPS fix, #9 touch-key LEDs, #10 CPR voltages,
+#11 off-mode charging. Headphone jack parked by Yaron.
+
 ## STATE (2026-10-05 17:40) — kernel r37 on the tablet, next: vibration (ISSUES list after the hardware review)
 - Kernel **r37** (#38) INSTALLED = r35 + 0127 (Home key + hall sensor wake from suspend, ISSUES 18) + 0128
   (msm8916-wcd-analog: PM8916 sequence clears MICB_1_INT_RBIAS → mic 16 kHz tone gone, ISSUES 19). The 20261005
@@ -86,7 +166,7 @@ TXn− pull-ups off on PM8916 (ours). REVERTED: 0119.
   emails/coordinates/the tablet password), move `.git` out and back around it, commit (author Yaron Shahrabani
   <406826+yarons@users.noreply.github.com>, `Co-Authored-By` trailer), scan the diff, push. `review/` is never
   published (it holds the scrub map). Yaron's rules: no photos/raw camera dumps, name yes / email no, GPL-2.0.
-  HEAD dbc4c9d (2026-10-05: session notes; code at 5248021 = kernel r35 + tweaks r37 + Mesa 26.2.4). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
+  HEAD fbcaa52 (2026-10-05: kernel r37 = 0127 wake + 0128 mic; Mesa 26.2.4 at 5248021). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
 - Release images: `pmos-gt510.sh install-public` (no SSH keys, sshd off, UTC, password 147147) + `release`
   (xz'd sparse userdata image, lk2nd, MANIFEST.txt, SHA256SUMS). gt510-tweaks r35 rebrands the OS on-device
   ("SM-T550 Mainline (unofficial, based on Nura)", ID=nura kept, text plymouth theme sm-t550, Adwaita wallpaper).
