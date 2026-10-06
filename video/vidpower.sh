@@ -8,6 +8,7 @@
 # switched off for the run and restored. Showtime runs from the patched copy (PYTHONPATH=~/vtest/st).
 # Run as a user unit: systemd-run --user --unit=vidpower --collect ~/vtest/vidpower.sh <clip>; log ~/vtest/logs/vidpower.txt
 export XDG_RUNTIME_DIR=/run/user/$(id -u) DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus
+VDEC=/dev/$(basename "$(dirname "$(grep -l qcom-venus-decoder /sys/class/video4linux/video*/name)")")  # node numbers move between boots
 C=$1; D=${2:-40}; L=$HOME/vtest/logs; O=$L/vidpower.txt; mkdir -p $L; : > $O
 B=/sys/class/power_supply/max170xx_battery; BL=$(ls -d /sys/class/backlight/* | head -1)
 S() { echo "${SUDO_PW:-147147}" | sudo -S -p "" "$@"; }
@@ -32,7 +33,7 @@ phase() {  # phase <tag> [ENV=val …] — "-" as the first env = no Showtime (i
 			--method org.mpris.MediaPlayer2.Player.Play >/dev/null 2>&1;; esac
 	fi
 	sleep 8
-	P=$(pgrep -x showtime | head -1); venus=0; [ -n "$P" ] && venus=$(ls -l /proc/$P/fd 2>/dev/null | grep -c /dev/video5)
+	P=$(pgrep -x showtime | head -1); venus=0; [ -n "$P" ] && venus=$(ls -l /proc/$P/fd 2>/dev/null | grep -c "$VDEC")
 	set -- $(cpu); b0=$1; t0=$2; p0=0; [ -n "$P" ] && p0=$(awk '{print $14+$15}' /proc/$P/stat)
 	sum=0; n=0; s0=$(date +%s)
 	fps=$(S python3 $HOME/vtest/planefps.py 6 | awk '/plane-0/ {print $2}')

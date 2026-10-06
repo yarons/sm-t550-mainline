@@ -1,11 +1,12 @@
 #!/bin/sh
 # ytwatch.sh [seconds] — read-only snapshot of the user's OWN Firefox while it plays a video (no profile, no
-# restart): Venus open (= H.264 on the hardware decoder), libavcodec / ffvpx mapped in the RDD process, Firefox CPU %
+# restart): Venus decoder open (= H.264 on the hardware decoder), libavcodec / ffvpx mapped in the RDD process, Firefox CPU %
 # (one core = 100) with the busiest threads, MemAvailable / swap / memory PSI, frames shown per DRM plane.
+VDEC=/dev/$(basename "$(dirname "$(grep -l qcom-venus-decoder /sys/class/video4linux/video*/name | head -1)")")  # node moves between boots
 N=${1:-10}
 ff=$(pgrep -f firefox-esr | tr "\n" " ")
 [ -n "$ff" ] || { echo "Firefox not running"; exit 1; }
-venus=0; for p in $ff; do venus=$((venus + $(ls -l /proc/$p/fd 2>/dev/null | grep -c /dev/video5))); done
+venus=0; for p in $ff; do venus=$((venus + $(ls -l /proc/$p/fd 2>/dev/null | grep -c $VDEC))); done
 libs=$(for p in $ff; do grep -ho -E "lib(avcodec\.so\.[0-9]+|mozavcodec\.so|dav1d[^ ]*\.so[.0-9]*|vpx[^ ]*\.so[.0-9]*)" /proc/$p/maps 2>/dev/null; done | sort -u | tr "\n" " ")
 tt() { for p in $ff; do k=$(tr '\0' ' ' < /proc/$p/cmdline 2>/dev/null | awk '{print $NF}'); case $k in rdd|tab|gpu|socket|utility) ;; *) k=main;; esac
 	for t in /proc/$p/task/*; do printf "%s %s:%s %s\n" "${t##*/}" "$k" "$(tr ' ' '_' < $t/comm 2>/dev/null)" "$(awk '{print $14+$15}' $t/stat 2>/dev/null)"; done; done 2>/dev/null; }

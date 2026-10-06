@@ -8,159 +8,67 @@ Paste this into a new session to continue. Everything lives in `~/workspace/gt51
   this file verbatim (the last one = "as of 2026-10-01 18:10"). Read the relevant part before re-investigating.
 - Memory: `samsung-t550-gt510.md`, `upstream-ai-policies.md`, `check-ai-policy-before-upstreaming.md`.
 
-## IN FLIGHT (2026-10-06 08:30) — hardware review #4: hardware video decoding (ISSUES 21, not yet written there)
-Findings so far (tools in video/ + on the tablet in ~/vtest: t1280x720.mp4 / t1920x1080.mp4 = 20 s testsrc2 H.264
-High 4 Mbit/s made with ffmpeg libx264, decbench.py, showbench.sh, planefps.py):
-- Venus decoder = /dev/video5 (v4l2-ctl: H264, VP8, VC1, MPEG-4/XviD, MPEG-2, H.263 → NV12). GStreamer 1.28.7
-  v4l2h264dec has rank primary+1 (auto-picked). Decode-only (decbench.py, sync=false): 1080p HW 60 fps at 8 % system
-  CPU vs avdec_h264 66 fps at 80 %; 720p HW 85 fps / 28 % vs SW 128 / 84 %. Real time (fakesink sync=true): 593
-  rendered, 0 dropped, 30 fps. Decoder caps: DMABuf DMA_DRM drm-format=NV12 (no modifier) 1920x1088 (coded height).
-- GNOME Showtime 50 (the only player) builds GstPlay with glsinkbin(sink=gtk4paintablesink) whenever the paintable
-  has a GL context (always here: GSK_RENDERER=gl) — /usr/lib/python3.14/site-packages/showtime/play.py:24-38.
-  With Venus it shows the first frame and stays "Stopped" (MPRIS); with SW decode it plays at ~8 fps shown, 116 % CPU.
-- gst-launch, 14 s each, fpsdisplaysink: v4l2h264dec → gtk4paintablesink DIRECT = 338 rendered / 0 dropped / 30 fps
-  (GTK imports the NV12 dmabufs itself); v4l2h264dec → glsinkbin → gtk4paintablesink = 175 / 55 dropped (slow start);
-  avdec → glsinkbin = 1.7 fps. glimagesink with Venus: ~4 s start + 33 drops, then 24-26 fps. waylandsink: phoc's
-  dmabuf format list arrives EMPTY in GStreamer (drm-format={}) → only RGB wl_shm → playbin inserts videoconvert →
-  CPU reads uncached dmabufs → "A lot of buffers are being dropped".
-- Not the cause (checked): timestamps (identical HW/SW), CMA (16 MB, only 2.5 MB free, but Venus is behind the IOMMU;
-  no allocation errors), GTK patch 0102 (GTK imports the buffers fine).
-- Showtime patch (Yaron: "go ahead with the Showtime patch"), TEST stage — not packaged yet:
-  video/patch-showtime-play.py patches play.py to use gtk4paintablesink directly unless SHOWTIME_GLSINKBIN=1.
-  Patched copy on the tablet: ~/vtest/st/showtime, run with PYTHONPATH=/home/user/vtest/st (showbench.sh takes env).
-  SW decode with it: 27 fps shown at 61 % CPU (stock glsinkbin: ~8 fps, 116 %).
-- Venus in Showtime stalled on GstPlay's initial flushing seek to 0 → **kernel/0129** (NEW, in no kernel build yet;
-  applied to the colima kdev tree): vdec_start_output SEEK branch — if capture was re-STREAMON'd while output was
-  off (STREAMOFF both, STREAMON cap, STREAMON out) streamon_cap is 0, so no capture buffers were ever given to the
-  firmware → queue_dpb_bufs + process_initial_cap_bufs + streamon_cap=1. Test module kernel/out/venus-dec.ko =
-  tablet ~/venus-dec-0129.ko (`sudo modprobe -r venus_dec && sudo insmod ~/venus-dec-0129.ko`; taints 12288;
-  reboot or modprobe -r + modprobe restores the packaged one). video/seektest.py: seek to 0 now done in 0.11 s and
-  plays (position 5.01 s after 5 s). **Mid-stream seek still stalls**: seek to 10 s → ASYNC_DONE, capture DQBUFs
-  continue (strace), GStreamer logs "dropping frame 0:00:09.033…" then nothing; position frozen at 8.43 s
-  (config-interval=-1 no help). Unsolved — track separately.
-- LATEST (08:28, fresh insmod of the 0129 module, patched Showtime, 1080p clip): Venus opened (4 fds), Showtime CPU
-  30 %, but only 8.8 fb changes/s on plane-0 (XR24 768x1024 = composited, no overlay plane) and MPRIS not found
-  within 5 s (mpris=none). GST log: 32× gtk4paintablesink "Have too many pending frames" (imp.rs:854 show_frame)
-  → GTK/compositor not consuming frames fast enough (frame callbacks?) — NEXT to investigate (vs gst-launch
-  v4l2h264dec ! gtk4paintablesink = 30 fps, 0 dropped). Kernel log also shows `qcom-venus … session error: event
-  id:1004` = HFI_ERR_SESSION_INVALID_SESSION_ID (video/ref/hfi_helper.h:39), repeated ~1/s, 4× around that run
-  (likely at teardown — pkill showtime — check whether stock venus_dec does the same before blaming 0129). An
-  earlier run right after the mid-seek tests fell back to SW decode (venus fds=0).
-- NEXT: (1) "too many pending frames" in Showtime vs gst-launch; (2) 1004 errors stock vs 0129; (3) mid-stream seek;
-  (4) GtkGraphicsOffload (does phoc put the NV12 subsurface on an overlay plane? planefps shows only plane-0), CPU,
-  battery; (5) package packages/showtime (Alpine showtime + patch, pkgrel ≥100) and decide 0129 → kernel r38 (ask
-  Yaron before building/installing); (6) write ISSUES 21. Later: waylandsink empty dmabuf formats (phoc
-  linux-dmabuf feedback), ~4 s Venus start in GL paths.
-- Tablet: unlocked + on USB power for this (it auto-locks after suspend now — Phosh lock on resume, gt510-tweaks
-  disables lock only on blank; to check). Wi-Fi LAN-IP (./gw). Laptop keep-awake expired (it sleeps).
-  Test module 0129 is LOADED on the tablet right now.
-- PUSHED 7ffd5b4 (2026-10-06 ~10:15, session 392683; before: 06ed139): kernel 0129/0130/0131, gtk4.0 0103 (old
-  0100-0102 dropped), snapshot 0103, libcamera 0110, ffmpeg r100 (d5c224), gt510-tweaks BT files (4d591a), gps/touchkey
-  tools, video tools + traces, notes + ISSUES 21-28. review/scrub-map.tsv now also maps Yaron's headset BT MAC.
-  Excluded as before: video/ref/, images/videos (*.png/*.mp4), attic/ (incl. 4d591a's PA source copies).
-- HANDED OFF 2026-10-06 08:35 from session d5c224 to session 392683 (Yaron's call).
-- 0129 v1 CRASHES THE FIRMWARE (session 392683, 08:40): dmesg since the v1 insmod = 7× `SFR … Err_Fatal
-  vbuffer.c:623` + `no valid instance(session_id:dead)` + "system error (recovered)", 48× 1004; NONE before the insmod
-  (stock module). The 08:32 Showtime run died on it ("poll error 1: Resource busy" → Stopped). Cause: capture buffers
-  QBUF'd after capture STREAMON already go to the firmware (venus_helper_vb2_buf_queue: start_streaming_called), and v1's
-  process_initial_cap_bufs at output STREAMON resubmits the whole m2m list → double FTB. v1 saved as
-  video/venus-0129-v1-double-submit.patch. kernel/0129 is now **v2** (submit only the pre-STREAMON buffers, in
-  vdec_start_capture when SEEK + output off; tablet ~/venus-dec-0129v2.ko LOADED, kdev tree has v2): no crash, but
-  seektest seek 0 now STALLS (0.10 s after 5 s; v1 reached 5.01) and seek 10 stalls at 8.40, 1004 errors → Venus 1.8
-  seems to reject FTBs sent after the flush before any ETB.
-- **VENUS SEEK FIXED = kernel/0129 + kernel/0130** (08:55; tablet ~/venus-dec-0129v4.ko LOADED = both, srcversion
-  8F7AEC6CC48817CCCDD241B; kdev tree has both; builds done without touching the tree: scratch diff via stdin, .ko via
-  stdout). 0129 = v1's placement (output STREAMON in SEEK: queue_dpb + process_initial_cap_bufs after the ETBs,
-  streamon_cap=1) + vdec_vb2_buf_queue keeps capture buffers in the m2m context while SEEK && !streamon_out. 0130 =
-  vdec_stop_streaming(capture) unlinks inst->delayed_process: READONLY buffers parked there survived capture
-  STREAMOFF, so after the seek the delayed work submitted a stale entry while userspace owned it; userspace queued it
-  again → double FTB → firmware "session error 1004" ~150 ms after every seek (trace video/traces/vt-seek0-v3.txt,
-  video/vtrace.sh = function tracer on venus_* + kprobes on STREAMON/OFF/QBUF/submit/done/flush/events; kprobe types
-  9 = CAPTURE, 10 = OUTPUT). 0129-alone "worked" only under CPU contention (Yaron's Firefox thrash) — timing. Idle
-  tablet with both: preroll 0.44 s, seek 0 → 5.01 s after 5 s (×3), seek 10 → 13.34 s (×2), no kernel errors.
-  The v2 "FTB before ETB is rejected" idea is unproven (same 1004 signature as the 0130 bug). Thrash root cause per
-  d5c224: Firefox SW decode, zram 1.77/2.0 GB, MemAvailable 0 — the Firefox 1080p issue is d5c224's.
-- **Kernel r38 INSTALLED 09:17** (verified: uname #39 Oct 6 06:04 UTC, taint 0, venus_dec CEEE21FD…, seek 0 → 5.23 s,
-  seek 10 → 13.27 s, 0 session errors, 0 GPU faults; one reboot also covered 4d591a's PM8916 GPIO reset; NOTE a
-  backgrounded `(sleep 1; systemctl reboot) &` over ssh dies with the ssh scope — use `sudo systemctl reboot --no-block`).
-  Built 2026-10-06 09:05 ( laptop incremental 3 min, queue job kernel-r38): r37 + 0129 +
-  0130. dist/kernel/linux-postmarketos-qcom-msm8916-7.3_rc2-r38.apk sha256 0fb98a93…b5de85 (also on the laptop). Check:
-  venus-dec.ko srcversion r37 2D90E754… → r38 CEEE21FD… (only 0129/0130 touch venus; kdev builds differ by config).
-  Install = reboot: ask Yaron + tell d5c224 first; plain `apk add <file>` (never -u), then mkinitfs check, reboot,
-  verify /sys/module/venus_dec/srcversion = CEEE21FDFF276B3D601E78E and taint 0.
-- Showtime (patched copy) on Venus with 0129+0130 PLAYS (MPRIS Playing, 4 Venus fds, no kernel errors) but shows
-  10 fb changes/s (plane-0 XR24 composited), 71× "too many pending frames"; showdiag (video/traces/showdiag-venus-v4.txt):
-  Showtime main thread 14 % CPU, blocked 62 % in dma_fence_default_wait ← msm_ioctl_wait_fence (40-60 ms each) → GTK
-  renders the 1080p NV12 frames itself on the GPU and waits for it, i.e. NO OFFLOAD (gst-launch → gtk4paintablesink
-  direct: 30 fps). The sink's channel holds 3 FrameChanged; a busy main thread drops the rest (imp.rs:1026/854).
-- Shared tablet (since 08:47): session d5c224 works on hardware review #9 (touch-key LEDs) in parallel; message it
-  before any reboot/suspend/kernel install/perf or CPU-heavy run, and never run tests while Yaron uses the tablet.
-  video/{showdiag.sh,threadsample.py} = per-thread CPU, main-thread kernel stack, strace, perf of a playing Showtime
-  (needs ~/vtest/t1920x1080-100s.mp4 = 5× loop of the 20 s clip) — HEAVY, announce first.
-- WHY NO OFFLOAD = GTK colorstate rule (09:15, GDK_DEBUG=offload): every frame "🗙 Texture colorstate cicp-1/1/1/0
-  (NV12, straight): No color-management, non-default color state" (gdk/wayland/gdkwaylandcolor.c:1298-1304 in 4.24.1:
-  without a wp_color_management surface only GDK_COLOR_STATE_YUV = cicp 1/13/5/0 (BT.601 matrix, sRGB TF, narrow) is
-  offloaded; Venus/H.264 HD = BT.709 → GTK draws every frame on the a306 → ~10 fps on screen). CORRECTION: the old
-  "gst-launch → gtk4paintablesink 30 fps / 0 dropped" was fpsdisplaysink's count of frames handed to the sink — the
-  SCREEN showed 10 fps there too (planefps). PROOF: gst-launch … v4l2h264dec ! capssetter join=true replace=false
-  caps="video/x-raw(memory:DMABuf),colorimetry=(string)2:4:7:1" ! fpsdisplaysink video-sink=gtk4paintablesink →
-  0 refusals, plane-0 28.2 fb changes/s (planefps ceiling ~30), sink 29.99 fps / 0 dropped. Cost: phoc/Mesa convert
-  NV12 with their default (BT.601) matrix → slight colour shift on BT.709 video. Fix options: (1) local GTK patch:
-  without colour management, also offload narrow-range BT.709/BT.601 YUV (all apps, small); (2) relabel in the
-  Showtime patch (Showtime only, mislabels); (3) colour management in phoc (large). Yaron decides.
-  The 1004 lines are now explained by 0130 (none in d5c224's whole ffmpeg/Firefox window with v4 loaded). d5c224:
-  ffmpeg h264_v4l2m2m on Venus 1080p25 = 65.9 fps at 6 % of one core; Firefox could use Venus only via ffmpeg
-  v4l2m2m + LibreELEC drmprime patch (packages/ffmpeg r100, d5c224's) whose flush does capture STREAMOFF/ON → 0129/0130
-  matter for Firefox seeks too.
-- GTK OFFLOAD FIX (Yaron chose option 1, 09:25): packages/gtk4.0 REBASED on Alpine 4.24.1 (APKBUILD from aports
-  master, pkgrel 100) + ONE patch 0103-gdk-wayland-offload-sdr-video-without-color-management.patch
-  (gdkwaylandcolor.c: without colour management/representation, narrow-range YUV with BT.709/BT.601 primaries/TF/
-  matrix counts as the default colorstate → offloaded; compositor converts with BT.601 → slight shift on BT.709).
-  Old 4.24.0 r103 package (0100-0102) moved to attic/gtk4.0-4.24.0-r103/ (dropped earlier: not needed for Snapshot).
-  Dry-run applied on the real gtk-4.24.1 tarball. Laptop queue job gtk4-r100 (localpkgs-only gtk4.0, ~19 min) queued
-  09:25 behind d5c224's ffmpeg100b. gt510-tweaks r38 (Yaron) = exact pin `gtk4.0=4.24.1-r100` (a >= would let Alpine's
-  next release replace it; move it on every local gtk4.0 rebuild); job tweaks-r38 waits for gtk4-r100. Install BOTH
-  in one `apk add` (tweaks requires the r100 gtk). d5c224's Firefox prefs/ffmpeg pin go into tweaks r39. NEXT: install on the tablet (plain apk add of gtk4.0 + its subpackages, NO reboot;
-  restart GTK apps; announce to d5c224/4d591a), verify GDK_DEBUG=offload shows no colorstate refusals + planefps
-  ~28 fps in patched Showtime, check colours by eye with Yaron; then packages/showtime, CPU/battery, ISSUES 21.
-- **#6 VENUS ENCODER BITRATE = ISSUES 26 (09:45)**: HFI 1.x firmware budgets from buffer timestamps; GStreamer's v4l2
-  encoders send frame_number × 1 s → 4-14x overshoot. kernel/0131 (DISABLE_RC_TIMESTAMP=1 on IS_V1) → targets hit.
-  Tablet: ~/venus-enc-0131.ko insmod'ed (taint; venus_dec = packaged r38). kdev tree = 0100-0131, test hunks
-  reverted. **r39 = r38 + 0131 QUEUED** (Yaron, ~09:50; pkgrel 39 in kernel/apply-7.3.sh + pmos-gt510.sh, laptop job
-  kernel-r39 chained after tweaks-r38 → gtk4-r100 → d5c224's ffmpeg100b, so pmbootstrap jobs never overlap). Install =
-  reboot: ask Yaron, announce to d5c224/4d591a, `sudo systemctl reboot --no-block`.
-- UPSTREAM VENUS (11:35): upstream/venus/README.md — A) reply to David Heidelberg's 2026-09-28 seek patch (= our 0129
-  minus the buf_queue gate → double submit) with fixup + Tested-by offer; B) 0130 as a new patch; C) encoder series
-  0107/0109/0110/0111/0131 + cover letter. Formatted vs mainline 2c3418fffa9d, checkpatch/get_maintainer done.
-  Yaron reviews, adds Signed-off-by, sends. ref/ (mainline copies, mboxes) excluded from the public repo.
-- LAPTOP BUSY from 2026-10-06 11:15 for ~6-10 h: lineage-build-first-j8 (session 153de1; matches the queue's busy check, so
-  queued gt510 jobs wait). Build gt510 packages in colima t290 meanwhile (d5c224/4d591a seeded its repo; same key).
-- (11:08: 4d591a accidentally truncated ISSUES.md and restored it from file history + 7ffd5b4 — re-check ISSUES 21 e/f.)
-- **r39 BATCH INSTALLED 10:32** (one apk add + one reboot): kernel r39 (#40, 0131; venus_enc CED380CB, venus_dec CEEE21FD,
-  taint 0) + gtk4.0/-lang 4.24.1-r100 + gt510-tweaks **1-r39** (d5c224's superset of my r38: + Firefox video prefs, +
-  ffmpeg-libavcodec=8.1.2-r101 pin, + e173ce's /etc/machine-info rebrand). VERIFIED: encbench bars 2.00 Mbit/s (2 VBR),
-  seek 10 → 13.35 s, gt510-bt-a2dp active, **Showtime on Venus + GTK offload: 29.2 fps shown (was 10), 0 offload
-  refusals, Showtime 27 % of one core**; "too many pending frames" only in the first 4 s (startup), none after; colours
-  right (testsrc2 bars). POWER 11:05 (ISSUES 21 f): Venus+offload 658 mA / 24.5 fps vs software 993 mA, idle 468 mA.
-  NEXT: packages/showtime (TEST copy only so far); snapshot r113 +
-  libcamera r112 still building on the laptop (~11:01 / ~11:07), then install them (no reboot) + snaprec re-check.
-- SNAPSHOT RECORDING with 0131 (10:00): video 0.78 Mbit/s (driver default 1 Mbit/s; aperture has no v4l2h264enc
-  entry in its DEFAULT_BITRATE map). packages/snapshot r113 = + 0103-aperture-v4l2h264enc-bitrate.patch (extra-controls
-  video_bitrate = 2048*1024), Yaron 10:05. Laptop chain: ffmpeg100b (d5c224) → gtk4-r100 → tweaks-r38 (+ 4d591a's
-  gt510-bt-policy.pa and gt510-bt-a2dp helper, ISSUES 25) → kernel-r39 → snapshot-r113 → libcamera-r112 (d5c224's 0110 AWB skip-saturated,
-  Yaron 10:08; d5c224 installs it). gtk4-r100 started 10:07. INSTALL PLAN (Yaron): one apk
-  add of kernel r39 + gtk4.0(-lang) r100 + gt510-tweaks r38, ONE reboot (announce d5c224 + 4d591a); snapshot r113
-  later, no reboot. Then "laptop free" to session 153de1 (Lineage 6-10 h build waits for it) and d5c224.
-  Snapshot test tools: video/snaprec.sh (uinput tap via video/uitap.py; saves in ~/Videos/Camera).
-- WAYLANDSINK EMPTY drm-format = SOLVED (research, no change made): phoc's bundled wlroots 0.20.2
-  (types/wlr_linux_dmabuf_v1.c linux_dmabuf_send_modifiers) sends v3 clients ONLY DRM_FORMAT_MOD_INVALID when a format's
-  set is exactly {INVALID, LINEAR} (XWayland workaround, xserver#1166, still open). a3xx Mesa/EGL reports only LINEAR
-  (checked: eglQueryDmaBufModifiersEXT NV12/XR24/AR24/YUYV → 0x0), so all 67 formats go out INVALID-only (WAYLAND_DEBUG:
-  67/67 modifier events = 0x00ffffffffffffff). GStreamer 1.28.7 (and main) binds zwp_linux_dmabuf_v1 v3 and drops
-  INVALID on purpose (gstwldisplay.c:257) → {}. The v4 feedback has both (GDK_DEBUG=dmabuf: 134 entries, NV12:0 +
-  NV12:INVALID) — that is why GTK offload works. Fix options: phoc local package with a wlroots patch dropping that
-  workaround (small; Xwayland risk low here: GBM supports LINEAR) or GStreamer v4 feedback (upstream draft MR !5040).
-  Value low: Showtime uses gtk4paintablesink; waylandsink is only picked by explicit pipelines. Sources: video/ref/.
+## VIDEO / VENUS (hardware review #4 + #6, session 392683) — STATE 2026-10-06 14:05
+The chronological log of today's work is archived verbatim at the end of CONTINUATION-PROMPT.2026-09-27-history.md
+("Archived 2026-10-06 13:25"). ISSUES 21 (decode/playback) and 26 (encoder) carry the findings.
+
+INSTALLED on the tablet and verified:
+- Kernel **r39** (#40) = r37 + 0129 + 0130 (Venus decoder seeks: capture buffers queued during a seek reach the
+  firmware once; parked READONLY buffers are unlinked on capture STREAMOFF) + 0131 (Venus 1.x encoder rate control
+  from S_PARM instead of buffer timestamps). Taint 0; venus_dec CEEE21FD…, venus_enc CED380CB…. Venus node numbers move
+  between boots (decoder = /dev/video4 since the 11:23 boot): tools look it up by name ($VDEC).
+- **gtk4.0 4.24.1-r100** (packages/gtk4.0 0103: without colour management, narrow-range BT.709/BT.601 YUV counts as the
+  default colorstate → GTK offloads video to phoc; BT.709 shows with phoc's BT.601 conversion, slight shift).
+  gt510-tweaks pins `gtk4.0=4.24.1-r100` (exact; move it on every local gtk rebuild / Alpine bump).
+- **showtime 50.0-r100** (packages/showtime 0100: gtk4paintablesink without glsinkbin; SHOWTIME_GLSINKBIN=1 restores):
+  1080p on Venus 29 fps shown, Showtime 27 % of a core, 0 offload refusals. Pin `showtime=50.0-r100` goes into
+  gt510-tweaks r43 (d5c224 builds it).
+- **snapshot 51.0-r115** (0103: v4l2h264enc gets DEFAULT_BITRATE 2 Mbit/s; 0104: before each recording the bitrate is
+  scaled by negotiated/measured fps, because pipewiresrc fixates 30/1 while the soft-ISP camera delivers ~22-24 fps,
+  ~8.5 on battery): rear 1152x864 → 1.89 Mbit/s for 2 (scale 1.22), front 640x480 → 2.13 (scale 1.55). Journal line
+  "Recording with N bit/s (frame rate scale X)". Rollback file ~/r39/snapshot-51.0-r113.apk. One test run opened the
+  FRONT camera although last-camera-id says Back (the next run used the rear) — watch it.
+- Power, 1080p in Showtime (ISSUES 21 f, video/vidpower.sh): Venus + offload 658 mA / 24.5 fps, software 993 mA,
+  idle screen 468 mA (~9 h vs ~6 h of playback).
+
+IN FLIGHT:
+- **Upstream** (Yaron reviews, signs off, sends; AI never sends): upstream/venus/README.md — A) reply to David
+  Heidelberg's posted seek patch (= our 0129 minus the buf_queue gate → double submit) with fixup + Tested-by offer;
+  B) 0130 as a new patch (keep the possible-UAF sentence: Yaron); C) encoder series 0107/0109/0110/0111/0131 + cover
+  letter. Snapshot 0103/0104 would be GNOME issues (ask first: no clear AI policy).
+- Not fixed, low value: waylandsink sees no dmabuf formats (phoc's wlroots 0.20.2 sends v3 clients INVALID-only;
+  GStreamer binds v3 and drops INVALID). Fix = wlroots patch in phoc or GStreamer dmabuf feedback v4.
+- Firefox video (ISSUES 23) is d5c224's: Venus zero-copy works (ffmpeg r102/r103); blocks = buffer reuse (r103:
+  requeue delay 16, 32 buffers); the fixed black triangle appears only on the YouTube page at 1080p.
+
+TOOLS (video/; copies in the tablet's ~/vtest): seektest.py (flushing-seek test), vtrace.sh (function trace +
+kprobes on the decoder), enctrace.sh (HFI properties + ETBs), encbench.sh (bitrate vs PTS/S_PARM/QP), h264frames.py,
+showdiag.sh + threadsample.py (Showtime main-thread profile), vidpower.sh (battery/CPU per playback path),
+snaprec.sh + uitap.py (Snapshot recording; shutter tapped through a uinput touchscreen clone, tap point from the
+wlr-randr transform), planefps.py, showbench.sh, decbench.py. Traces: video/traces/.
+
+BUILDS: the laptop is busy with a LineageOS build (session 153de1, from 11:15 for 6-10 h; its container matches the
+queue's busy check). Build gt510 packages in colima t290 (gt510-pmos image, gt510-pmos-vol, outputs dist/colima/):
+`docker --context colima-t290 run --rm --name gt510-<job> --privileged -v /dev:/dev -v "$HOME/workspace/gt510-pmos:/src:ro"
+-v gt510-pmos-vol:/work -v "$HOME/workspace/gt510-pmos/dist/colima:/dist" -e PMOS_PASSWORD=… gt510-pmos
+/src/pmos-gt510.sh localpkgs-only <pkg>`; one job at a time (announce it). Colima's edge repo is seeded with kernel r39,
+gtk4.0/-dev/-lang r100 and mesa r100 (the mesa seeds break ffmpeg builds there; Yaron decides on removing them). To
+re-index after seeding: copy as root, then in ONE container `pmbootstrap -y chroot -- true; pmbootstrap -y index`.
+  MESA SEEDS REMOVED 2026-10-06 14:02 (Yaron; after d5c224's tweaks r43): the 6 mesa-*26.2.4-r100.apk now sit in
+  /work/pmb/seed-removed/ (also dist/colima/seed/) so colima can build ffmpeg (mesa-rusticl conflict). A gt510-tweaks
+  rebuild in colima needs them back (depends mesa>=26.2.4-r100): copy back as root + re-index; remove again after.
+
+COORDINATION (shared tablet): d5c224 = Firefox #23, 5 MP stills #24, CPR #28, tweaks r42/r43; 4d591a = A2DP #25, GPS
+#29, off-mode charging #30; e173ce = #27 spec cross-check, #32 camera. Message before any reboot, kernel install,
+camera/Venus/GPU-heavy run or apk add (apk takes a lock: check `pgrep -x apk`); announce public pushes. Public repo
+last pushed 75a77b7 (11:40): assemble-public.sh REPLACES ~/workspace/gt510-public — park .git outside and restore it.
+
+TRAPS learned today: a backgrounded `(sleep 1; systemctl reboot) &` over ssh dies with the session — use
+`sudo systemctl reboot --no-block` · fpsdisplaysink counts frames handed to the sink, not shown — use planefps.py ·
+GDK_DEBUG=offload explains every offload refusal · GStreamer's v4l2 encoders send frame_number × 1 s timestamps ·
+camerabin applies a new video-profile only at NULL→READY · Snapshot saves videos in ~/Videos/Camera and its shutter
+has no D-Bus action or key · lore.kernel.org sits behind an anti-bot page — use the patchwork.linuxtv.org API ·
+zsh: `echo =====` is `=` expansion (use other separators).
 
 ## Hardware review results so far (ISSUES 18-23)
 #1 wake from Home/cover DONE (r36/0127; cover untested, no magnetic cover) · #2 mic DONE (r37/0128 16 kHz tone) ·
@@ -260,7 +168,7 @@ drop parked (READONLY) capture buffers on capture STREAMOFF (ours). REVERTED: 01
   emails/coordinates/the tablet password), move `.git` out and back around it, commit (author Yaron Shahrabani
   <406826+yarons@users.noreply.github.com>, `Co-Authored-By` trailer), scan the diff, push. `review/` is never
   published (it holds the scrub map). Yaron's rules: no photos/raw camera dumps, name yes / email no, GPL-2.0.
-  HEAD 7ffd5b4 (2026-10-06: Venus 0129-0131, gtk4.0/snapshot/libcamera/ffmpeg local patches, notes ISSUES 21-28; before: 06ed139). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
+  HEAD 75a77b7 (2026-10-06: upstream/venus hand-off; Venus 0129-0131, gtk4.0/snapshot/libcamera/ffmpeg local patches, notes ISSUES 21-28; before: 06ed139). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
 - Release images: `pmos-gt510.sh install-public` (no SSH keys, sshd off, UTC, password 147147) + `release`
   (xz'd sparse userdata image, lk2nd, MANIFEST.txt, SHA256SUMS). gt510-tweaks r35 rebrands the OS on-device
   ("SM-T550 Mainline (unofficial, based on Nura)", ID=nura kept, text plymouth theme sm-t550, Adwaita wallpaper).

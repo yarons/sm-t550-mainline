@@ -1,0 +1,22 @@
+From: gt510 <gt510@localhost>
+Subject: avcodec/v4l2m2m: fix the requeue-delay guard
+
+0103's guard (num_buffers > 2 * delay) switched the delay off for its own
+defaults (32 buffers, delay 16). Keep 12 buffers circulating for the
+decoder instead: the delay applies while num_buffers >= delay + 12.
+---
+diff --git a/libavcodec/v4l2_buffers.c b/libavcodec/v4l2_buffers.c
+index 8184f33..5f2db33 100644
+--- a/libavcodec/v4l2_buffers.c
++++ b/libavcodec/v4l2_buffers.c
+@@ -329,8 +329,9 @@ static void v4l2_requeue_capture(V4L2Buffer *avbuf)
+     V4L2Context *ctx = avbuf->context;
+     V4L2Buffer *ready = avbuf;
+ 
++    /* keep at least 12 buffers circulating for the decoder (H.264 DPB + firmware) */
+     if (!V4L2_TYPE_IS_OUTPUT(ctx->type) && ctx->requeue_delay > 0 &&
+-        ctx->num_buffers > 2 * ctx->requeue_delay) {
++        ctx->num_buffers >= ctx->requeue_delay + 12) {
+         ff_mutex_lock(&ctx->delay_lock);
+         ctx->delayed[ctx->nb_delayed++] = avbuf;
+         if (ctx->nb_delayed > ctx->requeue_delay) {

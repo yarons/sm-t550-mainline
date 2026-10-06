@@ -6,6 +6,7 @@
 # Output ~/vtest/logs/<tag>.txt, Showtime stdout/stderr <tag>.err. Run as the session user via
 # `systemd-run --user --unit=showdiag --collect ~/vtest/showdiag.sh …` (sudo password <password>).
 export XDG_RUNTIME_DIR=/run/user/$(id -u) DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus
+VDEC=/dev/$(basename "$(dirname "$(grep -l qcom-venus-decoder /sys/class/video4linux/video*/name)")")  # node numbers move between boots
 C=$1; T=$2; shift 2
 L=$HOME/vtest/logs; mkdir -p $L; O=$L/$T.txt; : > $O; : > $L/$T.err
 S() { echo "${SUDO_PW:-147147}" | sudo -S -p "" "$@"; }
@@ -25,7 +26,7 @@ sleep 3
 P=$(pgrep -x showtime | head -1)
 {
 	echo "== $T  clip $C  env: $*"
-	echo "mpris ${M:-none} after ${i}s, status ${s0:-?} -> $(st); venus fds $(ls -l /proc/$P/fd 2>/dev/null | grep -c /dev/video5)"
+	echo "mpris ${M:-none} after ${i}s, status ${s0:-?} -> $(st); venus fds $(ls -l /proc/$P/fd 2>/dev/null | grep -c "$VDEC")"
 	S python3 ~/vtest/threadsample.py $P 6
 	S timeout -s INT 5 strace -p $P -T -o $L/$T.strace >/dev/null 2>&1
 	echo "strace main thread 5 s: calls by syscall (count, total s):"

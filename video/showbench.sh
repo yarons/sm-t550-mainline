@@ -3,6 +3,7 @@
 # sent if needed), Venus decoder open, Showtime CPU % of one core, frames shown per DRM plane (planefps.py), and a
 # downscaled kmsgrab screenshot /tmp/showbench-<tag>.png. Run as the session user (sudo password <password> for debugfs).
 export XDG_RUNTIME_DIR=/run/user/$(id -u) DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus
+VDEC=/dev/$(basename "$(dirname "$(grep -l qcom-venus-decoder /sys/class/video4linux/video*/name)")")  # node numbers move between boots
 C=$1; T=$2; shift 2
 gdbus call --session --dest org.gnome.Mutter.DisplayConfig --object-path /org/gnome/Mutter/DisplayConfig \
 	--method org.freedesktop.DBus.Properties.Set org.gnome.Mutter.DisplayConfig PowerSaveMode "<0>" >/dev/null
@@ -13,7 +14,7 @@ st() { gdbus call --session --dest "$M" --object-path /org/mpris/MediaPlayer2 --
 s0=$(st)
 case "$s0" in *Playing*) ;; *) gdbus call --session --dest "$M" --object-path /org/mpris/MediaPlayer2 --method org.mpris.MediaPlayer2.Player.Play >/dev/null 2>&1; sleep 2;; esac
 P=$(pgrep -x showtime | head -1)
-venus=$(ls -l /proc/$P/fd 2>/dev/null | grep -c "/dev/video5")
+venus=$(ls -l /proc/$P/fd 2>/dev/null | grep -c "$VDEC")
 u0=$(awk '{print $14+$15}' /proc/$P/stat)
 PF=$(echo "${SUDO_PW:-147147}" | sudo -S -p "" python3 ~/vtest/planefps.py 6 | grep -v "(off)" | tr "\n" ";")
 u1=$(awk '{print $14+$15}' /proc/$P/stat)

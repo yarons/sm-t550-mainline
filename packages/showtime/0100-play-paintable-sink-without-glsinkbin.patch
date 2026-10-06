@@ -1,0 +1,39 @@
+From: gt510 <gt510@localhost>
+Subject: play: feed gtk4paintablesink directly, glsinkbin only on request
+
+With a GL context, Showtime puts glsinkbin (GL upload) in front of
+gtk4paintablesink. On the SM-T550 (Adreno 306) that upload costs frames:
+software-decoded 1080p H.264 showed ~8 fps at 116 % CPU, and with the
+Venus hardware decoder playback started ~4 s late and dropped frames
+(gst-launch: 55 of 230 in 14 s). gtk4paintablesink imports the dmabufs
+itself and GTK offloads them to the compositor: 27 fps at 61 % CPU in
+software, 29 fps with Venus (with gtk4.0 0103).
+
+Use the paintable sink directly; SHOWTIME_GLSINKBIN=1 restores the old
+pipeline.
+---
+--- a/showtime/play.py
++++ b/showtime/play.py
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ # SPDX-FileCopyrightText: Copyright 2024-2026 kramo
+ 
++import os
+ from functools import partial
+ from typing import Any
+ 
+@@ -29,8 +30,12 @@
+     paintable = paintable_sink.props.paintable  # pyright: ignore[reportAttributeAccessIssue]
+     picture.props.paintable = paintable
+ 
+-    # OpenGL doesn't work on macOS properly
+-    if paintable.props.gl_context and system != "Darwin":
++    # glsinkbin puts a GL upload in front of the paintable sink. Where GTK can import the
++    # decoder's dmabufs itself (and offload them to the compositor), that upload costs frames:
++    # on a weak GPU (Adreno 306) hardware-decoded H.264 started slowly and dropped frames, and
++    # software decoding ran at ~8 fps instead of ~27. Use it only with SHOWTIME_GLSINKBIN=1.
++    # OpenGL doesn't work on macOS properly.
++    if os.environ.get("SHOWTIME_GLSINKBIN") == "1" and paintable.props.gl_context and system != "Darwin":
+         gl_sink = Gst.ElementFactory.make("glsinkbin")
+         gl_sink.props.sink = paintable_sink  # pyright: ignore[reportAttributeAccessIssue, reportOptionalMemberAccess]
+         sink = gl_sink

@@ -1,0 +1,118 @@
+From: gt510 <gt510@localhost>
+Subject: avcodec/v4l2m2m: longer, tunable capture requeue delay
+
+0102's delay of 8 releases still let Firefox show blocks of later frames
+now and then in fullscreen playback (MSE keeps up to ~10 decoded frames
+queued, plus the frames the compositor holds). Default delay 16, capture
+buffers 32 (+25 MB at 1080p over 0102); GT510_V4L2_REQUEUE_DELAY=<0..32>
+overrides the delay at run time (0 = old behaviour, queue at once).
+---
+diff --git a/libavcodec/v4l2_buffers.c b/libavcodec/v4l2_buffers.c
+index 186418b..8184f33 100644
+--- a/libavcodec/v4l2_buffers.c
++++ b/libavcodec/v4l2_buffers.c
+@@ -316,7 +316,8 @@ static uint8_t * v4l2_get_drm_frame(V4L2Buffer *avbuf)
+ 
+ /*
+  * Queue a released capture buffer to the driver only after
+- * V4L2_CAPTURE_REQUEUE_DELAY later releases. A zero-copy user (Firefox's V4L2
++ * ctx->requeue_delay later releases (V4L2_CAPTURE_REQUEUE_DELAY, or the
++ * GT510_V4L2_REQUEUE_DELAY environment variable). A zero-copy user (Firefox's V4L2
+  * decoder) drops its reference to a decoded frame before the frame has been
+  * composited, and the driver may hand a requeued buffer straight back to the
+  * decoder, which then overwrites a picture that is still waiting to be shown
+@@ -328,14 +329,14 @@ static void v4l2_requeue_capture(V4L2Buffer *avbuf)
+     V4L2Context *ctx = avbuf->context;
+     V4L2Buffer *ready = avbuf;
+ 
+-    if (!V4L2_TYPE_IS_OUTPUT(ctx->type) &&
+-        ctx->num_buffers > 2 * V4L2_CAPTURE_REQUEUE_DELAY) {
++    if (!V4L2_TYPE_IS_OUTPUT(ctx->type) && ctx->requeue_delay > 0 &&
++        ctx->num_buffers > 2 * ctx->requeue_delay) {
+         ff_mutex_lock(&ctx->delay_lock);
+         ctx->delayed[ctx->nb_delayed++] = avbuf;
+-        if (ctx->nb_delayed > V4L2_CAPTURE_REQUEUE_DELAY) {
++        if (ctx->nb_delayed > ctx->requeue_delay) {
+             ready = ctx->delayed[0];
+             memmove(&ctx->delayed[0], &ctx->delayed[1],
+-                    V4L2_CAPTURE_REQUEUE_DELAY * sizeof(ctx->delayed[0]));
++                    (ctx->nb_delayed - 1) * sizeof(ctx->delayed[0]));
+             ctx->nb_delayed--;
+         } else {
+             ready = NULL;
+diff --git a/libavcodec/v4l2_context.c b/libavcodec/v4l2_context.c
+index 818fac1..d844bb4 100644
+--- a/libavcodec/v4l2_context.c
++++ b/libavcodec/v4l2_context.c
+@@ -22,6 +22,7 @@
+  */
+ 
+ #include <linux/videodev2.h>
++#include <stdlib.h>
+ #include <sys/ioctl.h>
+ #include <sys/mman.h>
+ #include <unistd.h>
+@@ -29,6 +30,7 @@
+ #include <poll.h>
+ #include "libavutil/mem.h"
+ #include "libavcodec/avcodec.h"
++#include "libavutil/common.h"
+ #include "decode.h"
+ #include "v4l2_buffers.h"
+ #include "v4l2_fmt.h"
+@@ -773,6 +775,12 @@ int ff_v4l2_context_init(V4L2Context* ctx)
+ 
+     ff_mutex_init(&ctx->delay_lock, NULL);
+     ctx->nb_delayed = 0;
++    ctx->requeue_delay = V4L2_CAPTURE_REQUEUE_DELAY;
++    {
++        const char *env = getenv(V4L2_CAPTURE_REQUEUE_DELAY_ENV);
++        if (env && *env)
++            ctx->requeue_delay = av_clip(atoi(env), 0, V4L2_CAPTURE_REQUEUE_DELAY_MAX);
++    }
+ 
+     memset(&req, 0, sizeof(req));
+     req.count = ctx->num_buffers;
+diff --git a/libavcodec/v4l2_context.h b/libavcodec/v4l2_context.h
+index a29d07d..eb3f530 100644
+--- a/libavcodec/v4l2_context.h
++++ b/libavcodec/v4l2_context.h
+@@ -37,9 +37,12 @@
+ 
+ /**
+  * Number of later releases a released capture buffer waits for before it is
+- * queued to the driver again (see v4l2_free_buffer()).
++ * queued to the driver again (see v4l2_free_buffer()): the default, the upper
++ * bound, and the environment variable that overrides it (0 = queue at once).
+  */
+-#define V4L2_CAPTURE_REQUEUE_DELAY 8
++#define V4L2_CAPTURE_REQUEUE_DELAY 16
++#define V4L2_CAPTURE_REQUEUE_DELAY_MAX 32
++#define V4L2_CAPTURE_REQUEUE_DELAY_ENV "GT510_V4L2_REQUEUE_DELAY"
+ 
+ typedef struct V4L2Context {
+     /**
+@@ -107,8 +110,9 @@ typedef struct V4L2Context {
+      * the driver yet (oldest first), and the lock that guards them (buffers
+      * are released from any thread).
+      */
+-    V4L2Buffer *delayed[V4L2_CAPTURE_REQUEUE_DELAY + 1];
++    V4L2Buffer *delayed[V4L2_CAPTURE_REQUEUE_DELAY_MAX + 1];
+     int nb_delayed;
++    int requeue_delay;
+     AVMutex delay_lock;
+ 
+ } V4L2Context;
+diff --git a/libavcodec/v4l2_m2m_dec.c b/libavcodec/v4l2_m2m_dec.c
+index 383d23d..e6eafff 100644
+--- a/libavcodec/v4l2_m2m_dec.c
++++ b/libavcodec/v4l2_m2m_dec.c
+@@ -295,7 +295,7 @@ static void v4l2_decode_flush(AVCodecContext *avctx)
+ static const AVOption options[] = {
+     V4L_M2M_DEFAULT_OPTS,
+     { "num_capture_buffers", "Number of buffers in the capture context",
+-        OFFSET(num_capture_buffers), AV_OPT_TYPE_INT, {.i64 = 24}, 2, INT_MAX, FLAGS },
++        OFFSET(num_capture_buffers), AV_OPT_TYPE_INT, {.i64 = 32}, 2, INT_MAX, FLAGS },
+     { "pixel_format", "Pixel format to be used by the decoder", OFFSET(pix_fmt), AV_OPT_TYPE_PIXEL_FMT, {.i64 = AV_PIX_FMT_NONE}, AV_PIX_FMT_NONE, AV_PIX_FMT_NB, FLAGS },
+     { NULL},
+ };

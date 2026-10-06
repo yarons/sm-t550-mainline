@@ -6,14 +6,16 @@
 # aarch64, so configure (--enable-libsvtav1) failed with "SvtAv1Enc >= 0.9.0 not found".
 # r101: + 0101 (v4l2m2m timestamps when the caller sets no timebase: Firefox got AV_NOPTS_VALUE on every frame).
 # r102: + 0102 (delayed capture requeue: Firefox released frames before compositing → corruption; coded height
-# for DRM PRIME frames: Firefox's chroma offset). LTO off: under pmbootstrap's qemu the LTO link alone took ~50 min (lto1 emulated); the build is ~4x faster without.
+# for DRM PRIME frames: Firefox's chroma offset). r103: + 0103 (delay 16, 32 capture buffers, GT510_V4L2_REQUEUE_DELAY). r104: + 0104 (guard
+# bug: 0103's defaults switched the delay off).
+# LTO off: under pmbootstrap's qemu the LTO link alone took ~50 min (lto1 emulated); the build is ~4x faster without.
 # Contributor: Sergei Lukin <sergej.lukin@gmail.com>
 # Contributor: Łukasz Jendrysik <scadu@yandex.com>
 # Contributor: Jakub Skrzypnik <j.skrzypnik@openmailbox.org>
 maintainer="Achill Gilgenast <achill@achill.org>"
 pkgname=ffmpeg
 pkgver=8.1.2
-pkgrel=102
+pkgrel=104
 pkgdesc="Complete and free Internet live audio and video broadcasting solution for Linux/Unix"
 url="https://ffmpeg.org/"
 arch="all"
@@ -92,6 +94,8 @@ source="https://ffmpeg.org/releases/ffmpeg-$pkgver.tar.xz
 	0100-v4l2m2m-drm-prime-output.patch
 	0101-v4l2m2m-timestamps-without-timebase.patch
 	0102-v4l2m2m-delay-capture-requeue-and-coded-height.patch
+	0103-v4l2m2m-longer-tunable-requeue-delay.patch
+	0104-v4l2m2m-requeue-delay-guard.patch
 	"
 options="!check" # tests/data/hls-lists.append.m3u8 fails
 
@@ -405,4 +409,6 @@ b3adc16fe426217bb607da01c4137cee0a9788fc08e077874336db185d2b7287746a7dc94cf0181e
 a684319943ed9b6fd49f12148ca9ec8ef9375e34d5cd65c5afdf862b5f4912c70a2f2d15263e08b518373e7128bdda3db3d6d4e9cfbdf2db10d53b5a3e0250c0  0100-v4l2m2m-drm-prime-output.patch
 81cea8597e64298c4523d37c01dcaea40f72f008bdcdcb33368afba2c80a7b1b361987bda97dd492542345740195125e1226eb80453e0765adeca129ebb45926  0101-v4l2m2m-timestamps-without-timebase.patch
 c1d42975329bbfa9b68b5a5f80babacfa0507afa623cb6b3acb7c36182e27702498df26762356b21883cf30d4a88d9de619be947cec45eadd74438af570f4dd7  0102-v4l2m2m-delay-capture-requeue-and-coded-height.patch
+328c6242e7cb342c2b941e6db17a1d9cbba4f34f8b1b5090d455d6079d26ed4aca529fba7dfb6ec2533cc3f7e93c9a6e557e7e863c9beb156235e3c8ec4d938c  0103-v4l2m2m-longer-tunable-requeue-delay.patch
+4c57e843cbc2ce951a081ff483b1af671a17dd2e33366df8de6c4720ef807f4d75996f552210d4064d740877e4efef4aaa68db7c4ce9cd7f2991064595592ad8  0104-v4l2m2m-requeue-delay-guard.patch
 "

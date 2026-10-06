@@ -244,8 +244,8 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    video/traces/vidpower-r39-2026-10-06.txt): idle screen on 468 mA / CPU 19 % of 400 · Venus + offload 658 mA, 24.5 fps
    shown, CPU 92 % (Showtime 22 % of a core) · Venus, GDK_DISABLE=offload 614 mA but only 10 fps · avdec_h264 + offload
    993 mA, 25 fps, CPU 211 % (Showtime 170 %) · idle again 463 mA. → playback costs +190 mA over the idle screen with
-   Venus vs +525 mA in software: ~6000 mAh ≈ 9 h vs 6 h of 1080p. Remaining: packages/showtime (the Showtime
-   gtk4paintablesink patch is still a TEST copy in ~/vtest/st). UPSTREAM: prepared 2026-10-06 in upstream/venus/README.md
+   Venus vs +525 mA in software: ~6000 mAh ≈ 9 h vs 6 h of 1080p. packages/showtime 50.0-r100 (0100: gtk4paintablesink
+   without glsinkbin, SHOWTIME_GLSINKBIN=1 restores it) created 12:35, building in colima after snapshot r114. UPSTREAM: prepared 2026-10-06 in upstream/venus/README.md
    (0129 duplicates David Heidelberg's posted seek patch → review reply with our buf_queue fixup; 0130 new patch).
 22. CLOSED (2026-10-06, nothing to implement) — **Touch-key LEDs** (hardware review #9). Recents/Back are maXTouch
    1664T T15 keys (mainline keycodes KEY_APPSELECT 0x244, KEY_BACK 0x9e). Stock never lit them: Samsung's gt510 driver
@@ -312,7 +312,25 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    FIX ffmpeg 0102 (r102): released capture buffers wait 8 later releases before QBUF, num_capture_buffers 20→24;
    DRM PRIME frames report the coded height. Built in colima (repo un-seeded of mesa: the slim local mesa breaks
    ffmpeg's makedepends via mesa-rusticl). r102 + tweaks r41 (4d591a; pin ffmpeg-libavcodec=8.1.2-r102) INSTALLED
-   11:19 (apk 109 s). Test pending (video/fxshot.sh burst on testsrc2, then YouTube).
+   11:19 (apk 109 s). VERIFIED 12:30 (video/fxshot.sh, 8 screenshots of a 100 s testsrc2 loop): Firefox decodes
+   on V4L2 zero-copy ("Using V4L2 DMABufSurface … copy 0", libavcodec.so.62.28.102 in RDD) and every frame is clean —
+   no foreign blocks, colours right, no green band. Script traps found on the way: the Venus decoder node moves
+   between boots (/dev/video4 since 11:23; scripts now look it up by name), an open Phosh app grid blocks the first
+   paint of an untokened window (wtype -k Escape), Firefox relaunches itself at start (systemd-run -p
+   KillMode=process), killed starts count as startup crashes (toolkit.startup.max_resumed_crashes=-1 in the bench
+   profile). NEXT: Yaron's YouTube clip in his own Firefox.
+   YouTube with r102 (Yaron 12:45): green band gone, blocky squares still there (rarer), "not super smooth", and a
+   BLACK TRIANGLE at a fixed screen spot in fullscreen (Firefox WebRender; Showtime/GTK offload clean there). Not
+   reproduced with local files (media doc, fullscreen <video> + YouTube-like gradients, gradients alone; default,
+   gfx.webrender.compositor=false, gfx.webrender.software=true) → needs the YouTube page at 1080p. Trap: a test pref
+   persisted in the bench prefs.js (gfx.webrender.software) and silently turned HW WR + HW decode off — cleaned.
+   r102's 8-release delay too short in fullscreen (one block-shifted diagonal outside testsrc2's checkerboard).
+   ffmpeg r103 (0103: delay 16 / 32 buffers / GT510_V4L2_REQUEUE_DELAY) + tweaks r42 (pin r103, 4d591a's XTRA timer)
+   INSTALLED 13:1x; BUG in 0103: its guard (num_buffers > 2*delay) switches its own default off → r103 = 32 buffers,
+   no delay; still clean in 12 fullscreen shots, and clean with REQ=12 too. r104 (0104 guard: num_buffers >= delay+12)
+   prepared, NOT BUILT: colima's repo still holds the seeded mesa r100 APKs (a Claude Code safety check stopped the
+   scripted rm; Yaron's call) and ffmpeg won't build next to them. Next tweaks bump: pin ffmpeg-libavcodec as
+   >=8.1.2-r103 + <8.1.3 instead of exact, so local ffmpeg revisions stop forcing tweaks bumps.
 24. ACTIVE (2026-10-06, hardware review #7, session d5c224) — **Full 5 MP stills (rear SR544).** The sensor streams
    2592x1944 at 27.9 fps; /etc/libcamera/configuration.yaml caps the soft ISP output at 1296x972 because 5 MP once
    debayered at 0.7 fps (2026-09-25, before the GPU debayer / Mesa a3xx work). Remeasured on r38 with the cap lifted for
@@ -337,9 +355,10 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    sums only blocks below 240/255 in every channel (awbSum_/awbCount); Awb uses them with the matching black-level
    offset, falls back to all blocks under 1/16 coverage; sum_/histogram (AGC, AF) unchanged. Waits for Yaron's go
    (laptop queue + Lineage build waiting).
-   libcamera r112 INSTALLED 11:17 (Yaron OK), wireplumber@video-capture restarted, camera works. Observation: ON
-   BATTERY (tuned balanced-battery) rear 1296 delivers 8.5 fps vs 25-28 on USB power — same on r111 (A/B in the same
-   scene), sensor at full rate (VBLANK 48, exposure max) → soft-ISP side slower on battery; separate item, not 0110.
+   libcamera r112 INSTALLED 11:17 (Yaron OK), wireplumber@video-capture restarted, camera works. Observation: rear
+   1296 delivered 8.5 fps in every default-role cam run 11:15-11:21 (stock and override config, with/without --file;
+   r111 the same in an A/B) while the sensor ran at full rate (VBLANK 48, exposure max = dark scene); a role=still run
+   at ~11:16 gave 25.4. Cause open (battery? role? scene?) → ISSUES 32 (e173ce). Not 0110 (r111 identical).
    Soft frames were AF, not the GPU: cam runs ~45 frames before AF settles at 28 fps; 150 frames → sharp. 5 MP
    (GPU, 2584x1944) is real native detail; the CPU debayer can't scale and crops the centre instead.
    DECISION (Yaron 11:25, via e173ce): OPTION 1 = reconfigure on shutter (viewfinder stays <=1080 tall; shutter:
@@ -411,7 +430,14 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    x264enc/openh264enc/va*/vulkan/vp8enc DEFAULT_BITRATE 2048 kbit/s but has NO entry for v4l2h264enc → driver
    default video_bitrate 1 Mbit/s now really applies. Proposed: packages/snapshot 0103 adding v4l2h264enc with
    extra-controls "controls,video_bitrate=2097152" (= upstream's 2 Mbit/s; upstreamable) — Yaron: yes; snapshot
-   51.0-r113 INSTALLED 11:21; first recording ~1.6-2.7 Mbit/s (file not finalised — clean re-check pending).
+   51.0-r113 INSTALLED 11:21. Clean check 12:16 (portrait, charging, libcamera r112): 1152x864 VIDEO 1.65 Mbit/s at
+   24.0 fps, 22.6 s, no Venus errors (r112: 0.72) = 2 Mbit/s × 24/30 — the RC budgets from the declared 30 fps while the
+   camera delivers 24 (on battery ~8.5 fps → ~0.6 Mbit/s). Preview colours neutral on r112 (white ceiling).
+   FIXED 2026-10-06 14:03 — snapshot 51.0-r115 INSTALLED (0104: before each recording, scale v4l2h264enc's bitrate by
+   negotiated/measured fps, 1-4x; frame times from a buffer probe on the camera src pad). Rear 1152x864 at 22.3 fps:
+   journal "Recording with 2566671 bit/s (frame rate scale 1.22)" → video 1.89 Mbit/s (target 2.0); front 640x480 at
+   19.7 fps: scale 1.55 → 2.13 Mbit/s. No Venus errors, Snapshot stable. (r114 tried to declare the measured rate
+   with a capssetter: not-negotiated + Snapshot segfault, because pipewiresrc fixates 30/1 — attic/.)
    UPSTREAM: 5-patch series 0107/0109/0110/0111/0131 prepared in upstream/venus/ (Yaron signs off and sends).
 27. DONE (2026-10-06 10:08, session 57d516) — **Spec cross-check** (Yaron pasted a web spec sheet "for GT510"). That
    sheet is the SM-T510 (Tab A 10.1 2019, Exynos 7904, codename gta3xlwifi), NOT our SM-T550 (codename gt510, APQ8016)
@@ -526,6 +552,14 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    `systemctl poweroff` → 60 s: stays dark or powers back on (what shows: Samsung logo / lk2nd / pmOS splash)? If it
    boots: ponreason. (B) if dark: 5 min on the charger, unplug 10 s, plug in → boots? what shows, how long; ponreason +
    battery vs before. (C) if nothing boots: power key → ponreason (KPDPWR) + battery: did it charge while off?
+   RESULT (A), 11:22-11:24, wall charger, r41 + ffmpeg r102: before = 80 %, 4343 mAh, charging +815 mA. `systemctl
+   poweroff` 11:22:49 → systemd-shutdown only at 11:23:35 (46 s shutdown — separate slowness) → the PMIC POWERED STRAIGHT
+   BACK ON: kernel boot 11:23:53, full Phosh. After: PON_REASON1 0x10 = USB_CHG only (no HARD_RESET, no KPDPWR_N),
+   POFF_REASON1 0x02 PS_HOLD, cmdline without androidboot.*, 80 % charging +478 mA. → With a charger attached the
+   tablet cannot stay off: power-off = reboot into the full OS (USB_CHG power-on trigger; lk2nd/extlinux gives Linux no
+   hint). Same boot verified two ISSUES 25 items: Jabra auto-connect after boot (helper "connected" 11:24:43 → a2dp_sink)
+   and auto_switch=0; gt510-xtra.timer armed (RandomizedDelaySec 10 min → first run 11:32, too late for a quick fix
+   after boot → shrink to ~1 min next bump). Still open: (B') unplugged poweroff then plug-in; what the screen shows.
 31. OPEN (2026-10-06, session 4d591a) — **gt510-tweaks upgrade burns ~3 min of CPU** (r40 install 10:50-10:53: apk.log
    spends it in post-upgrade/triggers; overlapped Yaron's YouTube test → likely the early stutter d5c224 saw).
    Suspects (post-upgrade): unconditional `systemd-hwdb update` (full hwdb.bin recompile, for one 61-gt510 hwdb file),
@@ -542,10 +576,22 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    own package. Build note: d5c224 keeps colima's mesa r100 seed in dist/colima/seed/ (removed from the repo because it
    breaks ffmpeg builds); tweaks builds need re-seed → build → un-seed. Until fixed: never install tweaks while Yaron
    uses the tablet.
-32. OPEN (2026-10-06 11:30, added by e173ce at Yaron's request; unassigned) — **Rear camera slow on battery.**
+32. CLOSED (2026-10-06 12:16, session e173ce: NOT A BUG, wrong camera in the test) — **Rear camera slow on battery.**
    Found by d5c224 during ISSUES 24: on battery (tuned profile balanced-battery) the rear camera at 1296x972
    delivers 8.5 fps vs 25-28 fps on USB power, same scene. Same on libcamera r111 (A/B), so not 0110's AWB change.
    The sensor runs at full rate (VBLANK 48, exposure at max), so the loss is on the soft-ISP side (GPU debayer +
    CPU stats). Leads, NOT checked yet: what the battery tuned profile changes (cpufreq governor/max, GPU devfreq
    min/governor, a3xx runtime PM); compare scaling_cur_freq + GPU devfreq cur_freq and per-frame ISP time on battery
    vs USB with the same scene. Also check Snapshot's preview fps on battery (users see this, not only `cam`).
+   RESULT: d5c224 (12:0x) — "battery" was a hypothesis; its 25.4 fps run (stills5m.sh, ~11:16) was probably on
+   battery too; every 8.5 fps run used a hard-coded `cam -c 2` (default role). camera/rear/battab.sh (clock/power
+   sampler + libcamera soft-ISP benchmark, ~/vtest/battab.sh, logs ~/battab/) on USB 12:13, rear auto-detected:
+   role=still 26.4 fps, viewfinder 26.2, Debayer 38.0/38.3 ms/frame, CPU stats 4.6/4.2 ms, GPU 400 MHz 100 %, CPU
+   busy 17-18 %. ROOT CAUSE: camera numbering changes between boots. Since the 11:23 reboot `cam -l` = 1 back
+   (camera@28), 2 FRONT (camera@20): `cam -c 2 -s width=1296,height=972` → "Camera configuration adjusted",
+   camera@20 at 1600x1200-NV21 → 8.5 fps (the front sensor's 2 MP rate) = exactly the reported number. Battery
+   itself unmeasured (tuned balanced-battery only changes EPP, a no-op on ARM, and amdgpu panel_power_savings).
+   Lesson (already in memory: cam -c index flips): select cameras by path; camera/rear/lastframe.sh still
+   hard-codes `-c 2` (d5c224 told). cam ran 3x with wireplumber@video-capture up; service + both nodes fine after.
+   FIXED 12:2x (Yaron asked): lastframe.sh + awbab.sh (same bug) use `cam -c "$REAR"`, REAR = the camera@28 ID
+   (cam -c takes an ID too); Mac + tablet ~/vtest copies updated; not run yet (Snapshot was open).

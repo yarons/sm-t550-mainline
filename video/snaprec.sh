@@ -17,7 +17,7 @@ W=$(gdbus introspect --session --dest org.gnome.Snapshot --object-path /org/gnom
 # touchscreen (uitap.py; TAP="x y" in raw 768x1024 scanout pixels; default = Snapshot's record button for the
 # current landscape transform, 90 or 270, read with wlr-randr).
 XFORM=$(WAYLAND_DISPLAY=wayland-0 wlr-randr 2>/dev/null | awk '/Transform:/ {print $2; exit}')
-case "$XFORM" in 90) TAP0="390 40";; 270) TAP0="380 980";; *) TAP0="";; esac
+case "$XFORM" in 90) TAP0="390 40";; 270) TAP0="380 980";; normal) TAP0="379 965";; *) TAP0="";; esac
 [ -n "${TAP:-$TAP0}" ] || { echo "$T: output transform $XFORM: shutter position unknown, set TAP"; exit 1; }
 act() { echo "${SUDO_PW:-147147}" | sudo -S -p "" python3 $HOME/vtest/uitap.py ${TAP:-$TAP0} >/dev/null; }
 D=$HOME/Videos/Camera; before=$(ls -t "$D" 2>/dev/null | head -1)
@@ -29,7 +29,18 @@ if [ -n "$SHOT" ]; then  # SHOT=<png>: screenshot of the screen (preview) 3 s in
 else
 	sleep "$S"
 fi
-act; sleep 10  # mp4 finalisation (moov) takes a few seconds
+act  # stop
+# Wait until the mp4 is finalised (ffprobe can read it); if the stop tap missed, tap once more.
+newest() { ls -t "$D" 2>/dev/null | head -1; }
+ok=0; retap=0; last=-1
+for i in $(seq 1 20); do
+	sleep 1; f=$(newest); sz=$(stat -c %s "$D/$f" 2>/dev/null || echo 0)
+	[ -n "$f" ] && [ "$f" != "$before" ] && ffprobe -v quiet -show_entries format=duration "$D/$f" >/dev/null 2>&1 && { ok=1; break; }
+	# still growing 6 s after the stop tap = still recording: the tap missed (a finalising file stops growing)
+	[ $i -ge 6 ] && [ $retap = 0 ] && [ "$sz" -gt "$last" ] && [ "$last" -ge 0 ] && { act; retap=1; }
+	last=$sz
+done
+[ $ok = 1 ] || echo "$T: recording not finalised after 20 s (retap=$retap)"
 gdbus call --session --dest org.gnome.Snapshot --object-path /org/gnome/Snapshot \
 	--method org.gtk.Actions.Activate quit "[]" "{}" >/dev/null 2>&1
 sleep 2; pkill -x snapshot 2>/dev/null

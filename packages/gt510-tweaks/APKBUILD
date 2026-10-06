@@ -1,7 +1,7 @@
 # Local tweaks for the Samsung Galaxy Tab A 9.7 2015 (SM-T550, gt510wifi) on device-qcom-msm8916.
 pkgname=gt510-tweaks
 pkgver=1
-pkgrel=41
+pkgrel=43
 pkgdesc="SM-T550 (gt510wifi) integration: audio, charger, GPS, rotation, camera, trimmed services; Phosh"
 url="https://postmarketos.org"
 arch="noarch"
@@ -13,7 +13,9 @@ depends="
 	mesa>=26.2.4-r100
 	mesa-dri-gallium<26.2.5
 	gtk4.0=4.24.1-r100
-	ffmpeg-libavcodec=8.1.2-r102
+	ffmpeg-libavcodec>=8.1.2-r103
+	ffmpeg-libavutil<8.1.3
+	showtime=50.0-r100
 	alsa-utils
 	iio-sensor-proxy
 	phosh-mobile-settings
@@ -44,9 +46,16 @@ depends="
 # management; Alpine's gtk4.0 draws every video frame on the a306 instead (~10 fps for 1080p). An exact pin,
 # because a plain >= would let Alpine's next release replace it. When Alpine moves past 4.24.1, rebuild
 # packages/gtk4.0 on the new version first, then move this pin; every local gtk4.0 rebuild moves it too.
-# ffmpeg-libavcodec=8.1.2-r101: gt510-firefox-video.js forces Firefox's V4L2-M2M decoder (Venus); only the local
-# ffmpeg (packages/ffmpeg 0100 DRM PRIME output + 0101 timestamps without a timebase) makes that path work — with
-# Alpine's libavcodec every H.264 video in Firefox would freeze ("Got non-DRM-PRIME frame"). Exact pin, like gtk4.0.
+# ffmpeg-libavcodec>=8.1.2-r103 + ffmpeg-libavutil<8.1.3 (two names, like mesa/mesa-dri-gallium: one
+# constraint per package name): gt510-firefox-video.js forces Firefox's V4L2-M2M decoder (Venus); only the
+# local ffmpeg makes that path work (packages/ffmpeg: 0100 DRM PRIME output, 0101 timestamps without a timebase,
+# 0102-0104 delayed capture requeue + coded height) — with Alpine's libavcodec every H.264 video in Firefox would
+# freeze ("Got non-DRM-PRIME frame"), with r100-r101 it shows blocks of later frames. Alpine's own 8.1.2 builds are
+# r0-r99 and the next release is 8.1.3+ (libavutil comes from the same build), so only local builds fit; when Alpine moves on, rebuild
+# packages/ffmpeg on the new version first, then move both bounds.
+# showtime=50.0-r100: the local showtime (packages/showtime 0100) feeds gtk4paintablesink without glsinkbin (Venus
+# 1080p 29 fps vs ~8 fps software / dropped frames with glsinkbin); exact pin so Alpine's next release cannot
+# replace it; move it on every local showtime rebuild.
 install="$pkgname.post-install $pkgname.post-upgrade"
 triggers="$pkgname.trigger=/usr/share/applications:/usr/lib"
 source="

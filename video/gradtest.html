@@ -1,0 +1,17 @@
+<!doctype html>
+<!-- gradtest.html — black-triangle repro for Firefox WebRender on the a306 (ISSUES 23): a colourful full-window
+     background with YouTube-like translucent overlays: a top gradient bar (ytp-gradient-top), a bottom gradient
+     (ytp-gradient-bottom) and a rounded, clipped box. Load fullscreen (F11) and look for black wedges. -->
+<meta charset="utf-8"><title>gradtest</title>
+<style>
+html, body { margin: 0; height: 100%; overflow: hidden;
+  background: repeating-linear-gradient(90deg, #f00 0 12.5%, #0c0 12.5% 25%, #ff0 25% 37.5%, #00f 37.5% 50%,
+                                         #f0f 50% 62.5%, #0ff 62.5% 75%, #fff 75% 87.5%, #f80 87.5% 100%); }
+.top { position: fixed; left: 0; right: 0; top: 0; height: 48%;
+  background: linear-gradient(to bottom, rgba(0,0,0,.6), rgba(0,0,0,0)); }
+.bottom { position: fixed; left: 0; right: 0; bottom: 0; height: 30%;
+  background: linear-gradient(to top, rgba(0,0,0,.6), rgba(0,0,0,0)); }
+.box { position: fixed; left: 30%; top: 55%; width: 40%; height: 10%; border-radius: 18px; overflow: hidden;
+  background: rgba(0,0,0,.4); }
+</style>
+<div class="top"></div><div class="bottom"></div><div class="box"></div>

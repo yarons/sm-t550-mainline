@@ -1,0 +1,13 @@
+<!doctype html>
+<!-- vidtest.html — black-triangle repro, closer to YouTube fullscreen: the 1080p test clip as an autoplaying looped
+     <video> filling the window (object-fit: contain, black letterbox) with YouTube-like overlays on top. -->
+<meta charset="utf-8"><title>vidtest</title>
+<style>
+html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
+video { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.top { position: fixed; left: 0; right: 0; top: 0; height: 30%;
+  background: linear-gradient(to bottom, rgba(0,0,0,.6), rgba(0,0,0,0)); }
+.bottom { position: fixed; left: 0; right: 0; bottom: 0; height: 25%;
+  background: linear-gradient(to top, rgba(0,0,0,.6), rgba(0,0,0,0)); }
+</style>
+<video src="t1920x1080-100s.mp4" autoplay loop muted></video><div class="top"></div><div class="bottom"></div>

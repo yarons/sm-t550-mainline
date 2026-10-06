@@ -1,0 +1,113 @@
+From: gt510 <gt510@localhost>
+Subject: aperture: scale the V4L2 encoder bitrate to the camera's real frame rate
+
+The camera source fixates 30 fps (aperture caps the camera caps at
+MAXIMUM_RATE and pipewiresrc picks the maximum), and V4L2 encoders such
+as the Venus encoder budget every frame for the frame rate in the caps.
+A camera behind a software ISP delivers fewer frames: the SM-T550 rear
+camera gives ~24 fps on USB power and ~8.5 on battery, so a recording got
+80 % (or 30 %) of DEFAULT_BITRATE: 1.65 Mbit/s for 2 Mbit/s.
+
+Keep the timestamps of the camera's last 30 frames (buffer probe on the
+camera source pad) and, before each recording, raise the bitrate of a
+v4l2h264enc in camerabin by the ratio of the negotiated to the measured
+frame rate (1x to 4x). Declaring the real rate in the caps instead does
+not work: everything downstream is negotiated for the fixated rate.
+---
+--- a/aperture/src/viewfinder.rs
++++ b/aperture/src/viewfinder.rs
+@@ -72,6 +72,11 @@
+         pub display_config: OnceCell<gio::DBusProxy>,
+         /// Current preview/capture rotation, readable from streaming threads.
+         pub orientation_degrees: Arc<AtomicU32>,
++        /// Timestamps (ns) of the camera's most recent frames, written from the streaming
++        /// thread: the frame rate it really delivers, see `scale_v4l2_bitrate`.
++        pub frame_times: Arc<std::sync::Mutex<std::collections::VecDeque<u64>>>,
++        /// Source pad of the current camera element, for its negotiated frame rate.
++        pub camera_pad: RefCell<Option<gst::Pad>>,
+ 
+         pub timeout_handler: RefCell<Option<glib::SourceId>>,
+ 
+@@ -806,6 +811,8 @@
+         {
+             self.notify_is_recording();
+         };
++
++        self.scale_v4l2_bitrate();
+ 
+         let camerabin = imp.camerabin();
+         camerabin.set_property_from_str("mode", "mode-video");
+@@ -816,8 +823,51 @@
+         camerabin.emit_by_name::<()>("start-capture", &[]);
+ 
+         Ok(())
++    }
++
++    /// The frame rate the camera delivers, measured over its last frames.
++    fn measured_fps(&self) -> Option<f64> {
++        let times = self.imp().frame_times.lock().unwrap();
++        if times.len() < 10 {
++            return None;
++        }
++        let span = times.back()?.checked_sub(*times.front()?)?;
++        (span > 0).then(|| (times.len() - 1) as f64 * 1e9 / span as f64)
+     }
+ 
++    /// The frame rate in the camera's negotiated caps.
++    fn declared_fps(&self) -> Option<f64> {
++        let caps = self.imp().camera_pad.borrow().as_ref()?.current_caps()?;
++        let fps = caps.structure(0)?.get::<gst::Fraction>("framerate").ok()?;
++        (fps.numer() > 0 && fps.denom() > 0).then(|| fps.numer() as f64 / fps.denom() as f64)
++    }
++
++    /// The camera source fixates its frame rate (30 fps here), and V4L2 encoders budget every
++    /// frame for that rate. A camera behind a software ISP delivers fewer frames (24 on the
++    /// SM-T550, 8.5 on battery), so the recording got only part of DEFAULT_BITRATE. Raise the
++    /// bitrate of a V4L2 encoder by declared/measured frame rate before each recording.
++    fn scale_v4l2_bitrate(&self) {
++        let scale = match (self.declared_fps(), self.measured_fps()) {
++            (Some(declared), Some(measured)) if measured > 0.0 => (declared / measured).clamp(1.0, 4.0),
++            _ => 1.0,
++        };
++        let bitrate = (f64::from(DEFAULT_BITRATE) * 1024.0 * scale) as i32;
++        let Some(bin) = self.imp().camerabin().downcast_ref::<gst::Bin>() else {
++            return;
++        };
++        for element in bin.iterate_recurse().into_iter().flatten() {
++            if element.factory().is_some_and(|factory| factory.name() == "v4l2h264enc") {
++                log::info!("Recording with {} bit/s (frame rate scale {:.2})", bitrate, scale);
++                element.set_property(
++                    "extra-controls",
++                    gst::Structure::builder("controls")
++                        .field("video_bitrate", bitrate)
++                        .build(),
++                );
++            }
++        }
++    }
++
+     /// Stop recording video.
+     ///
+     /// This method throws an error if:
+@@ -1391,6 +1441,21 @@
+             // set on camerabin arrive). Rewrite it at the source so every branch
+             // (preview, picture, video) carries the full rotation.
+             if let Some(pad) = element.static_pad("src") {
++                let frame_times = imp.frame_times.clone();
++                frame_times.lock().unwrap().clear();
++                pad.add_probe(gst::PadProbeType::BUFFER, move |_pad, info| {
++                    if let Some(pts) = info.buffer().and_then(|buffer| buffer.pts()) {
++                        let mut times = frame_times.lock().unwrap();
++                        if times.len() == 30 {
++                            times.pop_front();
++                        }
++                        times.push_back(pts.nseconds());
++                    }
++                    gst::PadProbeReturn::Ok
++                });
++                imp.camera_pad.replace(Some(pad));
++            }
++            if let Some(pad) = element.static_pad("src") {
+                 let degrees = imp.orientation_degrees.clone();
+                 pad.add_probe(gst::PadProbeType::EVENT_DOWNSTREAM, move |_pad, info| {
+                     let new_event = match &info.data {

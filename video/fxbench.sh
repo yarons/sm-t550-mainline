@@ -7,6 +7,7 @@
 # PROF=<dir> = persistent profile instead (kept; warm it once: pmOS policy force-installs uBlock Origin, whose
 # first-run list compile costs ~1 core for minutes). WAIT=<s> before measuring (default 12; a fresh profile does first-run work for ~30 s).
 # Run as the session user (sudo password <password> for debugfs).
+VDEC=/dev/$(basename "$(dirname "$(grep -l qcom-venus-decoder /sys/class/video4linux/video*/name | head -1)")")  # node moves between boots
 export XDG_RUNTIME_DIR=/run/user/$(id -u) DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus
 U=$1; T=$2; shift 2
 P=${PROF:-/tmp/fxbench-$T}; L=/tmp/fxbench-$T.log
@@ -20,7 +21,7 @@ systemd-run --user --unit=fxbench-$T --collect env MOZ_LOG=PlatformDecoderModule
 sleep ${WAIT:-12}
 ticks() { t=0; for p in $(pgrep -f firefox-esr); do v=$(awk '{print $14+$15}' /proc/$p/stat 2>/dev/null); t=$((t + ${v:-0})); done; echo $t; }
 mem() { awk '/MemAvailable/{a=$2} /SwapTotal/{st=$2} /SwapFree/{sf=$2} END{printf "avail %d MB, swap used %d MB", a/1024, (st-sf)/1024}' /proc/meminfo; }
-venus=0; for p in $(pgrep -f firefox-esr); do venus=$((venus + $(ls -l /proc/$p/fd 2>/dev/null | grep -c /dev/video5))); done
+venus=0; for p in $(pgrep -f firefox-esr); do venus=$((venus + $(ls -l /proc/$p/fd 2>/dev/null | grep -c $VDEC))); done
 lavc=$(for p in $(pgrep -f firefox-esr); do grep -ho "libavcodec\.so\.[0-9]*" /proc/$p/maps 2>/dev/null; done | sort -u | tr "\n" " ")
 tticks() { for p in $(pgrep -f firefox-esr); do k=$(tr '\0' ' ' < /proc/$p/cmdline 2>/dev/null | awk '{print $NF}'); case $k in rdd|tab|gpu|socket|utility) ;; *) k=main;; esac
 	for t in /proc/$p/task/*; do printf "%s %s:%s %s\n" "${t##*/}" "$k" "$(tr ' ' '_' < $t/comm 2>/dev/null)" "$(awk '{print $14+$15}' $t/stat 2>/dev/null)"; done; done; }

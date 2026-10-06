@@ -4,7 +4,8 @@ Description=Refresh GNSS XTRA assistance data (after boot, then every 8 h)
 [Timer]
 OnBootSec=1min
 OnUnitActiveSec=8h
-RandomizedDelaySec=10min
+# Small: the first run after boot is what makes an early fix fast (10 min put it at 11:32 for an 11:23 boot).
+RandomizedDelaySec=1min
 
 [Install]
 WantedBy=timers.target

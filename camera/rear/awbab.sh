@@ -3,6 +3,9 @@
 # on llvmpipe (LIBGL_ALWAYS_SOFTWARE=1), and CPU debayer (software_isp: mode: cpu), both via a per-process config copy (XDG_CONFIG_HOME), 45 frames each, last frame kept. Prints the
 # lower-right YUV means (neutral = U,V ≈ 128) and the AWB gains the simple IPA logged at the end of each run.
 export XDG_RUNTIME_DIR=/run/user/$(id -u)
+# Rear SR544 by camera ID: cam's index order (-c 1/2) changes between boots (ISSUES 32: -c 2 became the front
+# camera after the 2026-10-06 11:23 reboot).
+REAR=/base/soc@0/cci@1b0c000/i2c-bus@0/camera@28
 for m in gpu llvmpipe cpu; do
 	c=$m; [ $m = llvmpipe ] && c=gpu
 	C=/tmp/awbab-$m; mkdir -p $C/libcamera
@@ -10,7 +13,7 @@ for m in gpu llvmpipe cpu; do
 	grep -q "mode: $c" $C/libcamera/configuration.yaml || printf "  software_isp:\n    mode: %s\n" $c >> $C/libcamera/configuration.yaml
 	rm -f /dev/shm/awb-$m-*.bin
 	SW=; [ $m = llvmpipe ] && SW=1
-	LIBGL_ALWAYS_SOFTWARE=$SW LIBCAMERA_LOG_LEVELS="IPASoftAwb:0,*:2" XDG_CONFIG_HOME=$C cam -c 2 -s width=1296,height=972 --capture=45 \
+	LIBGL_ALWAYS_SOFTWARE=$SW LIBCAMERA_LOG_LEVELS="IPASoftAwb:0,*:2" XDG_CONFIG_HOME=$C cam -c "$REAR" -s width=1296,height=972 --capture=45 \
 		--file="/dev/shm/awb-$m-#.bin" > /tmp/awbab-$m.log 2>&1 &
 	P=$!
 	while kill -0 $P 2>/dev/null; do ls -t /dev/shm/awb-$m-*.bin 2>/dev/null | tail -n +3 | xargs -r rm -f; sleep 0.1; done
