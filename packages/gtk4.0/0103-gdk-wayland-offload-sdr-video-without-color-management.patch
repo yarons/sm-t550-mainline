@@ -1,0 +1,75 @@
+From: gt510 <gt510@localhost>
+Subject: gdk/wayland: offload SDR video without color management
+
+Without wp_color_management_v1 (e.g. phoc), a subsurface may only show a
+texture in the default color state, which for YUV is BT.601 coefficients,
+sRGB transfer, narrow range (cicp 1/13/5/0). Hardware-decoded HD video is
+BT.709 (cicp 1/1/1/0), so GTK draws every frame itself instead: on the
+SM-T550 (Adreno 306) 1080p H.264 from the Venus decoder showed ~10 fps in
+GNOME Showtime and in gst-launch ... ! gtk4paintablesink, with GDK_DEBUG=offload
+reporting "No color-management, non-default color state" for every frame.
+Relabelling the same frames as BT.601/sRGB made GTK offload them: 28 fps.
+
+Treat narrow-range YUV with BT.709/BT.601 primaries, transfer and
+coefficients like the default color state when the compositor has no
+color management or no color representation. The compositor then
+converts with its default (BT.601) coefficients, which shifts the colors
+of BT.709 video slightly; that is the price for smooth playback here.
+---
+--- a/gdk/wayland/gdkwaylandcolor.c
++++ b/gdk/wayland/gdkwaylandcolor.c
+@@ -1277,7 +1277,36 @@
+ 
+   g_clear_pointer (&self->repr_surface, wp_color_representation_surface_v1_destroy);
+ }
++
++/* Without color management, the compositor shows a YUV buffer with its own
++ * default conversion (BT.601 coefficients, narrow range). For SDR video in
++ * BT.709 or BT.601 that only means slightly shifted colors, which is a better
++ * deal than drawing every frame ourselves on a weak GPU, so let such buffers
++ * be offloaded as if they were in the default color state.
++ */
++static gboolean
++color_state_is_default_or_sdr_video (GdkColorState *cs,
++                                     GdkColorState *default_cs,
++                                     gboolean       is_yuv)
++{
++  const GdkCicp *cicp;
+ 
++  if (gdk_color_state_equivalent (cs, default_cs))
++    return TRUE;
++
++  if (!is_yuv)
++    return FALSE;
++
++  cicp = gdk_color_state_get_cicp (cs);
++  if (cicp == NULL)
++    return FALSE;
++
++  return cicp->range == GDK_CICP_RANGE_NARROW &&
++         (cicp->color_primaries == 1 || cicp->color_primaries == 5 || cicp->color_primaries == 6) &&
++         (cicp->transfer_function == 1 || cicp->transfer_function == 6 || cicp->transfer_function == 13) &&
++         (cicp->matrix_coefficients == 1 || cicp->matrix_coefficients == 5 || cicp->matrix_coefficients == 6);
++}
++
+ gboolean
+ gdk_wayland_color_surface_can_set_color_state (GdkWaylandColorSurface  *self,
+                                                GdkColorState           *cs,
+@@ -1299,7 +1328,7 @@
+ 
+   if (!self->mgmt_surface)
+     {
+-      if (!gdk_color_state_equivalent (cs, default_cs))
++      if (!color_state_is_default_or_sdr_video (cs, default_cs, is_yuv))
+         {
+           g_set_error_literal (error, G_IO_ERROR, G_IO_ERROR_FAILED, "No color-management, non-default color state");
+           return FALSE;
+@@ -1316,7 +1345,7 @@
+ 
+   if (!self->color->color_representation_manager)
+     {
+-      if (!gdk_color_state_equivalent (cs, default_cs))
++      if (!color_state_is_default_or_sdr_video (cs, default_cs, is_yuv))
+         {
+           g_set_error_literal (error, G_IO_ERROR, G_IO_ERROR_FAILED, "No color-representation, non-default color state");
+           return FALSE;

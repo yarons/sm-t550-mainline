@@ -1,0 +1,47 @@
+From: gt510 <gt510@localhost>
+Subject: media: venus: vdec: submit capture buffers restarted during a seek
+
+GStreamer's v4l2 decoders seek with STREAMOFF on both queues, then
+STREAMON on CAPTURE first and OUTPUT second. vdec_start_capture() returns
+early while the output queue is off, so the capture buffers queued before
+STREAMON stay in the m2m context and streamon_cap stays 0. When OUTPUT is
+restarted in the SEEK state, vdec_start_output() only queues the DPB
+buffers, and only if streamon_cap is set. Decoders without a separate DPB
+(single output, e.g. Venus 1.x on MSM8916) then have no buffer to decode
+into: the firmware stops consuming input and the pipeline never finishes
+the seek. On SM-T550 every GNOME Showtime start (it seeks after preroll)
+froze on the first frame; a flushing seek in playbin3 never completed.
+
+When the capture queue is streaming but was never started by the driver,
+do what vdec_start_capture() deferred: queue the DPB buffers, submit the
+pending capture buffers and mark capture as started.
+
+---
+--- a/drivers/media/platform/qcom/venus/vdec.c
++++ b/drivers/media/platform/qcom/venus/vdec.c
+@@ -1127,6 +1127,25 @@
+ 				ret = venus_helper_queue_dpb_bufs(inst);
+ 				if (ret)
+ 					return ret;
++			} else if (vb2_is_streaming(v4l2_m2m_get_dst_vq(inst->m2m_ctx))) {
++				/*
++				 * The capture queue was restarted while the output
++				 * queue was off (a seek: STREAMOFF both, STREAMON
++				 * capture, STREAMON output), so vdec_start_capture()
++				 * returned early and its buffers are still waiting in
++				 * the m2m context. Hand them to the firmware now: a
++				 * decoder without DPB buffers decodes straight into
++				 * them and otherwise stalls for good.
++				 */
++				ret = venus_helper_queue_dpb_bufs(inst);
++				if (ret)
++					return ret;
++
++				ret = venus_helper_process_initial_cap_bufs(inst);
++				if (ret)
++					return ret;
++
++				inst->streamon_cap = 1;
+ 			}
+ 		}
+ 		goto done;

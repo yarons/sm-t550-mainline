@@ -1,0 +1,34 @@
+From: gt510 <gt510@localhost>
+Subject: aperture: give v4l2h264enc the default bitrate too
+
+Every other H.264/VP8 encoder in the recording profile gets
+DEFAULT_BITRATE (2 Mbit/s), but v4l2h264enc had no entry, so recordings
+with hardware encoding used whatever the V4L2 driver defaults to. On the
+SM-T550 (Qualcomm Venus, 1 Mbit/s default) a 1152x864 recording came out
+at 0.78 Mbit/s once the driver's rate control honoured the target
+(kernel 0131); before that the firmware ignored it and wrote ~16 Mbit/s.
+
+Set the bitrate through v4l2h264enc's extra-controls (video_bitrate, in
+bit/s, like openh264enc's property).
+---
+--- a/aperture/src/viewfinder.rs
++++ b/aperture/src/viewfinder.rs
+@@ -1105,6 +1105,18 @@
+             .item(
+                 ElementPropertiesMapItem::builder("vulkanh264enc")
+                     .field("bitrate", DEFAULT_BITRATE)
++                    .build(),
++            )
++            .item(
++                // V4L2 stateful encoders take the bitrate as a V4L2 control (bit/s); without it the
++                // driver default applies (1 Mbit/s on Qualcomm Venus).
++                ElementPropertiesMapItem::builder("v4l2h264enc")
++                    .field(
++                        "extra-controls",
++                        gst::Structure::builder("controls")
++                            .field("video_bitrate", (DEFAULT_BITRATE * 1024) as i32)
++                            .build(),
++                    )
+                     .build(),
+             )
+             .item(

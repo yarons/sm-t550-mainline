@@ -1,0 +1,150 @@
+From: gt510 <gt510@localhost>
+Subject: software ISP: leave saturated pixels out of the white balance sums
+
+The simple IPA's grey-world AWB divides the green sum by the red and blue
+sums of every sampled pixel. A clipped highlight (a bright window) is
+clipped in raw green first, so its green is underestimated relative to red
+and blue, the red and blue gains come out too low, and the whole picture
+turns green (SM-T550 rear camera: walls and window frame green in Snapshot
+whenever a window is in view; neutral in the same room without it).
+
+SwStatsCpu now also sums only the pixels that are below 240/255 in every
+channel (awbSum_, awbCount), and Awb uses those sums with the matching
+black level offset, falling back to all pixels when fewer than 1/16 of
+them qualify. sum_ and the histogram are unchanged, so AGC and the
+autofocus scene-change check see the same data as before.
+---
+diff --git a/include/libcamera/internal/software_isp/swisp_stats.h b/include/libcamera/internal/software_isp/swisp_stats.h
+index 2758d14..40dd2bd 100644
+--- a/include/libcamera/internal/software_isp/swisp_stats.h
++++ b/include/libcamera/internal/software_isp/swisp_stats.h
+@@ -36,6 +36,15 @@ struct SwIspStats {
+ 	 * \brief Sums of colour channels of all the sampled pixels
+ 	 */
+ 	RGB<uint64_t> sum_;
++	/**
++	 * \brief Sums of colour channels of the sampled pixels that are below
++	 *        saturation in every channel (for white balance)
++	 */
++	RGB<uint64_t> awbSum_;
++	/**
++	 * \brief Number of sampled pixels included in awbSum_
++	 */
++	uint64_t awbCount;
+ 	/**
+ 	 * \brief Focus measure: sum of absolute differences between horizontally
+ 	 *        neighbouring sampled green values (only for some formats)
+diff --git a/src/ipa/simple/algorithms/awb.cpp b/src/ipa/simple/algorithms/awb.cpp
+index 05155c8..7f193ee 100644
+--- a/src/ipa/simple/algorithms/awb.cpp
++++ b/src/ipa/simple/algorithms/awb.cpp
+@@ -65,13 +65,20 @@ void Awb::process(IPAContext &context,
+ 	 */
+ 	const uint64_t nPixels = std::accumulate(
+ 		histogram.begin(), histogram.end(), uint64_t(0));
+-	const uint64_t offset = blackLevel * nPixels;
++	/*
++	 * Use the sums without (nearly) saturated pixels, unless they cover too
++	 * little of the frame to be representative.
++	 */
++	const bool unsaturated = stats->awbCount >= nPixels / 16;
++	const uint64_t count = unsaturated ? stats->awbCount : nPixels;
++	const RGB<uint64_t> &rawSum = unsaturated ? stats->awbSum_ : stats->sum_;
++	const uint64_t offset = blackLevel * count;
+ 	const uint64_t minValid = 1;
+ 	/*
+ 	 * Make sure the sums are at least minValid, while preventing unsigned
+ 	 * integer underflow.
+ 	 */
+-	const RGB<uint64_t> sum = stats->sum_.max(offset + minValid) - offset;
++	const RGB<uint64_t> sum = rawSum.max(offset + minValid) - offset;
+ 
+ 	/*
+ 	 * Calculate red and blue gains for AWB.
+diff --git a/src/libcamera/software_isp/swstats_cpu.cpp b/src/libcamera/software_isp/swstats_cpu.cpp
+index 7b6157e..a53fd84 100644
+--- a/src/libcamera/software_isp/swstats_cpu.cpp
++++ b/src/libcamera/software_isp/swstats_cpu.cpp
+@@ -171,6 +171,12 @@ SwStatsCpu::SwStatsCpu(const CameraManager &cm, bool quadBayer)
+ static constexpr unsigned int kRedYMul = 77; /* 0.299 * 256 */
+ static constexpr unsigned int kGreenYMul = 150; /* 0.587 * 256 */
+ static constexpr unsigned int kBlueYMul = 29; /* 0.114 * 256 */
++/*
++ * Pixels with any channel at or above this level (8-bit scale) are left out of
++ * the white balance sums: a clipped highlight (raw green clips first) would
++ * pull the grey-world gains towards green.
++ */
++static constexpr unsigned int kAwbSaturation = 240;
+ 
+ #define SWSTATS_START_LINE_STATS(pixel_t) \
+ 	pixel_t r, g, g2, b;              \
+@@ -178,12 +184,24 @@ static constexpr unsigned int kBlueYMul = 29; /* 0.114 * 256 */
+                                           \
+ 	uint64_t sumR = 0;                \
+ 	uint64_t sumG = 0;                \
+-	uint64_t sumB = 0;
++	uint64_t sumB = 0;                \
++	uint64_t awbR = 0;                \
++	uint64_t awbG = 0;                \
++	uint64_t awbB = 0;                \
++	uint64_t awbN = 0;
+ 
+ #define SWSTATS_ACCUMULATE_LINE_STATS(div) \
+ 	sumR += r;                         \
+ 	sumG += g;                         \
+ 	sumB += b;                         \
++	if (r < kAwbSaturation * (div) &&  \
++	    g < kAwbSaturation * (div) &&  \
++	    b < kAwbSaturation * (div)) {  \
++		awbR += r;                 \
++		awbG += g;                 \
++		awbB += b;                 \
++		awbN++;                    \
++	}                                  \
+                                            \
+ 	yVal = r * kRedYMul;               \
+ 	yVal += g * kGreenYMul;            \
+@@ -193,7 +211,11 @@ static constexpr unsigned int kBlueYMul = 29; /* 0.114 * 256 */
+ #define SWSTATS_FINISH_LINE_STATS() \
+ 	stats.sum_.r() += sumR;     \
+ 	stats.sum_.g() += sumG;     \
+-	stats.sum_.b() += sumB;
++	stats.sum_.b() += sumB;     \
++	stats.awbSum_.r() += awbR;  \
++	stats.awbSum_.g() += awbG;  \
++	stats.awbSum_.b() += awbB;  \
++	stats.awbCount += awbN;
+ 
+ void SwStatsCpu::statsBGGR8Line0(const uint8_t *src[], SwIspStats &stats)
+ {
+@@ -427,6 +449,8 @@ void SwStatsCpu::startFrame(uint32_t frame)
+ 
+ 	for (auto &s : stats_) {
+ 		s.sum_ = RGB<uint64_t>({ 0, 0, 0 });
++		s.awbSum_ = RGB<uint64_t>({ 0, 0, 0 });
++		s.awbCount = 0;
+ 		s.sharpness = 0;
+ 		s.yHistogram.fill(0);
+ 	}
+@@ -446,16 +470,21 @@ void SwStatsCpu::finishFrame(uint32_t frame, uint32_t bufferId)
+ 
+ 	if (computed) {
+ 		sharedStats_->sum_ = RGB<uint64_t>({ 0, 0, 0 });
++		sharedStats_->awbSum_ = RGB<uint64_t>({ 0, 0, 0 });
++		sharedStats_->awbCount = 0;
+ 		sharedStats_->sharpness = 0;
+ 		sharedStats_->yHistogram.fill(0);
+ 		for (const auto &s : stats_) {
+ 			sharedStats_->sum_ += s.sum_;
++			sharedStats_->awbSum_ += s.awbSum_;
++			sharedStats_->awbCount += s.awbCount;
+ 			sharedStats_->sharpness += s.sharpness;
+ 			for (unsigned int j = 0; j < SwIspStats::kYHistogramSize; j++)
+ 				sharedStats_->yHistogram[j] += s.yHistogram[j];
+ 		}
+ 
+ 		sharedStats_->sum_ >>= sumShift_;
++		sharedStats_->awbSum_ >>= sumShift_;
+ 	}
+ 
+ 	sharedStats_->valid = valid;

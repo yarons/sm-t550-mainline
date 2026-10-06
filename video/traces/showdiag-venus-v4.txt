@@ -1,0 +1,73 @@
+== venus-v4  clip /home/user/vtest/t1920x1080-100s.mp4  env: PYTHONPATH=/home/user/vtest/st GST_DEBUG=gtk4paintablesink:2 GST_DEBUG_NO_COLOR=1
+mpris org.mpris.MediaPlayer2.org.gnome.Showtime after 4s, status Stopped -> Playing; venus fds 4
+threads (CPU % of one core over 6.0 s):
+   14.0 %  showtime (17765)  <- main
+    4.8 %  vqueue:src (17813)
+    2.2 %  multiqueue0:src (17812)
+    2.0 %  qtdemux0:sink (17810)
+    1.5 %  v4l2h264dec0:sr (17817)
+    0.8 %  multiqueue1:src (17811)
+    0.5 %  GstPlay (17803)
+    0.2 %  gdbus (17786)
+    0.0 %  typefindelement (17804)
+    0.0 %  typefind:sink (17805)
+    0.0 %  python:traceq0 (17838)
+    0.0 %  python:traceq0 (17802)
+main thread states over 460 samples: S 81%, R 18%
+main thread blocked in (kernel stack top, % of samples):
+   62%  dma_fence_default_wait < dma_fence_wait_timeout < msm_ioctl_wait_fence < drm_ioctl_kernel
+   17%  do_sys_poll < __arm64_sys_ppoll < invoke_syscall < el0_svc_common
+    1%  ?
+    0%  0x0
+    0%  __futex_wait < futex_wait < do_futex < __arm64_sys_futex
+strace main thread 5 s: calls by syscall (count, total s):
+  ioctl              1407    2.713
+  ppoll               216    0.413
+  futex               319    0.062
+  recvmsg             197    0.061
+  read                172    0.053
+  write               105    0.031
+  sendmsg              50    0.030
+  lseek               100    0.015
+  munmap                2    0.001
+calls >= 15 ms:
+  ioctl(15, DRM_IOCTL_ETNAVIV_WAIT_FENCE or DRM_IOCTL_MSM_WAIT_FENCE, 0xffffd91618b0) = 0 <0.058133> <0.058133>
+  ioctl(15, DRM_IOCTL_ETNAVIV_WAIT_FENCE or DRM_IOCTL_MSM_WAIT_FENCE, 0xffffd91618b0) = 0 <0.051138> <0.051138>
+  ioctl(15, DRM_IOCTL_ETNAVIV_WAIT_FENCE or DRM_IOCTL_MSM_WAIT_FENCE, 0xffffd91618b0) = 0 <0.053448> <0.053448>
+  ioctl(15, DRM_IOCTL_ETNAVIV_WAIT_FENCE or DRM_IOCTL_MSM_WAIT_FENCE, 0xffffd91618b0) = 0 <0.055004> <0.055004>
+  ioctl(15, DRM_IOCTL_ETNAVIV_WAIT_FENCE or DRM_IOCTL_MSM_WAIT_FENCE, 0xffffd91618b0) = 0 <0.046594> <0.046594>
+  ioctl(15, DRM_IOCTL_ETNAVIV_WAIT_FENCE or DRM_IOCTL_MSM_WAIT_FENCE, 0xffffd91618b0) = 0 <0.044796> <0.044796>
+  ioctl(15, DRM_IOCTL_ETNAVIV_WAIT_FENCE or DRM_IOCTL_MSM_WAIT_FENCE, 0xffffd91618b0) = 0 <0.051947> <0.051947>
+  ioctl(15, DRM_IOCTL_ETNAVIV_WAIT_FENCE or DRM_IOCTL_MSM_WAIT_FENCE, 0xffffd91618b0) = 0 <0.049969> <0.049969>
+  ioctl(15, DRM_IOCTL_ETNAVIV_WAIT_FENCE or DRM_IOCTL_MSM_WAIT_FENCE, 0xffffd91618b0) = 0 <0.041016> <0.041016>
+  ioctl(15, DRM_IOCTL_ETNAVIV_WAIT_FENCE or DRM_IOCTL_MSM_WAIT_FENCE, 0xffffd91618b0) = 0 <0.061304> <0.061304>
+  ioctl(15, DRM_IOCTL_ETNAVIV_WAIT_FENCE or DRM_IOCTL_MSM_WAIT_FENCE, 0xffffd91618b0) = 0 <0.048764> <0.048764>
+  ioctl(15, DRM_IOCTL_ETNAVIV_WAIT_FENCE or DRM_IOCTL_MSM_WAIT_FENCE, 0xffffd91618b0) = 0 <0.046534> <0.046534>
+  ioctl(15, DRM_IOCTL_ETNAVIV_WAIT_FENCE or DRM_IOCTL_MSM_WAIT_FENCE, 0xffffd91618b0) = 0 <0.048049> <0.048049>
+  ioctl(15, DRM_IOCTL_ETNAVIV_WAIT_FENCE or DRM_IOCTL_MSM_WAIT_FENCE, 0xffffd91618b0) = 0 <0.037639> <0.037639>
+  ioctl(15, DRM_IOCTL_ETNAVIV_WAIT_FENCE or DRM_IOCTL_MSM_WAIT_FENCE, 0xffffd91618b0) = 0 <0.043208> <0.043208>
+perf main thread 5 s (top dso/symbol):
+    11.37%  [kernel.kallsyms]                      [k] _raw_spin_unlock_irqrestore
+     1.64%  libpython3.14.so.1.0                   [.] 0x00000000000ff164
+     1.60%  libgallium-26.2.4.so                   [.] 0x00000000002b1520
+     1.54%  libpython3.14.so.1.0                   [.] _PyEval_EvalFrameDefault
+     1.51%  libgallium-26.2.4.so                   [.] 0x00000000007e489c
+     1.42%  [kernel.kallsyms]                      [k] iommu_map_nosync
+     1.37%  libgtk-4.so.1.2400.1                   [.] gtk_widget_queue_draw
+     1.34%  [kernel.kallsyms]                      [k] iommu_map_sg
+     1.25%  libgallium-26.2.4.so                   [.] 0x000000000076fe60
+     1.19%  libpython3.14.so.1.0                   [.] _PyObject_GenericGetAttrWithDict
+     1.18%  libgallium-26.2.4.so                   [.] 0x0000000000453748
+     1.11%  libgobject-2.0.so.0.9000.0             [.] g_type_check_instance_is_fundamentally_a
+     1.05%  libwayland-client.so.0.26.0            [.] wl_proxy_marshal_array_flags
+     1.02%  libgallium-26.2.4.so                   [.] 0x00000000008df6bc
+     0.91%  [kernel.kallsyms]                      [k] sched_balance_softirq
+     0.89%  libpython3.14.so.1.0                   [.] PyGILState_Ensure
+     0.76%  ld-musl-aarch64.so.1                   [.] memcmp
+     0.62%  ld-musl-aarch64.so.1                   [.] ioctl
+     0.61%  libglib-2.0.so.0.9000.0                [.] g_pointer_bit_unlock
+     0.59%  libpython3.14.so.1.0                   [.] 0x00000000000b2048
+planes:
+plane-0: 10.0 fb changes/s  XR24 768x1024
+status at end Playing; 'too many pending frames': 71
+DONE

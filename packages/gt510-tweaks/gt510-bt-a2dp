@@ -1,0 +1,45 @@
+#!/bin/sh
+# gt510-tweaks (ISSUES 25): keep Bluetooth headsets on A2DP. HFP/HSP connect but carry no audio on WCNSS (no SCO
+# over HCI), yet PulseAudio leaves a headset that reconnects HFP-first on handsfree_head_unit (module-bluetooth-policy
+# never moves headsets to A2DP) and brings cards up "off" after a PulseAudio restart. Switch such a card to a2dp_sink
+# as soon as A2DP is available. "off" is only overridden on a card that is new (or present when this starts), so an
+# explicit "off" chosen in Settings is kept.
+
+pending=	# indices of new cards that may still be "off"
+
+fix() {
+	out=$(pactl list cards 2>/dev/null | awk -v pend=" $pending " '
+		/^Card #/ { idx = substr($2, 2); name = ""; a2dp = 0 }
+		/^\tName: / { name = $2 }
+		/^\t\ta2dp_sink: / { a2dp = ($0 ~ /available: yes\)/) }
+		/^\tActive Profile: / {
+			act = $3
+			isnew = (pend == " * " || index(pend, " " idx " "))
+			if (name ~ /^bluez_card\./ && a2dp && act != "a2dp_sink" &&
+			    (act ~ /^(handsfree|headset)_head_unit$/ || (act == "off" && isnew)))
+				print idx, name
+		}')
+	[ "$pending" = "*" ] && pending=
+	[ -n "$out" ] || return 0
+	echo "$out" | while read -r idx card; do
+		pactl set-card-profile "$card" a2dp_sink && echo "gt510-bt-a2dp: $card -> a2dp_sink"
+	done
+	for idx in $(echo "$out" | cut -d' ' -f1); do
+		pending=$(echo " $pending " | sed "s/ $idx / /; s/^ *//; s/ *$//")
+	done
+}
+
+while :; do
+	pending="*"
+	fix
+	pactl subscribe 2>/dev/null | while read -r _ ev _ obj num; do
+		[ "$obj" = card ] || continue
+		num=${num#\#}
+		case $ev in
+		"'new'") pending="$pending $num"; sleep 1 ;;
+		"'remove'") pending=$(echo " $pending " | sed "s/ $num / /; s/^ *//; s/ *$//"); continue ;;
+		esac
+		fix
+	done
+	sleep 2
+done

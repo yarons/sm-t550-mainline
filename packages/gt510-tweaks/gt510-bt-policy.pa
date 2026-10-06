@@ -1,0 +1,8 @@
+# gt510: never flip a Bluetooth headset to HFP/HSP automatically (ISSUES 25).
+# WCNSS carries SCO voice over its internal PCM link, not HCI (mainline btqcomsmd has no SCO channel), so the
+# handsfree profile connects but is silent. With the default auto_switch=1 any app that records with
+# media.role=phone (calls, WebRTC) would mute the headset; auto_switch=0 keeps A2DP and records from the tablet mic.
+.ifexists module-bluetooth-policy.so
+unload-module module-bluetooth-policy
+load-module module-bluetooth-policy auto_switch=0
+.endif

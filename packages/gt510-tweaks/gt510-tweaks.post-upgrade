@@ -23,6 +23,8 @@ if [ -d /run/systemd/system ] || [ -e /usr/lib/systemd/systemd ]; then
 	systemctl --global enable gt510-persist.service >/dev/null 2>&1
 	# Snapshot camera permission granted once at login (gt510-camera-permission).
 	systemctl --global enable gt510-camera-permission.service >/dev/null 2>&1
+	# Bluetooth headsets back to A2DP after an HFP-first reconnect (gt510-bt-a2dp, ISSUES 25).
+	systemctl --global enable gt510-bt-a2dp.service >/dev/null 2>&1
 	# greetd.service.d/zz-gt510-autologin.conf (takes effect at the next greetd start).
 	systemctl daemon-reload >/dev/null 2>&1
 else

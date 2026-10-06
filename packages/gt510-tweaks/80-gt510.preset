@@ -1,6 +1,7 @@
 # gt510-tweaks: pmOS presets every new user unit, and 99-default.preset disables them.
 enable gt510-persist.service
 enable gt510-camera-permission.service
+enable gt510-bt-a2dp.service
 enable pipewire.service
 # Camera monitor instance (90-gt510-split-video.conf); without this line a fresh image has it disabled
 # (the preset run after post-install undoes `systemctl --global enable`).

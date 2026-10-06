@@ -1,0 +1,46 @@
+From: gt510 <gt510@localhost>
+Subject: media: venus: venc: rate control from the frame rate on HFI 1.x
+
+The HFI 1.x firmware (Venus 1.8 on MSM8916) budgets bits per frame from
+the input buffer timestamps unless told otherwise. The driver passes the
+V4L2 timestamps through, but those are opaque cookies to a stateful
+encoder: GStreamer's v4l2 encoders, for one, set them to the frame
+number in seconds. The firmware then sees one frame per second and gives
+each frame the budget of a whole second: on SM-T550 (640x480, 2 Mbit/s
+VBR target) GStreamer got 7.4 Mbit/s on test bars and 25 Mbit/s on noise,
+and Snapshot recordings ran ~10x over the bitrate. v4l2-ctl, which queues
+real monotonic timestamps faster than real time, undershot instead.
+Neither S_PARM, the H.264 level nor VUI timing changed the result.
+
+Send HFI_PROPERTY_PARAM_VENC_DISABLE_RC_TIMESTAMP (already handled by
+the 1.x packet builder) so that the firmware uses the frame rate set
+through S_PARM, as the V4L2 encoder interface intends. With it the same
+GStreamer encodes hit their targets: bars 2.00 Mbit/s (2 Mbit/s target),
+noise 1.95 (CBR 2), 8.14 (VBR 8), 2.01 over 20 s (VBR 2), 1152x864 bars
+4.00 (4).
+
+Only tested on HFI 1.x; newer firmware may honour timestamps too.
+---
+--- a/drivers/media/platform/qcom/venus/venc.c
++++ b/drivers/media/platform/qcom/venus/venc.c
+@@ -851,6 +851,20 @@
+ 	ret = hfi_session_set_property(inst, ptype, &rate_control);
+ 	if (ret)
+ 		return ret;
++
++	/*
++	 * Budget the bits from the frame rate (S_PARM), not from the buffer
++	 * timestamps: they are opaque cookies to the driver, and e.g.
++	 * GStreamer's v4l2 encoders use frame numbers in seconds, which made
++	 * the HFI 1.x firmware overshoot the target bitrate 4-14 times.
++	 */
++	if (IS_V1(inst->core)) {
++		ptype = HFI_PROPERTY_PARAM_VENC_DISABLE_RC_TIMESTAMP;
++		en.enable = 1;
++		ret = hfi_session_set_property(inst, ptype, &en);
++		if (ret)
++			return ret;
++	}
+ 
+ 	if (rate_control == HFI_RATE_CONTROL_CQ && ctr->const_quality) {
+ 		struct hfi_heic_frame_quality quality = {};

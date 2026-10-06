@@ -1,0 +1,25 @@
+== venus-direct  clip /home/user/vtest/t1920x1080-100s.mp4  env: PYTHONPATH=/home/user/vtest/st GST_DEBUG=gtk4paintablesink:2 GST_DEBUG_NO_COLOR=1
+mpris org.mpris.MediaPlayer2.org.gnome.Showtime after 9s, status Playing -> Stopped; venus fds 0
+threads (CPU % of one core over 6.0 s):
+    0.0 %  vqueue:src (15125)
+    0.0 %  v4l2h264dec0:sr (15148)
+    0.0 %  v4l2h264dec0:sr (15137)
+    0.0 %  showtime (15002)  <- main
+    0.0 %  python:traceq0 (15152)
+    0.0 %  python:traceq0 (15122)
+    0.0 %  python:traceq0 (15116)
+    0.0 %  python:traceq0 (15115)
+    0.0 %  python3:ir3q1 (15114)
+    0.0 %  python3:ir3q0 (15113)
+    0.0 %  python3:disk$0 (15112)
+    0.0 %  pool-spawner (15084)
+main thread states over 432 samples: S 100%
+main thread blocked in (kernel stack top, % of samples):
+  100%  do_sys_poll < __arm64_sys_ppoll < invoke_syscall < el0_svc_common
+strace main thread 5 s: calls by syscall (count, total s):
+calls >= 15 ms:
+perf main thread 5 s (top dso/symbol):
+planes:
+plane-0: 0.2 fb changes/s  XR24 768x1024
+status at end Stopped; 'too many pending frames': 0
+DONE

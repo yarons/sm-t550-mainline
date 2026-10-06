@@ -1,7 +1,7 @@
 # Local tweaks for the Samsung Galaxy Tab A 9.7 2015 (SM-T550, gt510wifi) on device-qcom-msm8916.
 pkgname=gt510-tweaks
 pkgver=1
-pkgrel=37
+pkgrel=38
 pkgdesc="SM-T550 (gt510wifi) integration: audio, charger, GPS, rotation, camera, trimmed services; Phosh"
 url="https://postmarketos.org"
 arch="noarch"
@@ -12,6 +12,7 @@ depends="
 	libcamera>=99990.7.2-r100
 	mesa>=26.2.4-r100
 	mesa-dri-gallium<26.2.5
+	gtk4.0=4.24.1-r100
 	alsa-utils
 	iio-sensor-proxy
 	phosh-mobile-settings
@@ -36,6 +37,10 @@ depends="
 # (IR3_SHADER_DEBUG=nouboopt, FD_MESA_DEBUG=inorder) only on the local mesa with packages/mesa 0100; an
 # unpatched Alpine mesa would hang the a306 GPU within seconds of a GTK app starting. When Alpine moves past
 # 26.2.4, rebuild packages/mesa on the new version first, then move both pins.
+# gtk4.0=4.24.1-r100: the local gtk4.0 (packages/gtk4.0 0103) offloads BT.709 video to phoc, which has no colour
+# management; Alpine's gtk4.0 draws every video frame on the a306 instead (~10 fps for 1080p). An exact pin,
+# because a plain >= would let Alpine's next release replace it. When Alpine moves past 4.24.1, rebuild
+# packages/gtk4.0 on the new version first, then move this pin; every local gtk4.0 rebuild moves it too.
 install="$pkgname.post-install $pkgname.post-upgrade"
 triggers="$pkgname.trigger=/usr/share/applications:/usr/lib"
 source="
@@ -43,6 +48,7 @@ source="
 	61-gt510-accel.rules
 	61-gt510-back-escape.hwdb
 	zz-gt510-gtk-gl.sh
+	gt510-bt-policy.pa
 	gt510-phosh-unblank
 	gt510-phosh-unblank.desktop
 	gt510-recents
@@ -67,6 +73,8 @@ source="
 	gt510-persist.service
 	gt510-camera-permission
 	gt510-camera-permission.service
+	gt510-bt-a2dp
+	gt510-bt-a2dp.service
 	80-gt510.preset
 	80-gt510-system.preset
 	gt510-retroarch-defaults
@@ -85,6 +93,8 @@ package() {
 	install -Dm644 "$srcdir"/61-gt510-accel.rules -t "$pkgdir"/usr/lib/udev/rules.d/
 	install -Dm644 "$srcdir"/61-gt510-back-escape.hwdb -t "$pkgdir"/usr/lib/udev/hwdb.d/
 	install -Dm644 "$srcdir"/zz-gt510-gtk-gl.sh -t "$pkgdir"/etc/profile.d/
+	# Bluetooth headsets stay on A2DP: HFP is silent on WCNSS (no SCO path in btqcomsmd), ISSUES 25
+	install -Dm644 "$srcdir"/gt510-bt-policy.pa "$pkgdir"/etc/pulse/default.pa.d/gt510-bt-policy.pa
 	# Phosh: fix a stale "display off" state so the power key blanks on the first press
 	install -Dm755 "$srcdir"/gt510-phosh-unblank -t "$pkgdir"/usr/bin/
 	install -Dm644 "$srcdir"/gt510-phosh-unblank.desktop -t "$pkgdir"/etc/xdg/autostart/
@@ -124,6 +134,9 @@ package() {
 	install -Dm644 "$srcdir"/gt510-persist.service -t "$pkgdir"/usr/lib/systemd/user/
 	install -Dm755 "$srcdir"/gt510-camera-permission -t "$pkgdir"/usr/libexec/
 	install -Dm644 "$srcdir"/gt510-camera-permission.service -t "$pkgdir"/usr/lib/systemd/user/
+	# Keep Bluetooth headsets on A2DP: HFP carries no audio on WCNSS (ISSUES 25)
+	install -Dm755 "$srcdir"/gt510-bt-a2dp -t "$pkgdir"/usr/libexec/
+	install -Dm644 "$srcdir"/gt510-bt-a2dp.service -t "$pkgdir"/usr/lib/systemd/user/
 	install -Dm644 "$srcdir"/80-gt510.preset -t "$pkgdir"/usr/lib/systemd/user-preset/
 	install -Dm644 "$srcdir"/80-gt510-system.preset \
 		"$pkgdir"/usr/lib/systemd/system-preset/80-gt510.preset

@@ -1,0 +1,77 @@
+From: gt510 <gt510@localhost>
+Subject: media: venus: vdec: submit capture buffers restarted during a seek
+
+GStreamer's v4l2 decoders seek with STREAMOFF on both queues, then
+STREAMON on CAPTURE first and OUTPUT second. vdec_start_capture() returns
+early while the output queue is off, so the capture buffers queued before
+STREAMON are never handed to the firmware, and vdec_start_output() in the
+SEEK state only re-queues the DPB buffers (and only if streamon_cap is
+set). A decoder without separate DPB buffers (Venus 1.x on MSM8916) then
+has nothing to decode into: the firmware stops consuming input and the
+seek never completes. On SM-T550 every GNOME Showtime start (it seeks
+after preroll) froze on the first frame, and so did any later seek.
+
+When OUTPUT is restarted in the SEEK state while CAPTURE is streaming but
+was never started by the driver, submit the capture buffers waiting in
+the m2m context after the first input buffers, as vdec_start_capture()
+would have done, and mark capture as started.
+
+Capture buffers queued while CAPTURE streams but OUTPUT is still off would
+normally go to the firmware straight from buf_queue, and then be submitted
+a second time by the above (Venus 1.8 firmware: Err_Fatal in vbuffer.c and
+a system error). So hold them back in the m2m context during a seek, like
+the pre-STREAMON ones, and submit them all in one place.
+
+---
+--- a/drivers/media/platform/qcom/venus/vdec.c
++++ b/drivers/media/platform/qcom/venus/vdec.c
+@@ -1125,8 +1125,29 @@
+ 
+ 			if (inst->streamon_cap) {
+ 				ret = venus_helper_queue_dpb_bufs(inst);
++				if (ret)
++					return ret;
++			} else if (vb2_is_streaming(v4l2_m2m_get_dst_vq(inst->m2m_ctx))) {
++				/*
++				 * The capture queue was restarted while the output
++				 * queue was off (a seek: STREAMOFF both, STREAMON
++				 * capture, STREAMON output), so vdec_start_capture()
++				 * returned early and the capture buffers are waiting
++				 * in the m2m context (vdec_vb2_buf_queue() holds them
++				 * back during a seek). Hand them to the firmware now,
++				 * after the first input buffers: a decoder without
++				 * DPB buffers decodes straight into them and
++				 * otherwise stalls for good.
++				 */
++				ret = venus_helper_queue_dpb_bufs(inst);
++				if (ret)
++					return ret;
++
++				ret = venus_helper_process_initial_cap_bufs(inst);
+ 				if (ret)
+ 					return ret;
++
++				inst->streamon_cap = 1;
+ 			}
+ 		}
+ 		goto done;
+@@ -1390,6 +1411,19 @@
+ 		v4l2_m2m_buf_done(vbuf, VB2_BUF_STATE_DONE);
+ 		v4l2_event_queue_fh(&inst->fh, &eos);
+ 		inst->next_buf_last = false;
++		mutex_unlock(&inst->lock);
++		return;
++	}
++
++	/*
++	 * During a seek, keep capture buffers in the m2m context until the
++	 * output queue is restarted: vdec_start_output() hands all of them to
++	 * the firmware after the first input buffers. Submitting them here as
++	 * well would give the firmware the same buffer twice.
++	 */
++	if (V4L2_TYPE_IS_CAPTURE(vb->vb2_queue->type) &&
++	    inst->codec_state == VENUS_DEC_STATE_SEEK && !inst->streamon_out) {
++		v4l2_m2m_buf_queue(inst->m2m_ctx, vbuf);
+ 		mutex_unlock(&inst->lock);
+ 		return;
+ 	}

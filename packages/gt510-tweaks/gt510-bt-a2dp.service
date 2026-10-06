@@ -1,0 +1,13 @@
+[Unit]
+Description=Keep Bluetooth headsets on A2DP (HFP carries no audio on WCNSS)
+After=graphical-session.target
+# Not in the greeter's session (user greetd)
+ConditionUser=!@system
+
+[Service]
+ExecStart=/usr/libexec/gt510-bt-a2dp
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

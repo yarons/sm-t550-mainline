@@ -217,3 +217,187 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    listed with a vibra module (GH31-00724A) → connector/motor fault or not fitted on this unit; needs opening the
    tablet. Yaron does not remember whether it ever vibrated on Android. Tools: haptics/ (ffrumble.py, gp2regs.py,
    gp2set.py, tlmm.py, vibmic.sh). Hardware review: #3 done → #4 hardware video decode next.
+21. IN FLIGHT (2026-10-06, session 392683) — **Hardware video decode (Venus)** (hardware review #4). Venus decoder
+   /dev/video5 (H264/VP8/VC1/MPEG-4/MPEG-2/H.263 → NV12) is auto-picked by GStreamer 1.28.7 (v4l2h264dec primary+1):
+   1080p decode-only 60 fps at 8 % CPU vs avdec 66 fps at 80 %. Problems found: (a) GNOME Showtime puts glsinkbin in
+   front of gtk4paintablesink (GL upload stalls/drops dmabufs here) → local patch video/patch-showtime-play.py
+   (gtk4paintablesink direct unless SHOWTIME_GLSINKBIN=1; SW decode 8 → 27 fps shown, 116 → 61 % CPU), TEST copy only;
+   (b) every Venus seek froze (Showtime seeks after preroll → stuck on the first frame): capture buffers QBUF'd before
+   capture STREAMON in a seek never reached the firmware → **kernel/0129** (submit them at output STREAMON after the
+   ETBs, and hold capture buffers back in vdec_vb2_buf_queue during SEEK so none goes twice; an earlier draft
+   double-submitted → firmware Err_Fatal vbuffer.c:623) + **kernel/0130** (capture STREAMOFF left READONLY-parked
+   buffers linked on delayed_process; after the seek the delayed work submitted a stale one while userspace owned it,
+   userspace queued it again → firmware "session error 1004" a few frames after every seek; found with
+   video/vtrace.sh, trace video/traces/vt-seek0-v3.txt). Test module ~/venus-dec-0129v4.ko (= 0129+0130) on an idle
+   tablet: preroll 0.44 s, seek 0 → 5.01 s after 5 s (×3), seek 10 → 13.34 s (×2), no kernel errors; patched Showtime
+   on Venus PLAYS (was: frozen on the first frame). (c) waylandsink sees no dmabuf formats: phoc's wlroots 0.20.2 sends
+   v3 clients only the implicit modifier when a format has just {INVALID, LINEAR} (XWayland workaround); GStreamer
+   binds v3 and drops implicit → no zero-copy. Not fixed (low value: Showtime uses gtk4paintablesink). (d) OPEN:
+   Showtime on Venus shows only 10 fps (planefps plane-0 composited), 71× "too many pending frames": main thread
+   blocked 62 % in MSM_WAIT_FENCE (40-60 ms per frame) → GTK renders the 1080p NV12 frames itself on the GPU instead
+   of offloading them to phoc (gst-launch → gtk4paintablesink: 30 fps). TODO: why no offload (GSK_DEBUG=offload),
+   CPU/battery, packages/showtime, kernel r38 INSTALLED 2026-10-06 09:17 (0129+0130), upstream candidates. Details:
+   CONTINUATION-PROMPT IN FLIGHT; tools video/.
+22. CLOSED (2026-10-06, nothing to implement) — **Touch-key LEDs** (hardware review #9). Recents/Back are maXTouch
+   1664T T15 keys (mainline keycodes KEY_APPSELECT 0x244, KEY_BACK 0x9e). Stock never lit them: Samsung's gt510 driver
+   (Galaxy-MSM8916 lineage-17.1 drivers/input/touchscreen/mxt_t/, DT compatible "atmel,mxt_t") has
+   touchkey_led_control() and its sec_touchkey/brightness attribute under `#if 0`, pdata->led_power_ctrl is never
+   assigned and the shutdown call is commented out. The gt510 r07 DT has no key-LED regulator or GPIO (the only
+   vdd_led lines sit in a commented-out coreriver tc360 node). Live pins checked: GPIO 8 = regulator-lcd-vmipi,
+   GPIO 97 = DSI panel, 9/10 unclaimed inputs. Downstream pinctrl `gpio_led_pins` (GPIO 8/9/10, state gpio_led_off
+   output-low) is a template leftover: the gpio_led_off phandle is referenced nowhere, GPIO 8 is panel-extra-power-gpio1,
+   GPIO 9 the LTE-only sx9500 grip IRQ, GPIO 10 only spi0_cs0/tpiu template groups. The driver's EV_LED/LED_MISC bits
+   have no input ->event handler (dead advertisement). → SM-T550 keys are not backlit (or nothing on the board drives them);
+   no driver or DT work. Sources kept in touchkey/ref/ (not published).
+   Blink test 2026-10-06 (touchkey/blink.py, 1 Hz × 10 s per phase, Yaron watching): TLMM GPIO 9, TLMM GPIO 10,
+   PM8916 GPIO 1-4, maXTouch T19 GPIOs (DIR 0xFD) → nothing lit in any phase. TRAP: pinctrl-spmi-gpio
+   direction_input only sets input_enabled (output_enabled stays) → PM8916 GPIO 1-4 left in INPUT_OUTPUT mode,
+   driven low (same level as their old pull-down; no consumer on the T550); a reboot restores plain input (verified: r38 reboot 09:17 → in, pull-down).
+   Phase 5 = TLMM GPIO 60 (key-LED pin on mainline grandmax gpio-leds / serranove key_led regulator; unclaimed and
+   unused downstream on gt510) → nothing. Mainline Samsung lit keys always copy stock wiring (separate tc360/ABOV/
+   tm2 touchkey MCU with LED vdd-supply + I2C LED cmd, or a plain GPIO); gt510 has keys inside the maXTouch and its
+   tc360 node is commented out → design dropped the touchkey MCU and the LED. LineageOS gt510wifi overlay:
+   config_buttonBrightnessSettingDefault 0. Final: no key LED on the board.
+   Stock Android check (Yaron remembered lit keys): Android Authority Tab A 8.0/9.7 review "no backlighting with these
+   capacitive keys"; Best Buy Q&A on the 9.7" 16GB = 3 of 4 answers "no"; Android Central (Tab A with S Pen) moderator:
+   no lights behind the buttons in the Tab A line → keys were never lit on stock either.
+23. ACTIVE (2026-10-06, Yaron: "playing 1080p video, stuttering as hell, non responsive") — **Firefox 1080p playback.**
+   Clip = YouTube pVaeEK1WC2M at 1080p25 (offered as H.264 High avc1.640028 itag 137 2.4 Mbit/s, VP9, AV1; Firefox
+   picks VP9/AV1 by default). During Yaron's playback: memory thrash — MemAvailable 0, zram 1.77/2.0 GB, memory PSI
+   full 40 %, kswapd 23 %, 71 % sys CPU; the tab process had 605 MB swapped out.
+   Measured (video/clips/ = synthetic high-motion 1080p25 clips at YouTube bitrates; video/swdec.sh, video/fxbench.sh):
+   - ffmpeg decode alone, 4 threads: H.264 72.5 fps (1.2 cores at 25 fps), VP9 69.6 (1.0), AV1 dav1d 45.8 (1.8) →
+     decoding is NOT the limit. Venus via ffmpeg h264_v4l2m2m: 65.9 fps at 6 % of one core.
+   - Firefox 140.14 ESR, local H.264 clip, warm profile: 410 % CPU (all 4 cores), 17.7 fps shown: 3 decode threads
+     222 % + WebRender Renderer 93 % (hardware GL; per-frame 1080p YUV texture upload) + rest. Each Firefox start
+     also burns ~1 core for >30 s (pmOS policy force-installs uBlock Origin; IndexedDB/sqlite at start).
+   - media.hardware-video-decoding.force-enabled=true: "V4L2 FFmpeg init successful" on Venus, then "Got non-DRM-PRIME
+     frame from FFmpeg V4L2" → video stalls (0.1 fps). Upstream FFmpeg never returns DRM PRIME from v4l2m2m (Mozilla
+     bug 1852765 = this exact Venus case).
+   FIX CANDIDATE: packages/ffmpeg = Alpine 8.1.2-r3 + 0100 LibreELEC v4l2-drmprime (applies cleanly; NOT BUILT) +
+   gt510-tweaks Firefox prefs (force-enabled HW decode; YouTube H.264 only: VP9/AV1 off for MSE) → decode on Venus and
+   dmabuf zero-copy into WebRender (no texture upload). Seeks use the patch's capture STREAMOFF/ON flush → needs the
+   Venus seek-restart fix (kernel 0129, ISSUES 21). Waiting for Yaron's go (laptop build).
+24. ACTIVE (2026-10-06, hardware review #7, session d5c224) — **Full 5 MP stills (rear SR544).** The sensor streams
+   2592x1944 at 27.9 fps; /etc/libcamera/configuration.yaml caps the soft ISP output at 1296x972 because 5 MP once
+   debayered at 0.7 fps (2026-09-25, before the GPU debayer / Mesa a3xx work). Remeasured on r38 with the cap lifted for
+   one process (camera/rear/stills5m.sh: XDG_CONFIG_HOME copy of the config without max_output_*; `cam --capture=N`):
+   1296x972 25.7 fps, **2592x1944 9.5 fps** (XRGB8888, stride 2624, 20.4 MB/frame). So a 5 MP frame costs ~105 ms.
+   Snapshot/aperture saves stills FROM the viewfinder stream and caps the viewfinder at 1080 tall (utils.rs best_mode
+   MAX_HEIGHT), so 5 MP stills need a stream reconfigure on shutter (stop → 5 MP → let AE settle → grab → back) or a
+   5 MP viewfinder (9.5 fps preview). Quality check pending: both test frames black (YAVG 25 — lens face-down); needs
+   Yaron to aim the camera. camera/rear/lastframe.sh keeps only the last frame (cam --file without '#' APPENDS every
+   frame to one file: 918 MB in /tmp once — deleted). The 5 MP mode is not co-sited (standard Bayer path).
+   Window test (Yaron aimed it, 09:47): libcamera's simple pipeline reads the FULL 2592x1944 sensor mode for 1296x972
+   output too (soft ISP 2:1) — the co-sited binned path (0105) only runs for outputs it cannot get from the full mode,
+   e.g. 1280x720 (Input 1296x972). Full output = 2584x1944 (ISP margin), ABGR8888 (memory R,G,B,A). So 5 MP stills
+   need no sensor mode change: same exposure/gain, only the ISP output size changes. Every `cam` capture (720p binned,
+   1296, 5 MP) shows a strong GREEN cast (lower-right U≈117 V≈100) and soft focus (cam runs no AF); checking whether
+   Snapshot's PipeWire path looks the same (camera/rear/pwframe.sh: pipewiresrc offers only RGBA, caps need format).
+   RESULT (10:05-10:15): Snapshot's own preview is green too in the window scene (392683 kmsgrab), so not cam/5 MP.
+   camera/rear/awbab.sh A/B in an INDOOR scene (wall + cushion): freedreno GPU, the same shader on llvmpipe and CPU
+   debayer all neutral (U≈129 V≈122) → no Mesa/shader regression. Facing the bright window again → green again →
+   grey-world AWB is skewed by clipped highlights (raw G clips first; sums underestimate G → R/B gains too low). FIX
+   FIX WRITTEN, NOT BUILT: packages/libcamera 0110-gt510-softisp-awb-skip-saturated.patch (r112): SwStatsCpu also
+   sums only blocks below 240/255 in every channel (awbSum_/awbCount); Awb uses them with the matching black-level
+   offset, falls back to all blocks under 1/16 coverage; sum_/histogram (AGC, AF) unchanged. Waits for Yaron's go
+   (laptop queue + Lineage build waiting).
+   Soft frames were AF, not the GPU: cam runs ~45 frames before AF settles at 28 fps; 150 frames → sharp. 5 MP
+   (GPU, 2584x1944) is real native detail; the CPU debayer can't scale and crops the centre instead.
+25. ACTIVE (2026-10-06, session 4d591a) — **A2DP / Bluetooth audio** (hardware review #5). Headset = Yaron's Jabra
+   Evolve2 65 (paired by Yaron, now trusted). Sound server is PulseAudio 17 (module-bluez5-discover,
+   module-bluetooth-policy, pmOS module-switch-on-connect); PipeWire only serves the camera.
+   WORKS: connect → profile a2dp_sink, default sink switches to bluez_sink automatically; L/R channel tones correct
+   (Yaron heard both); 60 s stream on SBC and on SBC-XQ 552 kbps clean (no underruns or BlueZ/PA errors), pulseaudio
+   6 % / 8 % CPU, bluetoothd 0 % (audio/a2dp/a2dprun.sh); AVRCP absolute volume works (Yaron); HFP battery level
+   reported (75-80 %). Codecs offered: sbc, sbc_xq_453/512/552 (PA 17 has no AAC).
+   AVRCP buttons WORK: Decibels Playing → Paused 09:35:20 → Playing 09:35:21 on Yaron's presses (path BlueZ →
+   mpris-proxy → MPRIS; the "(AVRCP)" uinput device stays silent while mpris-proxy runs — expected).
+   HFP (headset mic/earpiece) DOES NOT CARRY AUDIO: profile handsfree_head_unit + mSBC negotiate, eSCO link comes
+   up (Setup Synchronous Connection → Complete, Success, eSCO, air mode Transparent), recording = 0 frames, btmon
+   0 SCO Data packets either way. Cause: mainline btqcomsmd only opens APPS_RIVA_BT_ACL/CMD and returns -EILSEQ for
+   SCO (btqcomsmd.c:87); WCNSS sends voice over its internal PCM link into LPASS, which downstream reaches through
+   QDSP6 AFE ports INT_BT_SCO_RX/TX (0x3000/0x3001) — mainline q6afe has no such ports. Fix = kernel (q6afe/q6dsp
+   ports + gt5 DT dai links) + userspace that routes SCO audio via ALSA (PulseAudio can't; PipeWire bluez5 SCO
+   offload could) — big; Yaron to decide. Scripts: audio/a2dp/{a2dprun,avrcptest,hfptest}.sh.
+   MITIGATION (Yaron chose it over the big fix): packages/gt510-tweaks/gt510-bt-policy.pa → /etc/pulse/default.pa.d/
+   reloads module-bluetooth-policy with auto_switch=0. Live A/B: default flips the Jabra to handsfree_head_unit (silent)
+   during a media.role=phone recording; auto_switch=0 keeps a2dp_sink and records from the tablet mic. Applied at
+   runtime on the tablet (lost on PA restart); packaging = fold into 392683's open tweaks r38 bump (asked).
+   RECONNECT: headset power cycle → auto-reconnects (~25-40 s, headset-initiated) BUT HFP-first, so PA leaves the
+   card on silent handsfree_head_unit (module-bluetooth-policy.c:360 "Do not automatically switch profiles for
+   headsets"); after a PA restart the card even comes up "off". FIX = packages/gt510-tweaks/gt510-bt-a2dp (+ .service,
+   user unit): pactl subscribe → any bluez card on HFP/HSP (or "off" when new) with a2dp_sink available → a2dp_sink.
+   Live: forced HFP → A2DP in <3 s; manual off kept; helper restart with card off → A2DP; Yaron power cycle → card HFP
+   10:00:02 → helper → a2dp_sink 10:00:03.6. Packaging asked of 392683 (r38).
+   TRAP: `pactl unload-module module-bluetooth-discover` + reload with headset=ofono at runtime → PA 17 SIGABRT in
+   pa_bluetooth_discovery_get (core 09:56:43); never reload BT discovery with new args (so no default.pa.d trick).
+   Still to test: auto-connect after boot (at 392683's r39 reboot).
+26. ACTIVE (2026-10-06, hardware review #6, session 392683) — **Venus encoder ignores the target bitrate.** ROOT CAUSE:
+   the HFI 1.x firmware budgets bits from the INPUT BUFFER TIMESTAMPS, and GStreamer's v4l2 encoders replace PTS with
+   frame_number × 1 s (ETB timestamps 0, 1000000, 2000000 µs — kprobe trace video/traces/et-gst.txt) → the firmware
+   gives each frame a whole second's budget (2 Mbit/s target: bars 7.4, noise 25 Mbit/s; old Snapshot ~10x).
+   v4l2-ctl queues real monotonic timestamps faster than real time → undershoots instead. Ruled out (byte-identical
+   output): PTS spacing (GStreamer overwrites it), S_PARM / CONFIG_FRAME_RATE (also sent for INPUT), H.264 level,
+   VUI timing (time_scale 1e9). FIX **kernel/0131**: send HFI_PROPERTY_PARAM_VENC_DISABLE_RC_TIMESTAMP=1 on HFI 1.x
+   (already in the 1.x packet builder, never sent) → RC from S_PARM as V4L2 intends. Module test (~/venus-enc-0131.ko
+   LOADED, srcversion 6F859569…): bars 2.00 (2 VBR), noise 1.95 (2 CBR), 8.14 (8 VBR), 2.01 over 20 s (2 VBR;
+   noise VBR overshoots at the start, then pays back), 1152x864 bars 4.00 (4); S_PARM 15 → budget follows. Notes:
+   stream is tagged level 1.0 unless userspace sets a level (GStreamer sets H264_LEVEL 0) — cosmetic, ffmpeg warns;
+   only one IDR per stream with GStreamer defaults (gop not applied?) — not checked. Tools: video/{encbench.sh,
+   enctrace.sh,h264frames.py,snaprec.sh,uitap.py}. r39 = r38 + 0131 queued (Yaron). SNAPSHOT RECORDING with 0131
+   (video/snaprec.sh: video mode, shutter tapped through a uinput touchscreen clone — Snapshot's win.take-picture is
+   not on D-Bus and has no key; tap position from the wlr-randr transform): 1152x864 Baseline, VIDEO 0.78 Mbit/s
+   + AAC 56 kbit/s, 23.7 fps, 20 s, no Venus errors (was ~16 Mbit/s). Cause: aperture (viewfinder.rs:909-957) gives
+   x264enc/openh264enc/va*/vulkan/vp8enc DEFAULT_BITRATE 2048 kbit/s but has NO entry for v4l2h264enc → driver
+   default video_bitrate 1 Mbit/s now really applies. Proposed: packages/snapshot 0103 adding v4l2h264enc with
+   extra-controls "controls,video_bitrate=2097152" (= upstream's 2 Mbit/s; upstreamable) — Yaron decides. TODO:
+   upstream candidate with 0107/0109/0110/0111.
+27. DONE (2026-10-06 10:08, session 57d516) — **Spec cross-check** (Yaron pasted a web spec sheet "for GT510"). That
+   sheet is the SM-T510 (Tab A 10.1 2019, Exynos 7904, codename gta3xlwifi), NOT our SM-T550 (codename gt510, APQ8016)
+   — the codename/model clash. Real SM-T550 rows (GSMArena) vs the tablet, read-only checks 09:54:
+   1.2 GHz quad A53 (we run 1.21 GHz, CPR) · RAM 1.5 GB (MemTotal 1.36 GB) · eMMC 16 GB (30777344 sectors, HS200
+   177.7 MHz 8-bit 1.8 V) · microSDXC (64 GB card OK) · 9.7" 768x1024 TFT · 5 MP AF + 2 MP (both work) · 3.5 mm jack
+   (input device present; parked by Yaron) · Wi-Fi a/b/g/n dual band (2 bands, no VHT = correct) · BT 4.1 A2DP
+   (ISSUES 25) · microUSB 2.0 (OTG, CDP/DCP/SDP) · accelerometer (+ cm3323 light + hall, no gyro/proximity) · battery
+   6000 mAh (gauge design 5550, learned full 5424 mAh). Positioning: GSMArena says GPS/GLONASS on CELLULAR models only
+   → hardware review #8 (GPS fix) may have no antenna on the Wi-Fi T550; check before any kernel work.
+   OPEN: "dual speakers" vs ONE max98357a node in the DT (QUAT MI2S SD1, sdmode GPIO 55). audio/tools/spkchan.sh
+   (1 kHz on L / R / both / L−R to the Speaker sink, Mic1 1 kHz band): quiet −77.8, left −51.0, right −37.3, both
+   −31.6, anti(L−R) −37.6 dB → both channels reach the speaker(s); not a single (L+R)/2 mono amp (L−R would cancel)
+   → looks like two amps/speakers = true stereo; but "both" exceeds the coherent L+R sum (−35.7) → first phase (left,
+   sink resuming from SUSPENDED) suspect. Rerun in shuffled order (`~/spkchan.sh both right left anti left right
+   both`) was refused by its own guard: Snapshot was recording (10:00). RERUN 10:03 (no streams): quiet −78.5,
+   both −31.4/−30.4, right −37.2/−35.9, left −36.6/−36.5, anti −39.7 → the first run's left −51 was the resume
+   warm-up. VERDICT: TRUE STEREO, nothing to fix — L = R, both = +5-6 dB (in-phase sum), L−R only −3 dB (one mono
+   amp would cancel L−R electrically to the quiet floor; two transducers ~4 cm path difference at the mic give exactly
+   −3 / +5.4 dB). So two amps on the one QUAT SD1 line (SD_MODE straps L and R, GPIO 55 enables both) behind one DT
+   codec node. PLACEMENT (10:05-10:07, Yaron covered each grille during 10 s pink noise per channel, tablet right-up
+   = transform 3): L → bottom-right grille, R → top-right grille, both on the edge you see on the right = the PORTRAIT
+   BOTTOM edge. In portrait: L = bottom-left, R = bottom-right → channel order CORRECT. Landscape stacks them
+   vertically (no stereo image possible); only 180° portrait would be reversed. NO CHANGE (no rotation swap).
+   Cosmetic: Bluetooth advertises "Qualcomm msm8916-based device" (other devices see that name when pairing).
+28. ACTIVE (2026-10-06, hardware review #10, session d5c224; research only, nothing changed) — **CPR: per-chip CPU
+   voltages.** Today (0113, r21+) CPR runs "qcom,force-ceiling-voltage": every corner at its ceiling, fuses ignored —
+   200/400 MHz 1.05 V, 533-998.4 MHz 1.1625 V (gt510: 998.4 on NOM), 1.094-1.2096 GHz 1.35 V. The mainline
+   msm8916_cpr_desc in 0113 has corner limits only (no fuse cells, refs, steps; "fuse-based scaling not supported
+   yet"). Downstream (Samsung msm8916-regulator.dtsi → kernel/ref-dts/samsung-msm8916-regulator.dtsi): fuse row 27,
+   open-loop init voltage = ref (1.05/1.15/1.375 V) + 6-bit sign-magnitude × 10 mV at bits 36/18/0, target quotients
+   12 bits at 42/24/6, ro-sel bits 54, step quotient 26, floors 1.05/1.05/1.1625, ceilings 1.05/1.15/1.375; downstream
+   ran 998.4 MHz and up on TURBO, closed loop on top. THIS chip (kernel/cpr-fuses.py, read from the corrected QFPROM
+   mirror 0x5c000 via /dev/mem; raw 0x58000 left alone): row 27 = 0x988d920364911b29 → SVS 1.05 V, NOM 1.11 V,
+   TURBO **1.285 V** (fields 0x20/0x24/0x29), quot 868/868/1132, ro-sel 2, CPR not fuse-disabled.
+   → Open-loop from fuses would run 1.094-1.2096 GHz at 1.285 V instead of 1.35 V (-65 mV, ~-9 % dynamic CPU power
+   at the top speeds, later throttling) and 533/800 MHz at 1.11 V if 998.4 moves to its own corner. Options: (a)
+   complete msm8916_cpr_desc with the fuse cells/refs/steps → per-chip open loop (closed loop stays off); (b) hard-code
+   this unit's 1.285 V ceiling (not portable to other SM-T550s). Needs a kernel build + stress test (0113 r20 style:
+   4-core sha256, temperatures) + reboot → Yaron's go.
+29. ACTIVE (2026-10-06, hardware review #8, session 4d591a) — **GPS fix.** Stack: gpsd 3.27.3-r101 `-N -b pds://any`
+   (gpsd-pds.service, engine runs only while a client watches); QRTR name service lists LOC/PDS svc 16 v2 on the modem
+   (node 0 port 14) → "QRTR open: Found PDS at 0 14". Indoors (10:05, gpsd -D 6, 73 s): NMEA at 1 Hz (GNGNS, GPGGA,
+   GPRMC, GPGSA, GNGSA, GPVTG, GLGSV), all empty: no GPGSV at all, one blank GLGSV entry, RMC "V", engine clock unset
+   (GNS 16:09:09 vs 07:05 UTC) → no satellites indoors, as expected. Earlier notes conflict: history "GPS (Yaron
+   confirmed a fix)" vs public README "no outdoor fix tested"; GSMArena lists GPS only for cellular SKUs (ISSUES 27).
+   NEXT: outdoor/open-sky run with gps/gnsslog.py under systemd-inhibit (logs to /tmp/gnss-outdoor.log on the tablet,
+   position rounded to ~100 m): satellites with SNR → antenna path exists; TTFF without XTRA assistance. Tools:
+   gps/{gpswatch.py,gnsslog.py,qrtrlookup.py}.

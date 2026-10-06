@@ -1,0 +1,51 @@
+From: gt510 <gt510@localhost>
+Subject: media: venus: vdec: drop parked capture buffers on capture STREAMOFF
+
+A capture buffer that comes back from the firmware with
+HFI_BUFFERFLAG_READONLY is still used as a reference frame. If userspace
+queues it again before the firmware releases it, venus_helper_vb2_buf_queue()
+parks it on inst->delayed_process, and the delayed work submits it once
+the RELEASE_BUFFER_REFERENCE event arrives.
+
+On capture STREAMOFF all capture buffers are returned to userspace, but
+the parked ones stay linked on delayed_process. After the next STREAMON
+(a seek), the first RELEASE event makes the delayed work submit such a
+stale entry while userspace owns the buffer; when userspace queues it
+again it reaches the firmware twice. On SM-T550 (Venus 1.8 firmware) this
+ended every seek in a GStreamer playbin after a few frames with
+"session error: event id:1004" (HFI_ERR_SESSION_INVALID_SESSION_ID).
+Traced: buffer 1 parked during preroll, submitted from
+delayed_process_buf_func 105 ms after the seek, queued again by
+userspace 41 ms later, session error 0.4 ms after that.
+
+Unlink the parked buffers when capture is stopped. A buffer that is still
+READONLY when it is queued again is parked again by buf_queue.
+
+---
+--- a/drivers/media/platform/qcom/venus/vdec.c
++++ b/drivers/media/platform/qcom/venus/vdec.c
+@@ -1309,10 +1309,22 @@
+ 
+ 	mutex_lock(&inst->lock);
+ 
+-	if (q->type == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE)
++	if (q->type == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE) {
++		struct venus_buffer *buf, *n;
++
+ 		ret = vdec_stop_capture(inst);
+-	else
++
++		/*
++		 * Capture buffers parked until the firmware releases them are
++		 * handed back to userspace below. Unlink them, or the delayed
++		 * work submits them again after the next STREAMON, while
++		 * userspace owns them (and they are queued a second time).
++		 */
++		list_for_each_entry_safe(buf, n, &inst->delayed_process, ref_list)
++			list_del_init(&buf->ref_list);
++	} else {
+ 		ret = vdec_stop_output(inst);
++	}
+ 
+ 	venus_helper_buffers_done(inst, q->type, VB2_BUF_STATE_ERROR);
+ 

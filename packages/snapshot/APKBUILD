@@ -3,7 +3,7 @@
 maintainer="team/gnome <achill@achill.org>"
 pkgname=snapshot
 pkgver=51.0
-pkgrel=112
+pkgrel=113
 pkgdesc="Take pictures and videos"
 url="https://gitlab.gnome.org/GNOME/snapshot"
 arch="all"
@@ -40,6 +40,7 @@ source="https://download.gnome.org/sources/snapshot/${pkgver%%.*}/snapshot-$pkgv
 	0100-aperture-paintable-orientation.patch
 	0101-aperture-viewfinder-no-sync.patch
 	0102-qrscreenbin-snapshot-child-once.patch
+	0103-aperture-v4l2h264enc-bitrate.patch
 	rustix.patch
 	"
 options="net" # cargo fetch for rustix update
