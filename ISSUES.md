@@ -272,8 +272,8 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    shown, Showtime 24-26 % of a core (load average still 3-7 after boot + d5c224's CPR stress test; before: 24.5-29 fps,
    27 %) → no regression seen. Re-measured after d5c224's soak (17:43, CPU policy normal): 22.2 / 27.5 / 24.2 fps,
    23-26 % — same spread as before; the patch only adds work once per buffer (re-import), not per frame. phoc's assertion lines (gm_display_panel_get_name, layout_transaction) are the same with
-   stock phoc on earlier boots. Rollback apks ~/phoc-rollback/ (r1). OPEN: phoc=0.57.0-r100 pin (no tweaks bump
-   planned by anyone, 17:30). Firefox re-check (d5c224, 17:40): unchanged and clean — Venus zero-copy, 28 fb/s,
+   stock phoc on earlier boots. Rollback apks ~/phoc-rollback/ (r1). PINNED: gt510-tweaks r47 (18:00, Yaron asked; r46 + `phoc=0.57.0-r100`, built in colima with the mesa
+   seeds in/out, installed in 92 s; a simulated apk upgrade leaves phoc alone). ISSUES 21 (g) DONE. Firefox re-check (d5c224, 17:40): unchanged and clean — Venus zero-copy, 28 fb/s,
    colours right; Firefox composites video itself (no YUV subsurface), so the new global doesn't touch its path. colortest trap: the first runs after boot/under load can
    grab Showtime's UI instead of the video (late seek, dropped frames) — rerun when the result shows grey UI colours.
 22. CLOSED (2026-10-06, nothing to implement) — **Touch-key LEDs** (hardware review #9). Recents/Back are maXTouch

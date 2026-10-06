@@ -15,7 +15,7 @@ The chronological log of today's work is archived verbatim at the end of CONTINU
 ("Archived 2026-10-06 13:25"). ISSUES 21 (decode/playback) and 26 (encoder) carry the findings.
 
 INSTALLED on the tablet (17:35; boot 17:24:47): kernel r40 (d5c224: r39 + CPR 0132), phoc 0.57.0-r100 (mine, BT.709),
-snapshot r121 + gt510-tweaks r46 (d5c224/e173ce) — the list below is the 14:12 state: kernel r39 (#40, taint 0), gtk4.0 4.24.1-r100, showtime
+snapshot r121 (d5c224/e173ce), gt510-tweaks r47 (mine 18:00: r46 + phoc=0.57.0-r100 pin) — the list below is the 14:12 state: kernel r39 (#40, taint 0), gtk4.0 4.24.1-r100, showtime
 50.0-r100, snapshot 51.0-r115, libcamera 99990.7.2-r113 (d5c224, 15:10; r112 = its AWB fix), ffmpeg-libavcodec 8.1.2-r104 (d5c224's
 Firefox fixes), mesa 26.2.4-r100, gt510-tweaks 1-r43 (d5c224: pins gtk4.0=4.24.1-r100, showtime=50.0-r100, ffmpeg
 via ffmpeg-libavcodec>=8.1.2-r103 + ffmpeg-libavutil<8.1.3). Snapshot is NOT pinned (Alpine 51.x would replace r115).
@@ -46,7 +46,8 @@ Verified details:
 NEXT (for whoever continues; Yaron decides order):
 0. ISSUES 21 (g) BT.709 colours: DONE on the device 17:33 (installed phoc: BT.709 + BT.601 clips exact, Showtime
    1080p 21.5-27.8 fps, no regression). Firefox re-checked by d5c224 17:40: clean, unchanged (it
-   composites video itself, no YUV subsurface). Remaining: tweaks pin. Was: Yaron approved; INSTALLED 17:25 (phoc,
+   composites video itself, no YUV subsurface). Pinned by gt510-tweaks r47 (18:00, installed).
+   DONE. Was: Yaron approved; INSTALLED 17:25 (phoc,
    -schemas, -lang r100; /usr/bin/phoc sha256 80b29d70…; rollback apks ~/phoc-rollback/ r1). Active from the next boot
    = 4d591a's off-mode test boot with d5c224's kernel r40 (its first run 16:31 only SUSPENDED the tablet; rerun with
    systemctl poweroff pending, 17:30). Nobody plans a tweaks bump: until one adds the pin, `apk upgrade` could replace
@@ -102,8 +103,8 @@ PHOC=<binary> runs a nested phoc), vidpower.sh (battery/CPU per playback path),
 snaprec.sh + uitap.py (Snapshot recording; shutter tapped through a uinput touchscreen clone, tap point from the
 wlr-randr transform), planefps.py, showbench.sh, decbench.py. Traces: video/traces/.
 
-BUILDS: the laptop is busy with a LineageOS build (session 153de1, from 11:15 for 6-10 h; its container matches the
-queue's busy check). Build gt510 packages in colima t290 (gt510-pmos image, gt510-pmos-vol, outputs dist/colima/):
+BUILDS: the laptop's LineageOS build (session 153de1) finished 19:34 (2026-10-06); the T290 session queues build 38
+next there, so check `lineage-build*` containers before using it. Build gt510 packages in colima t290 (gt510-pmos image, gt510-pmos-vol, outputs dist/colima/):
 `docker --context colima-t290 run --rm --name gt510-<job> --privileged -v /dev:/dev -v "$HOME/workspace/gt510-pmos:/src:ro"
 -v gt510-pmos-vol:/work -v "$HOME/workspace/gt510-pmos/dist/colima:/dist" -e PMOS_PASSWORD=… gt510-pmos
 /src/pmos-gt510.sh localpkgs-only <pkg>`; one job at a time (announce it). Queue now (d5c224 14:50): snapshot r116 (running) → d5c224's tweaks r44
@@ -119,7 +120,7 @@ re-index after seeding: copy as root, then in ONE container `pmbootstrap -y chro
 COORDINATION (shared tablet): d5c224 = Firefox #23, 5 MP stills #24, CPR #28, tweaks r42/r43; 4d591a = A2DP #25, GPS
 #29, off-mode charging #30; e173ce = #27 spec cross-check, #32 camera. Message before any reboot, kernel install,
 camera/Venus/GPU-heavy run or apk add (apk takes a lock: check `pgrep -x apk`); announce public pushes. Public repo
-last pushed 059574f (15:20): assemble-public.sh REPLACES ~/workspace/gt510-public — park .git outside and restore it.
+last pushed 49f097a (17:5x): assemble-public.sh REPLACES ~/workspace/gt510-public — park .git outside and restore it.
 
 TRAPS learned today: a hostname probe inside a stdin-piping ssh wrapper must use `ssh -n`, or it eats the piped
 file (gssh 17:20: truncated copies until fixed) · ./gssh went to the POCO F1 (172.16.42.1 over USB) at 15:16 — fixed 15:22: gssh now uses USB only
@@ -229,7 +230,8 @@ drop parked (READONLY) capture buffers on capture STREAMOFF (ours). REVERTED: 01
   emails/coordinates/the tablet password), move `.git` out and back around it, commit (author Yaron Shahrabani
   <406826+yarons@users.noreply.github.com>, `Co-Authored-By` trailer), scan the diff, push. `review/` is never
   published (it holds the scrub map). Yaron's rules: no photos/raw camera dumps, name yes / email no, GPL-2.0.
-  HEAD 059574f (2026-10-06 15:20: phoc r100 BT.709 patches + colortest.sh, snapshot 0105/0106 + libcamera 0111 +
+  HEAD 49f097a (2026-10-06 17:5x, d5c224: kernel 0132 CPR fuses + cprtest, snapshot r121 0105v3/0107, tweaks r46, ISSUES
+  23/24/28); before 059574f (2026-10-06 15:20: phoc r100 BT.709 patches + colortest.sh, snapshot 0105/0106 + libcamera 0111 +
   tweaks r45 marked in progress; before 2d9052d: showtime/snapshot packages, ffmpeg 0103/0104; before 75a77b7 upstream/venus hand-off; Venus 0129-0131, gtk4.0/snapshot/libcamera/ffmpeg local patches, notes ISSUES 21-28; before: 06ed139). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
 - Release images: `pmos-gt510.sh install-public` (no SSH keys, sshd off, UTC, password 147147) + `release`
   (xz'd sparse userdata image, lk2nd, MANIFEST.txt, SHA256SUMS). gt510-tweaks r35 rebrands the OS on-device

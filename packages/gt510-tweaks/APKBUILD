@@ -1,7 +1,7 @@
 # Local tweaks for the Samsung Galaxy Tab A 9.7 2015 (SM-T550, gt510wifi) on device-qcom-msm8916.
 pkgname=gt510-tweaks
 pkgver=1
-pkgrel=46
+pkgrel=47
 pkgdesc="SM-T550 (gt510wifi) integration: audio, charger, GPS, rotation, camera, trimmed services; Phosh"
 url="https://postmarketos.org"
 arch="noarch"
@@ -17,6 +17,7 @@ depends="
 	ffmpeg-libavcodec>=8.1.2-r103
 	ffmpeg-libavutil<8.1.3
 	showtime=50.0-r100
+	phoc=0.57.0-r100
 	alsa-utils
 	iio-sensor-proxy
 	phosh-mobile-settings
@@ -44,7 +45,7 @@ depends="
 # unpatched Alpine mesa would hang the a306 GPU within seconds of a GTK app starting. When Alpine moves past
 # 26.2.4, rebuild packages/mesa on the new version first, then move both pins.
 # gtk4.0=4.24.1-r100: the local gtk4.0 (packages/gtk4.0 0103) offloads BT.709 video to phoc, which has no colour
-# management; Alpine's gtk4.0 draws every video frame on the a306 instead (~10 fps for 1080p). An exact pin,
+# management (only colour representation, packages/phoc r100); Alpine's gtk4.0 draws every video frame on the a306 instead (~10 fps for 1080p). An exact pin,
 # because a plain >= would let Alpine's next release replace it. When Alpine moves past 4.24.1, rebuild
 # packages/gtk4.0 on the new version first, then move this pin; every local gtk4.0 rebuild moves it too.
 # ffmpeg-libavcodec>=8.1.2-r103 + ffmpeg-libavutil<8.1.3 (two names, like mesa/mesa-dri-gallium: one
@@ -62,6 +63,10 @@ depends="
 # showtime=50.0-r100: the local showtime (packages/showtime 0100) feeds gtk4paintablesink without glsinkbin (Venus
 # 1080p 29 fps vs ~8 fps software / dropped frames with glsinkbin); exact pin so Alpine's next release cannot
 # replace it; move it on every local showtime rebuild.
+# phoc=0.57.0-r100: the local phoc (packages/phoc 0100 wlroots GLES2 YCbCr hints + 0101 wp_color_representation_v1)
+# shows offloaded video with its own matrix (BT.709 HD video exact; Alpine's phoc converts everything as BT.601, so
+# greens come out ~30 levels too bright); exact pin so Alpine's next phoc cannot replace it. When Alpine moves past
+# 0.57.0-r1, rebuild packages/phoc on the new version first, then move this pin.
 install="$pkgname.post-install $pkgname.post-upgrade"
 triggers="$pkgname.trigger=/usr/share/applications:/usr/lib"
 source="
