@@ -8,9 +8,9 @@ Paste this into a new session to continue. Everything lives in `~/workspace/gt51
   this file verbatim (the last one = "as of 2026-10-01 18:10"). Read the relevant part before re-investigating.
 - Memory: `samsung-t550-gt510.md`, `upstream-ai-policies.md`, `check-ai-policy-before-upstreaming.md`.
 
-## VIDEO / VENUS + gt510-tweaks (hardware review #4/#6; sessions 392683 → d0acb3 → 36e367) — STATE 2026-10-13 13:40
+## VIDEO / VENUS + gt510-tweaks (hardware review #4/#6; sessions 392683 → d0acb3 → 36e367) — STATE 2026-10-13 15:00
 Earlier versions of this section are archived verbatim at the end of CONTINUATION-PROMPT.2026-09-27-history.md
-("Archived 2026-10-06 13:25", "Archived 2026-10-13 13:40"). Findings: ISSUES 21 (decode/playback, a-h), 26 (encoder),
+("Archived 2026-10-06 13:25", "Archived 2026-10-13 13:40"). Findings: ISSUES 21 (decode/playback, a-i), 26 (encoder),
 31 (tweaks upgrade cost), 23 (Firefox, d5c224's).
 
 YOUTUBE: use Pipeline (native, GStreamer): clapper 0.10.0-r101 (packages/clapper: gtk4paintablesink + GtkGraphicsOffload)
@@ -33,9 +33,13 @@ Local video pieces (one line each; details in ISSUES):
 - snapshot 0103/0104 (mine: encoder bitrate, scaled to the real frame rate); 0105-0107 (d5c224/e173ce: 5 MP stills,
   default camera). ffmpeg 0100-0106 (d5c224: Firefox V4L2 M2M path). mesa 0100-0102 (0102 = >256-instance draw split,
   d5c224, for the Firefox black triangle: not proven as its fix, the triangle did not reproduce on 2026-10-13).
-- gt510-tweaks r48-r50 (mine, 31): accel rule in /etc/udev/rules.d; splash + logo in gt510-branding (no initramfs
+- clapper r101 (0100, mine): gtk4paintablesink inside a GtkGraphicsOffload instead of glsinkbin + clappersink (stock
+  shows no picture here; r100 without the offload wrapper 10 fps); Pipeline 1080p25 YouTube: 25/25 fps, ~30 % of a core,
+  memory PSI 0 % (Firefox: ~60 MB free, stutter). yt-dlp-core only (deno would need a vte3-gtk4/simdutf upgrade).
+- gt510-tweaks r48-r51 (mine, 31 + 21 i): accel rule in /etc/udev/rules.d; splash + logo in gt510-branding (no initramfs
   rebuild per tweaks update); systemctl --no-reload (post-upgrade 56 → 3.4 s; a whole update ~92 → 14 s);
-  /usr/lib/sysctl.d/60-gt510-memory.conf vm.watermark_boost_factor = 0 (YouTube tab OOM-killed with ~200 MB free).
+  /usr/lib/sysctl.d/60-gt510-memory.conf vm.watermark_boost_factor = 0 (YouTube tab OOM-killed with ~200 MB free);
+  r51 pins clapper-libs=0.10.0-r101 and depends on pipeline, yt-dlp-core, libpeas2-python3.
 
 NEXT / OPEN (Yaron decides order):
 1. Upstream (Yaron reviews, signs off, sends; the AI never sends): upstream/venus/README.md — A) reply to David
@@ -50,12 +54,15 @@ NEXT / OPEN (Yaron decides order):
    initramfs charge mode).
 4. Low value: waylandsink sees no dmabuf formats (phoc's wlroots sends v3 clients INVALID-only); m2mflush "both-empty"
    (STREAMON OUTPUT before any bitstream after a full stop stalls; real clients queue input first); tweaks still runs
-   the systemd trigger (6.9 s) because it owns unit dirs; zram zstd vs lz4 untested (lz4 kept on purpose).
+   the systemd trigger (6.9 s) because it owns unit dirs; zram stays lz4 (d5c224 measured zstd: better ratio 2.9 vs 1.9
+   but more swap-in stalls). Pipeline follow-ups: full yt-dlp (deno) after a vte3-gtk4/simdutf upgrade; Alpine's
+   clapper-enhancers lacks the yt-dlp settings schema (harmless ERROR); clapper patch upstream (check Clapper's AI
+   policy first).
 
 TOOLS (video/, copies in the tablet's ~/vtest): m2mflush.py (raw V4L2 seek/flush test: output|both|both-empty),
 vtrace.sh (ftrace + kprobes on the decoder; queue type 10 = OUTPUT, 9 = CAPTURE), seektest.py (GStreamer flushing
 seek), colortest.sh (which YCbCr matrix the compositor used; PHOC= runs a nested phoc), showbench.sh, planefps.py,
-vidpower.sh, showdiag.sh + threadsample.py, enctrace.sh, encbench.sh, h264frames.py, snaprec.sh + uitap.py.
+ytbench.sh (a URL in Clapper: fps, CPU, memory PSI, sink), vidpower.sh, showdiag.sh + threadsample.py, enctrace.sh, encbench.sh, h264frames.py, snaprec.sh + uitap.py.
 tools/apktime.sh (per-step timing of an apk run), tools/colima-seeded-build.sh <tag> <pkg>… (mesa seeds in → build →
 out; use it for gt510-tweaks). A blocked thread's poll targets: read /proc/<pid>/task/<tid>/syscall and the pollfd array
 from /proc/<pid>/mem as root (ISSUES 21 h). Traces: video/traces/.
@@ -72,7 +79,7 @@ gt510-branding in the repo too (gt510-tweaks depends on it).
 COORDINATION (shared tablet; sessions 2026-10-13): 7c530c = d5c224's line (Firefox #23, mesa, ffmpeg, stills, CPR),
 59f6f7 = e173ce's line (camera/#33, spec), 36e367 = this (video/Venus, gt510-tweaks). Message before any reboot,
 kernel install, apk add (`pgrep -x apk`), Venus/GPU/camera-heavy run; ONE reboot for everyone (ask for pending kernel
-changes first); announce public pushes. Public repo 3e83c0e (2026-10-13): assemble-public.sh REPLACES
+changes first); announce public pushes. Public repo 4eb3256 (2026-10-13): assemble-public.sh REPLACES
 ~/workspace/gt510-public — park .git outside and restore it.
 
 TRAPS: USB 172.16.42.1 can be the Poco F1: ./gssh checks the hostname (ssh -n probe, exit 99 elsewhere), ./gw is Wi-Fi
@@ -184,7 +191,7 @@ drop parked (READONLY) capture buffers on capture STREAMOFF (ours). REVERTED: 01
   emails/coordinates/the tablet password), move `.git` out and back around it, commit (author Yaron Shahrabani
   <406826+yarons@users.noreply.github.com>, `Co-Authored-By` trailer), scan the diff, push. `review/` is never
   published (it holds the scrub map). Yaron's rules: no photos/raw camera dumps, name yes / email no, GPL-2.0.
-  HEAD 3e83c0e (2026-10-13, 36e367: clapper r101 + tweaks r51 = YouTube in Pipeline; 89fcfde clapper r100, zram;
+  HEAD 4eb3256 (2026-10-13, d5c224: session notes, triangle = only open Mesa item); 3e83c0e (36e367: clapper r101 + tweaks r51 = YouTube in Pipeline; 89fcfde clapper r100, zram;
   4336b3b compact video notes, colima-seeded-build.sh; 89159af tweaks r50 sysctl; b073811 r41 verification; 7d10402 0129 v4, tweaks r48/r49,
   gt510-branding, mesa 0102; before 148cf5b (2026-10-06 18:05, d0acb3: tweaks r47 phoc pin, ISSUES 21 g done); before 49f097a (17:5x, d5c224: kernel 0132 CPR fuses + cprtest, snapshot r121 0105v3/0107, tweaks r46, ISSUES
   23/24/28); before 059574f (2026-10-06 15:20: phoc r100 BT.709 patches + colortest.sh, snapshot 0105/0106 + libcamera 0111 +
