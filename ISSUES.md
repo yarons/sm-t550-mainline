@@ -292,6 +292,11 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    (parked capture buffers reach the firmware before input; mode both-empty) — clients queue input first, low value.
    UPSTREAM: our reply to Heidelberg's 2/2 carries the same gate → HOLD A in upstream/venus/README.md until the fixup
    and reply are updated (not sent yet, Yaron 12:xx).
+   VERIFIED on kernel r41 (#42, installed + ONE reboot 12:43 with d5c224's mesa r101 and tweaks r49; venus_dec
+   srcversion 4A3EFC4F… vs r40 CEEE21FD…): m2mflush output mode 5/5 flushes 30/30 frames, every held buffer back
+   (r40: stall after the 2nd flush); stop-both mode 5/5; GStreamer seektest 0 s → 5.02 s, 10 s → 13.34 s; no Venus
+   firmware/session errors; taint 0. Upstream fixup + reply regenerated on Heidelberg's 2/2 (fixup applies; HOLD
+   lifted). Firefox YouTube re-test with Yaron: d5c224.
 22. CLOSED (2026-10-06, nothing to implement) — **Touch-key LEDs** (hardware review #9). Recents/Back are maXTouch
    1664T T15 keys (mainline keycodes KEY_APPSELECT 0x244, KEY_BACK 0x9e). Stock never lit them: Samsung's gt510 driver
    (Galaxy-MSM8916 lineage-17.1 drivers/input/touchscreen/mxt_t/, DT compatible "atmel,mxt_t") has
@@ -457,7 +462,9 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    buffers on OUTPUT-only flushes → fix drafted as video/venus-0129-v4-gate.diff, kernel r41 pending its trace).
    My YouTube trace run (video/fxrepro.sh: MOZ_LOG + vtrace + RDD fd watch, now as systemd units) caught nothing:
    the clip was not played inside the window. NEXT: reproduce the triangle on stock first (same clip + fullscreen
-   as 10-06), then A/B 0102; 0102 into packages/mesa only with Yaron's OK.
+   as 10-06), then A/B 0102. Yaron OK'd 0102 for real: packages/mesa r101 (0100 + 0102) built in colima and
+   INSTALLED 2026-10-13 ~12:50 (plain apk add; installed lib passes fdtri at 257/1000/4096), before 36e367's
+   kernel r41 reboot, so phoc/phosh run r101 after it. A triangle A/B now needs ~/mesatest264 (r100-like) vs stock.
 24. DONE (2026-10-06 17:27, hardware review #7, session d5c224; snapshot r121 + tweaks r46 INSTALLED) — **Full 5 MP stills (rear SR544).** The sensor streams
    2592x1944 at 27.9 fps; /etc/libcamera/configuration.yaml caps the soft ISP output at 1296x972 because 5 MP once
    debayered at 0.7 fps (2026-09-25, before the GPU debayer / Mesa a3xx work). Remeasured on r38 with the cap lifted for
@@ -826,6 +833,10 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    `mask --no-reload` call 0.20 s). r49: enable/disable/mask with --no-reload, the 8 unneeded units batched in one
    disable + one mask call, the existing single daemon-reload picks them up (post-install + post-upgrade). Expected
    steady-state upgrade ~20 s (was ~92 s). Built after kernel r41; measure with apktime.sh.
+   r49 INSTALLED 12:4x (r48 → r49, apktime): TOTAL 14.3 s (was ~92 s): systemd trigger 6.9 s, post-upgrade 3.4 s,
+   apk 3.1 s, no mkinitfs, no icon cache. Unit states unchanged (ModemManager/cups.socket/fwupd masked, gpsd-pds +
+   gt510-xtra.timer enabled). Accel rule active from /etc after the reboot (lis2hh12 ACCEL_MOUNT_MATRIX set).
+   DONE. Left: the systemd trigger (daemon-reload + user@ reload + tmpfiles) because tweaks owns unit dirs.
 32. CLOSED (2026-10-06 12:16, session e173ce: NOT A BUG, wrong camera in the test) — **Rear camera slow on battery.**
    Found by d5c224 during ISSUES 24: on battery (tuned profile balanced-battery) the rear camera at 1296x972
    delivers 8.5 fps vs 25-28 fps on USB power, same scene. Same on libcamera r111 (A/B), so not 0110's AWB change.

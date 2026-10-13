@@ -1,6 +1,8 @@
 # Venus upstream hand-off (gt510 / SM-T550) — Yaron reviews, signs off, sends
 
-> **HOLD A (2026-10-13):** the buf_queue gate in our fixup (`heidelberg-2-2-fixup.diff`, also quoted in
+> **A READY AGAIN (2026-10-13, after kernel r41):** fixup and reply now carry the corrected gate (`!inst->streamon_cap`),
+> regenerated on top of Heidelberg's 2/2 (applies cleanly); verified on the device (ISSUES 21 h). History of the hold:
+> the buf_queue gate in our fixup (`heidelberg-2-2-fixup.diff`, also quoted in
 > `reply-heidelberg-2-2.txt`) parks capture buffers in an OUTPUT-only seek too (`streamon_cap` = 1), where nothing
 > submits them later: suspected cause of the Firefox/YouTube freeze (ISSUES 23, trace
 > `video/traces/ffx-freeze-venus-2026-10-13.txt`). Corrected gate drafted in `video/venus-0129-v4-gate.diff`

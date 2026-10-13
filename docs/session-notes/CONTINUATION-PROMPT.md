@@ -8,13 +8,22 @@ Paste this into a new session to continue. Everything lives in `~/workspace/gt51
   this file verbatim (the last one = "as of 2026-10-01 18:10"). Read the relevant part before re-investigating.
 - Memory: `samsung-t550-gt510.md`, `upstream-ai-policies.md`, `check-ai-policy-before-upstreaming.md`.
 
-## VIDEO / VENUS (hardware review #4 + #6, session 392683 → its continuation d0acb3) — STATE 2026-10-06 14:55
+## VIDEO / VENUS (hardware review #4 + #6, session 392683 → d0acb3 → 36e367) — STATE 2026-10-13 12:50
 (ISSUES 21 + 26 DONE; 21 (g) BT.709 colours IN FLIGHT). Session d0acb3 is the forked continuation of 392683 (same
 work, same notes); d5c224, e173ce and 4d591a were told (14:41-15:20) to message d0acb3 for video/Venus.
 The chronological log of today's work is archived verbatim at the end of CONTINUATION-PROMPT.2026-09-27-history.md
 ("Archived 2026-10-06 13:25"). ISSUES 21 (decode/playback) and 26 (encoder) carry the findings.
 
-INSTALLED on the tablet (17:35; boot 17:24:47): kernel r40 (d5c224: r39 + CPR 0132), phoc 0.57.0-r100 (mine, BT.709),
+2026-10-13 (session 36e367 = continuation of d0acb3/392683): INSTALLED, boot 12:43: kernel r41 (#42 = r40 + 0129 v4,
+the Venus seek-gate fix for the Firefox/YouTube freeze, ISSUES 21 h), mesa 26.2.4-r101 (d5c224: 0102 split of >256-
+instance draws, Firefox black triangle, ISSUES 23), gt510-tweaks r49 + NEW gt510-branding r0 (ISSUES 31: tweaks
+updates 14 s instead of ~92 s). Tools: video/m2mflush.py (raw V4L2 seek/flush test: output|both|both-empty),
+tools/apktime.sh (per-step timing of an apk run), /tmp/pollargs.py idea (read a blocked ppoll's fds via /proc/pid/mem).
+Traps: busybox ash: never rewrite a script another session is running (restore the same bytes); `sudo -S` with a
+heredoc on stdin eats the password (write the script to a file first); vtrace type 10 = OUTPUT, 9 = CAPTURE.
+Upstream A is ready again (corrected gate); Yaron sends. Colima t290 must be started (`colima start t290`) if stopped.
+Public repo 7d10402 (12:3x).
+OLDER STATE — INSTALLED on the tablet (17:35; boot 17:24:47): kernel r40 (d5c224: r39 + CPR 0132), phoc 0.57.0-r100 (mine, BT.709),
 snapshot r121 (d5c224/e173ce), gt510-tweaks r47 (mine 18:00: r46 + phoc=0.57.0-r100 pin) — the list below is the 14:12 state: kernel r39 (#40, taint 0), gtk4.0 4.24.1-r100, showtime
 50.0-r100, snapshot 51.0-r115, libcamera 99990.7.2-r113 (d5c224, 15:10; r112 = its AWB fix), ffmpeg-libavcodec 8.1.2-r105 (d5c224, 21:4x:
 h264_v4l2m2m bit-exact at 360p-1080p, YouTube blocks fixed), mesa 26.2.4-r100, gt510-tweaks 1-r43 (d5c224: pins gtk4.0=4.24.1-r100, showtime=50.0-r100, ffmpeg
@@ -119,6 +128,9 @@ next there, so check `lineage-build*` containers before using it. Build gt510 pa
 phoc`, log dist/colima/phoc100.log; no mesa seeds needed). e173ce sends d0acb3 "colima free" after tweaks r45. Colima's edge repo is seeded with kernel r39,
 gtk4.0/-dev/-lang r100 and mesa r100 (the mesa seeds break ffmpeg builds there; Yaron decides on removing them). To
 re-index after seeding: copy as root, then in ONE container `pmbootstrap -y chroot -- true; pmbootstrap -y index`.
+  mesa r101 (2026-10-13): its 8 apks were moved straight out of the colima repo to /work/pmb/seed-removed/r101/ (+ re-index,
+  dist/colima/mesa101-out.log); seed THOSE for the next tweaks build. The Mesa tarball is in /work/pmb/cache_distfiles
+  (archive.mesa3d.org reset the download once).
   MESA SEEDS REMOVED 2026-10-06 14:02 (Yaron; after d5c224's tweaks r43): the 6 mesa-*26.2.4-r100.apk now sit in
   /work/pmb/seed-removed/ (also dist/colima/seed/) so colima can build ffmpeg (mesa-rusticl conflict). A gt510-tweaks
   rebuild in colima needs them back (depends mesa>=26.2.4-r100): copy back as root + re-index; remove again after.
@@ -204,7 +216,7 @@ enabled + Wi-Fi connected (Yaron), Pictures/Videos + test scripts from `backup-2
 | linux-postmarketos-qcom-msm8916 | 7.3_rc2-**r38** (#39) | msm8916-mainline 7.3-rc2 @717e5e2 + `kernel/0100`–`0107`, `0109`–`0118`, `0120`–`0130` + `kernel/gt510.config` (r33: + CONFIG_SUSPEND; r34: + 0125; r35: + 0126; r36: + 0127; r37: + 0128; r38: + 0129/0130 venus seek) |
 | gt510-tweaks | **r37** | see "gt510-tweaks" (r35: rebrand; r36: gt510-wcnss-nv; r37: Mesa 26.2.4 pins) |
 | libcamera | 99990.7.2-**r111** | pmOS fork + 0100–0107 (see below) + **0108 EGL context leak (upstream backport)** + **0109 park the lens on stop** |
-| mesa (+dri-gallium, egl, gbm, gl, gles) | 26.2.4-**r100** | LOCAL slim build (freedreno + llvmpipe; GL/GLES/EGL/GBM only) + **0100 freedreno a3xx fixes** |
+| mesa (+dri-gallium, egl, gbm, gl, gles) | 26.2.4-**r101** | LOCAL slim build (freedreno + llvmpipe; GL/GLES/EGL/GBM only) + **0100 freedreno a3xx fixes** + **0102 split draws > 256 instances** (r101 INSTALLED 2026-10-13 ~12:50, d5c224) |
 | snapshot | 51.0-**r112** | 0100 aperture paintable orientation (+EXIF/mp4 tags) · 0101 viewfinder sink sync=false · **0102 QrScreenBin snapshots its child once** (enables offload); Exec env `GSK_RENDERER=gl` only |
 | gtk4.0 | 4.24.0-**r103** | 0100 no powf sRGB round trip (YUV, cairo) · 0101 cairo quarter-turn textures · 0102 import LINEAR dmabufs without explicit modifier |
 | phosh | 99990.57.0-**r100** | 0100 cellular tile hidden without a modem |
