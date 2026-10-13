@@ -276,6 +276,22 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    seeds in/out, installed in 92 s; a simulated apk upgrade leaves phoc alone). ISSUES 21 (g) DONE. Firefox re-check (d5c224, 17:40): unchanged and clean — Venus zero-copy, 28 fb/s,
    colours right; Firefox composites video itself (no YUV subsurface), so the new global doesn't touch its path. colortest trap: the first runs after boot/under load can
    grab Showtime's UI instead of the video (late seek, dropped frames) — rerun when the result shows grey UI colours.
+   (h) 0129 SEEK GATE STRANDS CAPTURE BUFFERS (2026-10-13, session 36e367; found from d5c224's ISSUES 23 YouTube
+   freeze: "sluggish, then frozen", 2 decoder sessions, RDD thread in ppoll(video5, infinite) with nothing pending,
+   10 s vtrace = zero Venus activity, firmware alive in a 3rd session; video/traces/ffx-freeze-venus-2026-10-13.txt).
+   CAUSE: 0129 v3 parks CAPTURE buffers queued while codec_state == SEEK && !streamon_out. In an OUTPUT-only seek
+   (FFmpeg v4l2_decode_flush = packages/ffmpeg 0100: STREAMOFF OUTPUT, STREAMON OUTPUT, DECODER_CMD START; capture
+   keeps streaming) streamon_cap stays 1, so vdec_start_output() only queues DPB buffers and nothing ever submits the
+   parked ones (venus' m2m device_run is empty); a capture QBUF from another thread blocks on inst->lock during the
+   input flush in vdec_stop_output() and lands exactly in that window. PROOF: video/m2mflush.py (raw V4L2, holds 4
+   frames, flushes, requeues them inside the window): r40 output mode strands all 4 per flush, after 2 flushes only 3
+   of 12 buffers circulate (3/30 frames); vtrace: exactly those idx queued once more than submitted; GStreamer-style
+   stop-both seek 5/5 runs fine. FIX 0129 v4: the gate also requires !inst->streamon_cap (kernel/0129 updated; was
+   v3 → scratchpad copy). Kernel r41 = r40 with 0129 v4 (Yaron OK'd the build on confirmation; d5c224 and e173ce:
+   nothing else for r41). Side finding: stop-both seek with STREAMON OUTPUT before any bitstream is queued stalls
+   (parked capture buffers reach the firmware before input; mode both-empty) — clients queue input first, low value.
+   UPSTREAM: our reply to Heidelberg's 2/2 carries the same gate → HOLD A in upstream/venus/README.md until the fixup
+   and reply are updated (not sent yet, Yaron 12:xx).
 22. CLOSED (2026-10-06, nothing to implement) — **Touch-key LEDs** (hardware review #9). Recents/Back are maXTouch
    1664T T15 keys (mainline keycodes KEY_APPSELECT 0x244, KEY_BACK 0x9e). Stock never lit them: Samsung's gt510 driver
    (Galaxy-MSM8916 lineage-17.1 drivers/input/touchscreen/mxt_t/, DT compatible "atmel,mxt_t") has
@@ -366,6 +382,82 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    itself (XR24 primary plane only), so phoc's colour-representation support does not change its path. Trap: the
    first run after a boot read 295 % CPU / 18 fps (WebExtensions first-run + memory pressure) — use WAIT=45.
    STILL OPEN: Yaron's YouTube test on r104 (blocks, black triangle).
+   YOUTUBE ON r104 (Yaron 21:0x): blocks AND triangles still there. ROOT CAUSE of the blocks (21:1x-21:3x, ffmpeg CLI
+   framemd5 hw vs sw, by pts): FFmpeg's h264_v4l2m2m LOSES PACKETS at stream start — 4-37 frames missing around frame
+   13-20 and every frame up to the next keyframe different (1080p clip: 366/600 equal, corrupt 20-249, clean from
+   keyframe 250; 720p/480p/360p the same), varying per run. Not the requeue ring (GT510_V4L2_REQUEUE_DELAY=0 same), not
+   the buffer count (20-32 same), not 0101-0104 (r100 libavcodec same), not CPR (pinned 998.4 same); GStreamer
+   v4l2h264dec on the same kernel is 600/600 bit-exact (needs videocrop bottom=8: it outputs 1920x1088). The 10:55
+   600/600 was luck. Mechanism (FFmpeg 8.1.2 v4l2_m2m_dec.c v4l2_receive_frame): the 16 output buffers fill before
+   Venus has parsed the headers → enqueue EAGAIN keeps the packet → v4l2_try_start() fails (VIDIOC_G_FMT, logged 16×)
+   → `goto fail` unrefs the pending packet. Fix ffmpeg 0105: while a packet is pending and capture is not started,
+   poll POLLPRI (source change, 100 ms steps, ≤2 s) and retry. GREEN BAND at non-1080p (360p: 24 padding rows of 384,
+   squashed in): 0102's coded height is right for the chroma offset, but Firefox sets apply_cropping=0 and shows
+   frame->height - crop_bottom → fix 0106: crop_bottom = coded - visible (0102's 'folds back' note was wrong for
+   Firefox). ffmpeg r105 BUILT (colima) + INSTALLED 21:4x (8 packages, plain apk add; tweaks' range pin fits):
+   h264_v4l2m2m bit-exact 1080p 600/600 (×2 + installed), 720p 600/600, 480p/360p 1000/1000; Firefox 360p strip clean
+   (no green band, no blocks). NEXT: Yaron's YouTube re-test on r105. The black triangle (fixed spot, fullscreen
+   only, WebRender) is still unexplained; ytshot.sh now has WAIT=/FXARGS= and F6 before 'f', but fullscreen YouTube
+   still did not engage in the bench profile.
+   r105 YouTube (Yaron 21:5x): BLOCKS GONE, black triangle still there. His fullscreen scanout grabs (21:42): fixed
+   black triangle, raw 768x1024 portrait (216,768)-(256,768)-(256,1024) = landscape (768,512)-(1024,512)-(768,552).
+   ANALYSIS 2026-10-07 (no tablet; Yaron away): its slanted edge extended runs (0,672)-(1024,512) = the diagonal of
+   the rect (0,512)-(1024,672) = the 16:9 video (y 96-672) clipped to WebRender's 2nd picture-cache tile row
+   (gfx.webrender.picture-tile-width/height default 1024x512); its other edges x=768 / y=512 are GPU bin edges. On
+   Linux WebRender prefers an UNDERLAY compositor surface for YUV video (picture.rs: prefer_underlay = clip_on_top ||
+   !macos) and draws a cutout into every tile the video touches: batch.rs add_compositor_surface_cutout() = solid
+   black brush, BlendMode::PremultipliedDestOut, ALPHA_PASS|CLIP_MASK, local rect = the video clamped to the tile.
+   The triangle = the cutout quad's upper-left triangle MISSING in one GPU bin (x 768-1023) → the tile keeps opaque
+   black there; valid tiles are reused, so it stays until that tile is redrawn. → freedreno a3xx hw binning
+   (fd3_gmem.c use_hw_binning(): on when >2 bins and no scissor-opt min offset; its own comment admits binning/render
+   mismatches with the scissor optimization, which WebRender's dirty rects trigger). A plain fullscreen <video>
+   (video/fstest.html), a CSS gradient overlay (fsgrad.html) and the YouTube embed with hidden controls (fsyt.html,
+   needs http: python3 -m http.server -b 127.0.0.1 8765 in ~/vtest) did NOT show it.
+   READY FOR THE NEXT TABLET SESSION: (1) Yaron's Firefox once with FD_MESA_DEBUG=nobin, then =noscis, then =sysmem
+   (env only, his profile untouched) — gone with nobin/noscis = binning bug confirmed; (2) test Mesa
+   mesa-test/out/mesatest-264-hlsq.tgz (26.2.4 + 0100 + packages/mesa/0101 = upstream 5b20e08a "flush HLSQ before
+   indirect const loads", 2026-09-27: VS consts are still indirect loads; mesa-test/build264.sh, PATCHES=/TAG=) via
+   LD_LIBRARY_PATH/LIBGL_DRIVERS_PATH/GBM_BACKENDS_PATH=~/mesatest264/root/usr/lib…; (3) video/fsui.html local
+   reproducer (fullscreen video + caption/progress UI updating every 200 ms over the lower tile row) with
+   video/fxtri.sh <tag> <page> ['ENV'] (counts dark pixels in the triangle region; fxshot.sh gained FXENV=/SCALE=);
+   (4) gl-hang/fdtri/fdtri (GLES3 headless): `instances` = N one-pixel instances — freedreno's DRAW() packs
+   (instance_count-1) into 8 bits (uint8_t, << 24) and nothing splits draws, while WebRender batches up to 8192
+   instances (0x20000/16) → check whether >256 wraps; `cutout` = WebRender's cutout in a 1024x512 RGBA8+depth target
+   (FD_MESA_DEBUG=gmem to force tiling), counts opaque pixels left per 256-px bin. Possible workarounds if needed:
+   FD_MESA_DEBUG=nobin for Firefox only (wrapper .desktop), or a Mesa fix once the trigger is known.
+   BIN LAYOUT (gl-hang/fdtri/binsim.py = Mesa 26.2.4 calc_nbins/layout_gmem/pipe setup for FD307: GMEM 128 KiB,
+   tile align 32, max bin width 992, 8 VSC pipes): a 1024x512 RGBA8 + Z24S8 tile → 6x8 bins of 192x64, one
+   6-bin pipe per row, hw binning ON; bin x edges 0/192/384/576/768/960. So the cutout's upper-left triangle is
+   dropped in bins 4-5 of its row while bins 0-3 of the SAME pipe draw it → a per-bin visibility error in the
+   binning pass, not a lost pipe. (1024x768 window RGBA8: 4x6 bins of 256x128.)
+   TABLET SESSION 2026-10-13 (d5c224, 09:40-10:30): **MESA BUG FOUND: a3xx draws only (instances % 256).**
+   gl-hang/fdtri on FD307, stock mesa r100: `instances` (gl_InstanceID) and the new `instattr` (per-instance
+   attribute, divisor 1 = how WebRender feeds instances) both draw 257 → 1, 300 → 44, 1000 → 232, 4096 → 256.
+   freedreno_draw.h fd_draw() takes `uint8_t instances` (= instance_count - 1 into CP_DRAW_INDX), nothing splits;
+   unchanged on Mesa main. Firefox ESR 140 WebRender: enable_instancing default true (Gecko never changes it),
+   Primitive batches chunked at MAX_INSTANCE_BUFFER_SIZE/16 = 8192 instances, other vertex kinds unchunked; its
+   Adreno-3xx quirks match renderer "Adreno (TM) 3" only, never "FD307". → every batch over 256 loses its tail.
+   FIX packages/mesa/0102-freedreno-a3xx-split-draws-over-256-instances.patch (local, NOT in APKBUILD): fd3_draw.c
+   splits into chunks of ≤256 (a multiple of every instance divisor) and sets VFD_INSTANCEID_OFFSET per chunk; that
+   register advances gl_InstanceID but NOT instanced attribute fetches (measured: v1 drew the first 256 again), so
+   for each chunk fd3_emit_vertex_bufs re-emits the instanced buffers offset by base/divisor*stride (new
+   fd3_emit.instance_base), and the state is restored after the last chunk. Test Mesa mesa-test/out/
+   mesatest-264-inst.tgz (0100+0101+0102) → tablet ~/mesatest264i: fdtri instances + instattr exact up to 4096,
+   cutout variants unchanged (0 wrong).
+   fdtri cutout (16 variants: y-flip, 1023-wide, opaque-first off, 5 scissors; default and FD_MESA_DEBUG=gmem) and
+   video/fsui.html (portrait and landscape; fxtri.sh now picks the crop for transform 90 or 270, CROP= overrides)
+   did NOT show the triangle. Yaron's Firefox + YouTube: test Mesa (0102) → "triangle gone, but sluggish"; stock
+   Mesa right after → "sluggish, no triangle", then the video froze on its first frame. So the triangle did not
+   reproduce today with stock either: 0102 is NOT yet shown to be the triangle fix (it can drop whole quads only,
+   the triangle is half a quad), but it is a real bug that WebRender hits. Sluggish = stock too: plane-0 27 fps,
+   5 gaps > 70 ms in 10 s (max 216 ms; video/planefps.py now prints frame pacing); MemAvailable 65-100 MB,
+   Firefox main 178 MB + phosh 115 MB swapped. Freeze: "HW is overloaded, needed 489600" flood at uptime
+   1705-1765 s (2 × 1080p sessions counted; only a warning), then RDD's MediaPDecoder in an infinite ppoll on
+   /dev/video5 with nothing queued (36e367: firmware fine, suspects its kernel 0129 SEEK gate stranding capture
+   buffers on OUTPUT-only flushes → fix drafted as video/venus-0129-v4-gate.diff, kernel r41 pending its trace).
+   My YouTube trace run (video/fxrepro.sh: MOZ_LOG + vtrace + RDD fd watch, now as systemd units) caught nothing:
+   the clip was not played inside the window. NEXT: reproduce the triangle on stock first (same clip + fullscreen
+   as 10-06), then A/B 0102; 0102 into packages/mesa only with Yaron's OK.
 24. DONE (2026-10-06 17:27, hardware review #7, session d5c224; snapshot r121 + tweaks r46 INSTALLED) — **Full 5 MP stills (rear SR544).** The sensor streams
    2592x1944 at 27.9 fps; /etc/libcamera/configuration.yaml caps the soft ISP output at 1296x972 because 5 MP once
    debayered at 0.7 fps (2026-09-25, before the GPU debayer / Mesa a3xx work). Remeasured on r38 with the cap lifted for
@@ -714,6 +806,26 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    fired by 61-gt510-accel.rules (/usr/lib/udev) + the plymouth theme (/usr/share/plymouth), plus systemd reloads.
    Optional next step (Yaron to decide; tweaks bumps currently go through d5c224): rules → /etc/udev/rules.d, splash
    theme → its own rarely-bumped package → tweaks upgrades would skip mkinitfs entirely.
+   ROOT CAUSE + r48 (2026-10-13, session 36e367, Yaron picked #31): apk-tools 3.0.8 (src/database.c:3000, purge of
+   the old package) marks EVERY directory the old package owns as modified, parents included, and fire_triggers
+   matches trigger paths against those directories (fnmatch FNM_PATHNAME, exact). So a package fires a trigger for
+   any watched directory it merely owns: tweaks owned /usr/lib/udev (parent of rules.d) and /usr/share/plymouth
+   (parent of the theme) → postmarketos-mkinitfs on every upgrade; /usr/share/icons/hicolor (logo) →
+   gtk-update-icon-cache; /usr/lib/udev/rules.d → udevd reload mark; unit dirs + tmpfiles.d → the systemd trigger
+   (daemon-reload, user@ reload, systemd-tmpfiles --create). r48: 61-gt510-accel.rules → /etc/udev/rules.d; splash
+   theme + logo → NEW package packages/gt510-branding 1-r0 (replaces=gt510-tweaks; tweaks depends on it; theme
+   selection stays in gt510-rebrand). Built in colima 09:47 (BUILD_RC=0, seeds in/out); apks staged in the tablet's
+   ~/r48 with tools/apktime.sh (per-step timing of an apk run). Install waits for d5c224's "triangle done". The first
+   install still runs mkinitfs once (the theme files move); the steady-state cost is measured with
+   `apktime.sh fix -r gt510-tweaks` afterwards. Image builds now need gt510-branding in the repo too.
+   r48 INSTALLED 12:4x (gt510-branding r0 + tweaks r48, 95.7 s incl. the one-time mkinitfs from the moved theme;
+   /usr/lib/udev/rules.d/61-gt510-accel.rules gone, /etc/udev/rules.d one present, plymouthd.conf Theme=sm-t550).
+   apktime breakdown: post-upgrade 56.5 s (!), mkinitfs 23.9 s (once), systemd trigger 7.4 s, apk 6.1 s, icon cache
+   0.6 s. Post-upgrade under sh -x: 16 × `systemctl disable|mask <unit>` at 3.1 s EACH — every enable/disable/mask
+   reloads PID 1 (measured: mask 3.37 s, mask --no-reload 0.10 s, daemon-reload 3.13 s, all 8 units in one
+   `mask --no-reload` call 0.20 s). r49: enable/disable/mask with --no-reload, the 8 unneeded units batched in one
+   disable + one mask call, the existing single daemon-reload picks them up (post-install + post-upgrade). Expected
+   steady-state upgrade ~20 s (was ~92 s). Built after kernel r41; measure with apktime.sh.
 32. CLOSED (2026-10-06 12:16, session e173ce: NOT A BUG, wrong camera in the test) — **Rear camera slow on battery.**
    Found by d5c224 during ISSUES 24: on battery (tuned profile balanced-battery) the rear camera at 1296x972
    delivers 8.5 fps vs 25-28 fps on USB power, same scene. Same on libcamera r111 (A/B), so not 0110's AWB change.

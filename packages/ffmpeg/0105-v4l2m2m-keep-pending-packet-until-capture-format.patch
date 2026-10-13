@@ -1,0 +1,54 @@
+From: gt510 <gt510@localhost>
+Subject: avcodec/v4l2m2m_dec: keep the pending packet until the capture format is known
+
+The capture format is only known once the driver has parsed the stream
+headers; until then VIDIOC_G_FMT fails and v4l2_try_start() returns an
+error. If the 16 output buffers fill up before that, ff_v4l2_context_
+enqueue_packet() returns EAGAIN and v4l2_receive_frame() keeps the packet
+for the next call, but the try_start failure that follows jumps to the
+fail path, which unrefs it. Every packet arriving in that window is lost,
+and the frames after it decode against missing references up to the next
+keyframe: blocks of wrong picture in every moving area.
+
+Seen on the SM-T550 (Venus, MSM8916) with Firefox and with the ffmpeg CLI:
+framemd5 against the software decoder showed 4-37 frames missing around
+frame 13-20 and every frame up to the next keyframe different, at 360p,
+480p, 720p and 1080p, varying from run to run with the header parsing
+time. GStreamer's v4l2h264dec on the same kernel was bit-exact (600/600).
+
+Wait for the source change (poll POLLPRI, 100 ms steps, at most 2 s) and
+retry the start while a packet is pending, instead of dropping it.
+---
+diff --git a/libavcodec/v4l2_m2m_dec.c b/libavcodec/v4l2_m2m_dec.c
+--- a/libavcodec/v4l2_m2m_dec.c
++++ b/libavcodec/v4l2_m2m_dec.c
+@@ -22,6 +22,7 @@
+  */
+ 
+ #include <linux/videodev2.h>
++#include <poll.h>
+ #include <sys/ioctl.h>
+ 
+ #include "libavutil/hwcontext.h"
+@@ -170,6 +171,21 @@
+ 
+     if (!s->draining) {
+         ret = v4l2_try_start(avctx);
++        /*
++         * The capture format is only known once the driver has parsed the
++         * stream headers (VIDIOC_G_FMT fails until then). If the output
++         * queue filled up first, the packet refused above (EAGAIN) is still
++         * pending, and the fail path below would drop it: every frame lost
++         * there breaks the references up to the next keyframe. Wait for the
++         * source change event instead (up to 2 s), then retry.
++         */
++        for (int i = 0; ret && ret != AVERROR(ENOMEM) && s->buf_pkt.size &&
++                        !capture->streamon && i < 20; i++) {
++            struct pollfd pfd = { .fd = s->fd, .events = POLLPRI };
++            if (poll(&pfd, 1, 100) < 0)
++                break;
++            ret = v4l2_try_start(avctx);
++        }
+         if (ret) {
+             /* can't recover */
+             if (ret != AVERROR(ENOMEM))

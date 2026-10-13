@@ -1,0 +1,24 @@
+# Boot splash theme and logo of the unofficial SM-T550 build, split out of gt510-tweaks (ISSUES 31): a package that
+# owns /usr/share/plymouth makes postmarketos-mkinitfs rebuild the initramfs on every one of its upgrades (apk marks
+# all directories of the old package as modified), and the logo under /usr/share/icons/hicolor reruns
+# gtk-update-icon-cache. These files rarely change, so only a bump of this package pays for that.
+# gt510-tweaks selects the theme (/usr/libexec/gt510-rebrand writes /etc/plymouth/plymouthd.conf).
+pkgname=gt510-branding
+pkgver=1
+pkgrel=0
+pkgdesc="SM-T550 (gt510wifi) unofficial build: boot splash theme and logo"
+url="https://postmarketos.org"
+arch="noarch"
+license="GPL-2.0-only"
+options="!check"
+replaces="gt510-tweaks"
+source="
+	sm-t550.plymouth
+	sm-t550.script
+	sm-t550-mainline.svg
+	"
+
+package() {
+	install -Dm644 "$srcdir"/sm-t550.plymouth "$srcdir"/sm-t550.script -t "$pkgdir"/usr/share/plymouth/themes/sm-t550/
+	install -Dm644 "$srcdir"/sm-t550-mainline.svg -t "$pkgdir"/usr/share/icons/hicolor/scalable/apps/
+}

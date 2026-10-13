@@ -1,19 +1,23 @@
 diff --git a/drivers/media/platform/qcom/venus/vdec.c b/drivers/media/platform/qcom/venus/vdec.c
-index fddde47..a727b42 100644
+index fddde47..e51c921 100644
 --- a/drivers/media/platform/qcom/venus/vdec.c
 +++ b/drivers/media/platform/qcom/venus/vdec.c
-@@ -1412,6 +1412,19 @@ static void vdec_vb2_buf_queue(struct vb2_buffer *vb)
+@@ -1412,6 +1412,23 @@ static void vdec_vb2_buf_queue(struct vb2_buffer *vb)
  		return;
  	}
  
 +	/*
-+	 * During a seek, keep capture buffers in the m2m context until the
-+	 * output queue is restarted: vdec_start_output() hands all of them to
-+	 * the firmware after the first input buffers. Submitting them here as
-+	 * well would give the firmware the same buffer twice.
++	 * During a seek that also stopped the capture side, keep capture
++	 * buffers in the m2m context until the output queue is restarted:
++	 * vdec_start_output() hands all of them to the firmware after the
++	 * first input buffers. Submitting them here as well would give the
++	 * firmware the same buffer twice. In an output-only seek the capture
++	 * side keeps running and nothing would hand them over later, so they
++	 * go to the firmware as usual.
 +	 */
 +	if (V4L2_TYPE_IS_CAPTURE(vb->vb2_queue->type) &&
-+	    inst->codec_state == VENUS_DEC_STATE_SEEK && !inst->streamon_out) {
++	    inst->codec_state == VENUS_DEC_STATE_SEEK && !inst->streamon_out &&
++	    !inst->streamon_cap) {
 +		v4l2_m2m_buf_queue(inst->m2m_ctx, vbuf);
 +		mutex_unlock(&inst->lock);
 +		return;

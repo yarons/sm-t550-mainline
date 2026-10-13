@@ -1,14 +1,16 @@
 #!/bin/sh
 # pmOS images may be systemd or OpenRC; enable the same services on either.
 if [ -d /run/systemd/system ] || [ -e /usr/lib/systemd/systemd ]; then
+	# --no-reload on every enable/disable/mask: each one otherwise reloads systemd, ~3.1 s on this SoC (17 calls
+	# made a tweaks upgrade take ~56 s, ISSUES 31); the single daemon-reload below picks all of them up.
 	# rmtfs (modem DSP -> audio) and iio-sensor-proxy come enabled via pmOS presets.
-	systemctl enable rmtfs.service hkdm.service gpsd-pds.service gt510-wcnss-nv.service gt510-xtra.timer >/dev/null 2>&1
+	systemctl enable --no-reload rmtfs.service hkdm.service gpsd-pds.service gt510-wcnss-nv.service \
+		gt510-xtra.timer >/dev/null 2>&1
 	# Wi-Fi tablet: no modem, no printing, no mDNS, no firmware-update daemon.
-	for u in ModemManager.service q6voiced.service cups.service cups.socket cups.path \
-		avahi-daemon.service avahi-daemon.socket fwupd.service; do
-		systemctl disable "$u" >/dev/null 2>&1
-		systemctl mask "$u" >/dev/null 2>&1
-	done
+	unneeded="ModemManager.service q6voiced.service cups.service cups.socket cups.path avahi-daemon.service
+		avahi-daemon.socket fwupd.service"
+	systemctl disable --no-reload $unneeded >/dev/null 2>&1
+	systemctl mask --no-reload $unneeded >/dev/null 2>&1
 	# Per-user background services with nothing to do on this device.
 	systemctl --global mask cellbroadcastd.service gvfs-afc-volume-monitor.service \
 		gvfs-gphoto2-volume-monitor.service gvfs-goa-volume-monitor.service \

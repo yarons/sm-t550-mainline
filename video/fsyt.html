@@ -1,0 +1,14 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>fsyt</title>
+<!-- YouTube's embedded player (Big Buck Bunny, Blender's upload) in an iframe that the page makes fullscreen by itself
+     (bench-profile pref full-screen-api.allow-trusted-requests-only=false): YouTube's own player CSS, overlays and
+     gradients in fullscreen, for ISSUES 23's black triangle. ?v=<id> picks another video. -->
+<style>html, body { margin: 0; height: 100%; background: #000; } iframe { border: 0; width: 100%; height: 100%; }</style>
+<iframe id="f" allow="autoplay; fullscreen; encrypted-media"></iframe>
+<script>
+const id = new URLSearchParams(location.search).get("v") || "aqz-KE-bpKQ";
+const f = document.getElementById("f");
+f.src = "https://www.youtube.com/embed/" + id + "?autoplay=1&mute=1&controls=1&playsinline=0";
+setTimeout(() => f.requestFullscreen().catch(e => { document.title = "fs-error " + e; }), 12000);
+</script>

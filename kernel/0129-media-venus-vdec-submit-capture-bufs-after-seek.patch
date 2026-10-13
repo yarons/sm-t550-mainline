@@ -19,8 +19,16 @@ would have done, and mark capture as started.
 Capture buffers queued while CAPTURE streams but OUTPUT is still off would
 normally go to the firmware straight from buf_queue, and then be submitted
 a second time by the above (Venus 1.8 firmware: Err_Fatal in vbuffer.c and
-a system error). So hold them back in the m2m context during a seek, like
-the pre-STREAMON ones, and submit them all in one place.
+a system error). So hold them back in the m2m context during such a seek,
+like the pre-STREAMON ones, and submit them all in one place.
+
+Only when the capture side was stopped as well (streamon_cap clear): in an
+output-only seek (FFmpeg's v4l2_decode_flush: STREAMOFF and STREAMON on
+OUTPUT, CAPTURE keeps streaming) nothing hands held-back buffers over
+later, so each seek stranded the capture buffers requeued in its window
+until the firmware had too few to decode (v3 of this patch: Firefox froze
+on YouTube; video/m2mflush.py strands 4 buffers per flush, decoding stops
+after the second).
 
 ---
 --- a/drivers/media/platform/qcom/venus/vdec.c
@@ -55,7 +63,7 @@ the pre-STREAMON ones, and submit them all in one place.
  			}
  		}
  		goto done;
-@@ -1390,6 +1411,19 @@
+@@ -1390,6 +1411,23 @@
  		v4l2_m2m_buf_done(vbuf, VB2_BUF_STATE_DONE);
  		v4l2_event_queue_fh(&inst->fh, &eos);
  		inst->next_buf_last = false;
@@ -64,13 +72,17 @@ the pre-STREAMON ones, and submit them all in one place.
 +	}
 +
 +	/*
-+	 * During a seek, keep capture buffers in the m2m context until the
-+	 * output queue is restarted: vdec_start_output() hands all of them to
-+	 * the firmware after the first input buffers. Submitting them here as
-+	 * well would give the firmware the same buffer twice.
++	 * During a seek that also stopped the capture side, keep capture
++	 * buffers in the m2m context until the output queue is restarted:
++	 * vdec_start_output() hands all of them to the firmware after the
++	 * first input buffers. Submitting them here as well would give the
++	 * firmware the same buffer twice. In an output-only seek the capture
++	 * side keeps running and nothing would hand them over later, so they
++	 * go to the firmware as usual.
 +	 */
 +	if (V4L2_TYPE_IS_CAPTURE(vb->vb2_queue->type) &&
-+	    inst->codec_state == VENUS_DEC_STATE_SEEK && !inst->streamon_out) {
++	    inst->codec_state == VENUS_DEC_STATE_SEEK && !inst->streamon_out &&
++	    !inst->streamon_cap) {
 +		v4l2_m2m_buf_queue(inst->m2m_ctx, vbuf);
  		mutex_unlock(&inst->lock);
  		return;

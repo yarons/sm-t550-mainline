@@ -3,7 +3,7 @@
 # (Firefox's self-relaunch drops URL arguments), H.264 via the system prefs, HW decode forced (1) or off (0); after
 # 35 s (autoplay allowed by pref) press F11 / f (fullscreen) with wtype, wait 12 s, then <shots> scanout screenshots (384 px wide strip
 # /tmp/ytshot-<tag>-strip.png) plus full-resolution crops of the region where the black triangle shows
-# (raw 768x1024 scanout x 408-768, y 0-260; /tmp/ytshot-<tag>-tri.png). EXTRA='user_pref(...);' adds a pref; REQ=<n> sets GT510_V4L2_REQUEUE_DELAY (ffmpeg r103+).
+# (raw 768x1024 scanout x 408-768, y 0-260; /tmp/ytshot-<tag>-tri.png). EXTRA='user_pref(...);' adds a pref; FXARGS='--kiosk' adds Firefox arguments; WAIT=<s> before fullscreen (default 35); REQ=<n> sets GT510_V4L2_REQUEUE_DELAY (ffmpeg r103+).
 export XDG_RUNTIME_DIR=/run/user/$(id -u) DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus WAYLAND_DISPLAY=wayland-0
 U=$1; T=$2; HW=$3; N=${4:-6}; P=/home/user/.cache/fxbench-prof
 VDEC=/dev/$(basename "$(dirname "$(grep -l qcom-venus-decoder /sys/class/video4linux/video*/name | head -1)")")
@@ -18,9 +18,10 @@ gdbus call --session --dest org.gnome.Mutter.DisplayConfig --object-path /org/gn
 	--method org.freedesktop.DBus.Properties.Set org.gnome.Mutter.DisplayConfig PowerSaveMode "<0>" >/dev/null 2>&1
 wtype -k Escape 2>/dev/null; sleep 1
 rm -f /tmp/ytshot-$T.moz*
-systemd-run --user --unit=ytshot-$T --collect -p KillMode=process env ${REQ:+GT510_V4L2_REQUEUE_DELAY=$REQ} MOZ_LOG=FFmpegVideo:4,PlatformDecoderModule:4 MOZ_LOG_FILE=/tmp/ytshot-$T.moz firefox-esr --no-remote --profile $P >/dev/null 2>&1
-sleep 35
-wtype -k F11; sleep 3; wtype f; sleep 12
+systemd-run --user --unit=ytshot-$T --collect -p KillMode=process env ${REQ:+GT510_V4L2_REQUEUE_DELAY=$REQ} MOZ_LOG=FFmpegVideo:4,PlatformDecoderModule:4 MOZ_LOG_FILE=/tmp/ytshot-$T.moz firefox-esr --no-remote --profile $P $FXARGS >/dev/null 2>&1
+sleep ${WAIT:-35}
+# F6 moves the keyboard focus from the address bar into the page, so YouTube gets the 'f' (fullscreen) key.
+wtype -k F11; sleep 3; wtype -k F6; sleep 1; wtype f; sleep 12
 venus=0; for p in $(pgrep -f firefox-esr); do venus=$((venus + $(ls -l /proc/$p/fd 2>/dev/null | grep -c $VDEC))); done
 echo "${SUDO_PW:-147147}" | sudo -S -p "" rm -f /tmp/ytshot-$T-*.png
 i=1; while [ $i -le $N ]; do

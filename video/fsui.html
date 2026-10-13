@@ -1,0 +1,39 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>fsui</title>
+<!-- ISSUES 23 black triangle, local reproducer: like YouTube's fullscreen player, a container goes fullscreen (requested
+     by the page; bench-profile pref full-screen-api.allow-trusted-requests-only=false) with the 16:9 video letterboxed
+     (1024x576 at y 96 on 1024x768) and UI ABOVE the video that changes several times a second: a caption line over the
+     video's lower edge and a progress bar + time at the bottom. Content above a hardware-decoded video makes WebRender
+     draw the video as an underlay and punch a cutout into every 1024x512 picture-cache tile it touches; the changing UI
+     redraws the lower tile row (dirty rects) again and again. ?ms=<n> update period (default 200). -->
+<style>
+html, body { margin: 0; height: 100%; background: #000; color: #fff; font: 22px sans-serif; }
+#p { position: relative; width: 640px; height: 360px; background: #000; overflow: hidden; }
+#p:fullscreen { width: 100vw; height: 100vh; }
+video { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: contain; }
+#cap { position: absolute; left: 0; right: 0; text-align: center; }
+#cap span { background: rgba(8, 8, 8, 0.75); padding: 2px 8px; }
+#bar { position: absolute; left: 12px; right: 12px; bottom: 40px; height: 4px; background: rgba(255, 255, 255, 0.3); }
+#fill { height: 100%; width: 0; background: #f00; }
+#time { position: absolute; left: 12px; bottom: 8px; font-size: 16px; }
+</style>
+<div id="p">
+  <video id="v" src="t1920x1080-100s.mp4" autoplay muted loop></video>
+  <div id="cap"><span id="capt"></span></div>
+  <div id="bar"><div id="fill"></div></div><div id="time"></div>
+</div>
+<script>
+const q = new URLSearchParams(location.search), ms = +(q.get("ms") || 200);
+const p = document.getElementById("p"), v = document.getElementById("v"), cap = document.getElementById("cap");
+function place() { const h = p.clientWidth * 9 / 16, top = (p.clientHeight - h) / 2; cap.style.top = (top + h - 60) + "px"; }
+new ResizeObserver(place).observe(p);
+let n = 0;
+setInterval(() => {
+  n++;
+  document.getElementById("capt").textContent = "caption line " + n + (n % 2 ? " — moving text" : "");
+  document.getElementById("fill").style.width = (v.duration ? 100 * v.currentTime / v.duration : n % 100) + "%";
+  document.getElementById("time").textContent = v.currentTime.toFixed(1) + " / " + (v.duration || 0).toFixed(1);
+}, ms);
+v.addEventListener("playing", () => setTimeout(() => p.requestFullscreen().catch(e => { document.title = "fs-error " + e; }), 2000), { once: true });
+</script>

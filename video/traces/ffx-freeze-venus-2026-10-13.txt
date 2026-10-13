@@ -1,0 +1,26 @@
+Firefox YouTube 1080p freeze (ISSUES 23, reported by d5c224, 2026-10-13 ~10:00), Venus-side check by session 36e367
+Kernel r40 (#41), ffmpeg r105, stock Mesa. Uptime ~2280-2330 s when checked (freeze began ~1765 s).
+
+dmesg: 1489x "qcom-venus: HW is overloaded, needed: 489600 max: 352800" at 1705-1765 s.
+  venus_pm_load_scale() runs on every OUTPUT (bitstream) buffer queued (helpers.c:525 session_process_buf) ->
+  one warning per frame; 489600 = 2 x 1080p@30 (8160 MB x 30 each); an instance counts from INST_INIT to INST_STOP.
+  load_scale_v1 only picks the clock (1080p30 alone 160 MHz; over the limit the top 228.57 MHz). Harmless.
+
+Stuck state: RDD pid 6568 holds 1 fd on /dev/video5; tid 6957 "MediaPDecoder #1" state S, wchan do_sys_poll.
+  ppoll args (/tmp/pollargs.py, read from /proc/6568/mem):
+    syscall 73 (ppoll), nfds 1, timeout NULL (infinite)
+    fd 27 -> /dev/video5  events 0x147 [POLLIN|POLLPRI|POLLOUT|POLLRDNORM|POLLWRNORM]  revents 0x0
+  => v4l2_m2m_poll: no POLLERR (a queue is streaming with buffers queued in the driver), no done buffer, no event.
+
+vtrace.sh /tmp/vt-stuck.txt sleep 10 (all venus_core/venus_dec functions + kprobes): 0 lines -> no QBUF, no buffer
+  sent to the firmware, none returned in 10 s.
+vtrace.sh /tmp/vt-gst.txt gst-launch-1.0 ... ! v4l2h264dec ! fakesink num-buffers=60 (a 3rd session): 4 s,
+  5636 lines: von 2, voff 2, vqbuf 144, vsub 143, vdone 143, vflush 1, vevt 43 -> firmware alive, tracer works;
+  the overload warning reappeared at 489600 (gst session + the idle stuck Firefox session).
+
+Candidates (to be decided by a vtrace ring capture across the freeze):
+  (1) capture starvation: firmware holds input but has no capture buffer (all held by Firefox/ffmpeg: r103
+      requeue delay 16/32, frames kept by WebRender) -> no frame, no input back.
+  (2) kernel 0129 SEEK gate: after OUTPUT STREAMOFF (SEEK), CAPTURE buffers queued while OUTPUT is not streaming
+      are parked until the next OUTPUT STREAMON; a flush that STREAMOFFs OUTPUT and waits for a frame before
+      STREAMON OUTPUT gives exactly this poll state.

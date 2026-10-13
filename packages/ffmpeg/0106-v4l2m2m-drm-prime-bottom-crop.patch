@@ -1,0 +1,40 @@
+From: gt510 <gt510@localhost>
+Subject: avcodec/v4l2m2m: report the rows below the picture as a bottom crop
+
+0102 makes single-buffer DRM PRIME frames report the coded height (e.g.
+1088 for 1080p, 384 for 360p) so Firefox finds the chroma plane at pitch *
+frame->height. Firefox then showed those padding rows too: a green band
+(all-zero YUV) along the bottom of the picture, 24 rows at 360p, slightly
+squashed into the display size. Firefox sets apply_cropping = 0 and shows
+frame->height - crop_bottom rows, so set crop_bottom to the padding.
+Users with apply_cropping (the default) get the old height back from
+av_frame_apply_cropping().
+---
+diff --git a/libavcodec/v4l2_buffers.c b/libavcodec/v4l2_buffers.c
+--- a/libavcodec/v4l2_buffers.c
++++ b/libavcodec/v4l2_buffers.c
+@@ -644,16 +644,20 @@
+     /*
+      * A DRM PRIME user (Firefox) finds the chroma plane of a single-buffer
+      * NV12/YUV420 frame at pitch * frame->height, but the buffer holds the
+-     * coded (aligned) height, e.g. 1088 rows for 1080p: report that height.
+-     * A bottom crop would not help, av_frame_apply_cropping() folds it back
+-     * into the height for hwaccel formats.
++     * coded (aligned) height, e.g. 1088 rows for 1080p or 384 for 360p:
++     * report that height, and the rows below the picture as a bottom crop.
++     * Firefox sets apply_cropping = 0, so the crop reaches it and it shows
++     * frame->height - crop_bottom rows; with apply_cropping (the default)
++     * av_frame_apply_cropping() folds the crop back into the height.
+      */
+     if (frame->format == AV_PIX_FMT_DRM_PRIME && avbuf->num_planes == 1) {
+         int coded = V4L2_TYPE_IS_MULTIPLANAR(avbuf->context->type) ?
+                     avbuf->context->format.fmt.pix_mp.height :
+                     avbuf->context->format.fmt.pix.height;
+-        if (coded > frame->height)
++        if (coded > frame->height) {
++            frame->crop_bottom = coded - frame->height;
+             frame->height = coded;
++        }
+     }
+     frame->sample_aspect_ratio = avbuf->context->sample_aspect_ratio;
+ 

@@ -1,7 +1,7 @@
 # Local tweaks for the Samsung Galaxy Tab A 9.7 2015 (SM-T550, gt510wifi) on device-qcom-msm8916.
 pkgname=gt510-tweaks
 pkgver=1
-pkgrel=47
+pkgrel=49
 pkgdesc="SM-T550 (gt510wifi) integration: audio, charger, GPS, rotation, camera, trimmed services; Phosh"
 url="https://postmarketos.org"
 arch="noarch"
@@ -18,6 +18,7 @@ depends="
 	ffmpeg-libavutil<8.1.3
 	showtime=50.0-r100
 	phoc=0.57.0-r100
+	gt510-branding
 	alsa-utils
 	iio-sensor-proxy
 	phosh-mobile-settings
@@ -110,9 +111,6 @@ source="
 	80-gt510-system.preset
 	gt510-retroarch-defaults
 	gt510-rebrand
-	sm-t550.plymouth
-	sm-t550.script
-	sm-t550-mainline.svg
 	20_gt510-branding.gschema.override
 	gt510-wcnss-nv
 	gt510-wcnss-nv.service
@@ -120,8 +118,10 @@ source="
 
 package() {
 	install -Dm644 "$srcdir"/gt510-modules.conf "$pkgdir"/etc/modules-load.d/gt510.conf
-	# Accelerometer Z sign (auto-rotate via iio-sensor-proxy)
-	install -Dm644 "$srcdir"/61-gt510-accel.rules -t "$pkgdir"/usr/lib/udev/rules.d/
+	# Accelerometer Z sign (auto-rotate via iio-sensor-proxy). /etc/udev/rules.d, not /usr/lib/udev/rules.d: apk marks
+	# every directory of the old package as modified on an upgrade, parents included, so owning /usr/lib/udev made
+	# postmarketos-mkinitfs rebuild the initramfs (~23 s) on every tweaks upgrade (ISSUES 31)
+	install -Dm644 "$srcdir"/61-gt510-accel.rules -t "$pkgdir"/etc/udev/rules.d/
 	# /etc/udev/hwdb.d, not /usr/lib/udev/hwdb.d: the systemd and mkinitfs apk triggers watch the latter, so every
 	# tweaks upgrade recompiled hwdb (twice, with post-upgrade) and rebuilt the initramfs (ISSUES 31)
 	install -Dm644 "$srcdir"/61-gt510-back-escape.hwdb -t "$pkgdir"/etc/udev/hwdb.d/
@@ -179,11 +179,10 @@ package() {
 		"$pkgdir"/usr/lib/systemd/system-preset/80-gt510.preset
 	# RetroArch: touch in menus, fullscreen, no GTK Mesa workarounds, no launch splash wait
 	install -Dm755 "$srcdir"/gt510-retroarch-defaults -t "$pkgdir"/usr/libexec/
-	# Unofficial build branding: OS name/URLs (os-release, issue via gt510-rebrand), neutral boot splash,
+	# Unofficial build branding: OS name/URLs (os-release, issue via gt510-rebrand), neutral boot splash (theme and
+	# logo in gt510-branding: owning /usr/share/plymouth would rebuild the initramfs on every tweaks upgrade),
 	# GNOME wallpaper + default accent instead of postmarketOS/Nura's.
 	install -Dm755 "$srcdir"/gt510-rebrand -t "$pkgdir"/usr/libexec/
-	install -Dm644 "$srcdir"/sm-t550.plymouth "$srcdir"/sm-t550.script -t "$pkgdir"/usr/share/plymouth/themes/sm-t550/
-	install -Dm644 "$srcdir"/sm-t550-mainline.svg -t "$pkgdir"/usr/share/icons/hicolor/scalable/apps/
 	install -Dm644 "$srcdir"/20_gt510-branding.gschema.override -t "$pkgdir"/usr/share/glib-2.0/schemas/
 	# This tablet's own Wi-Fi/BT NV, copied once from the stock system partition (Samsung's file, never shipped)
 	install -Dm755 "$srcdir"/gt510-wcnss-nv -t "$pkgdir"/usr/libexec/

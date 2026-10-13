@@ -1,0 +1,102 @@
+From: gt510-pmos (local, not upstream)
+Subject: [PATCH] freedreno/a3xx: split draws of more than 256 instances
+
+CP_DRAW_INDX carries (instances - 1) in an 8-bit field (fd_draw() takes a
+uint8_t), so on a3xx a draw of N > 256 instances only drew N % 256 of them
+(gl-hang/fdtri on FD307: 257 -> 1, 1000 -> 232, 4096 -> 256, both with
+gl_InstanceID and with per-instance attributes). WebRender batches up to
+8192 instances per draw. Split such draws into chunks of at most 256
+instances. VFD_INSTANCEID_OFFSET advances gl_InstanceID but not the
+instanced attribute fetches (measured), so for each chunk the instanced
+vertex buffers are re-emitted with their offsets advanced to the chunk's
+first instance; the chunk size is a multiple of every instance divisor.
+
+diff --git a/src/gallium/drivers/freedreno/a3xx/fd3_draw.c b/src/gallium/drivers/freedreno/a3xx/fd3_draw.c
+index c581ba4..e60a171 100644
+--- a/src/gallium/drivers/freedreno/a3xx/fd3_draw.c
++++ b/src/gallium/drivers/freedreno/a3xx/fd3_draw.c
+@@ -72,9 +72,54 @@ draw_impl(struct fd_context *ctx, struct fd_ringbuffer *ring,
+        fd3_emit_get_vp(emit)->writes_psize && (info->mode == MESA_PRIM_POINTS))
+       primtype = DI_PT_POINTLIST_PSIZE;
+ 
+-   fd_draw_emit(ctx->batch, ring, primtype,
+-                emit->binning_pass ? IGNORE_VISIBILITY : USE_VISIBILITY, info,
+-                emit->draw, index_offset);
++   /* CP_DRAW_INDX carries (instances - 1) in 8 bits, so a draw of more than
++    * 256 instances only drew (instances % 256) of them.  Split it into chunks
++    * of at most 256 instances: VFD_INSTANCEID_OFFSET advances gl_InstanceID,
++    * but not the instanced attribute fetches, so those are re-emitted with
++    * their buffer offsets advanced to the chunk's first instance.  The chunk
++    * size must be a multiple of every instance divisor.
++    */
++   unsigned step = 256;
++   bool instanced_vbo = false;
++   for (unsigned i = 0; i < emit->vtx->vtx->num_elements; i++) {
++      unsigned d = emit->vtx->vtx->pipe[i].instance_divisor;
++      if (d) {
++         instanced_vbo = true;
++         step -= step % d;
++      }
++   }
++   if (step == 0) /* a divisor above 256: no split, as before */
++      step = info->instance_count;
++
++   struct pipe_draw_info chunk = *info;
++   unsigned base = 0;
++   do {
++      chunk.instance_count = MIN2(info->instance_count - base, step);
++
++      if (base) {
++         OUT_PKT0(ring, REG_A3XX_VFD_INSTANCEID_OFFSET, 1);
++         OUT_RING(ring, info->start_instance + base);
++         if (instanced_vbo) {
++            emit->instance_base = base;
++            fd3_emit_vertex_bufs(ring, emit);
++         }
++      }
++
++      fd_draw_emit(ctx->batch, ring, primtype,
++                   emit->binning_pass ? IGNORE_VISIBILITY : USE_VISIBILITY,
++                   &chunk, emit->draw, index_offset);
++      base += step;
++   } while (base < info->instance_count);
++
++   /* leave the state as an unsplit draw would, for the next draw */
++   if (base > step) {
++      OUT_PKT0(ring, REG_A3XX_VFD_INSTANCEID_OFFSET, 1);
++      OUT_RING(ring, info->start_instance);
++      if (instanced_vbo) {
++         emit->instance_base = 0;
++         fd3_emit_vertex_bufs(ring, emit);
++      }
++   }
+ }
+ 
+ static bool
+diff --git a/src/gallium/drivers/freedreno/a3xx/fd3_emit.c b/src/gallium/drivers/freedreno/a3xx/fd3_emit.c
+index 36ffccf..3f46e13 100644
+--- a/src/gallium/drivers/freedreno/a3xx/fd3_emit.c
++++ b/src/gallium/drivers/freedreno/a3xx/fd3_emit.c
+@@ -424,6 +424,8 @@ fd3_emit_vertex_bufs(struct fd_ringbuffer *ring, struct fd3_emit *emit)
+                            (vtxcnt_regid != regid(63, 0));
+          bool isint = util_format_is_pure_integer(pfmt);
+          uint32_t off = vb->buffer_offset + elem->src_offset;
++         if (elem->instance_divisor)
++            off += emit->instance_base / elem->instance_divisor * elem->src_stride;
+          uint32_t fs = util_format_get_blocksize(pfmt);
+ 
+          assert(fmt != VFMT_NONE);
+diff --git a/src/gallium/drivers/freedreno/a3xx/fd3_emit.h b/src/gallium/drivers/freedreno/a3xx/fd3_emit.h
+index 96e4765..81c2bc1 100644
+--- a/src/gallium/drivers/freedreno/a3xx/fd3_emit.h
++++ b/src/gallium/drivers/freedreno/a3xx/fd3_emit.h
+@@ -41,6 +41,9 @@ struct fd3_emit {
+    bool rasterflat;
+    bool skip_consts;
+ 
++   /* first instance of the current chunk of a split instanced draw (fd3_draw.c) */
++   unsigned instance_base;
++
+    /* cached to avoid repeated lookups of same variants: */
+    const struct ir3_shader_variant *vs, *fs;
+ };

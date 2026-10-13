@@ -1,7 +1,8 @@
 #!/bin/sh
 # fxshot.sh <url> <tag> <hw 1|0> [shots] — Firefox (persistent bench profile) plays <url> with hardware decoding
 # forced (1) or disabled (0); after 15 s, grabs <shots> screenshots back to back (kmsgrab, 256 px wide) into
-# /tmp/fxshot-<tag>-strip.png to look for corruption. EXTRA='user_pref(...);' adds one more pref; FXARGS='--kiosk' adds Firefox arguments; FFLIB=<dir> runs Firefox with LD_LIBRARY_PATH=<dir> (test libavcodec builds). Venus open + Firefox CPU are printed.
+# /tmp/fxshot-<tag>-strip.png to look for corruption. EXTRA='user_pref(...);' adds one more pref; FXARGS='--kiosk' adds Firefox arguments; FFLIB=<dir> runs Firefox with LD_LIBRARY_PATH=<dir> (test libavcodec builds); FXENV='VAR=value …' adds environment
+# (e.g. FD_MESA_DEBUG=nobin); SCALE=<px> sets the strip's per-shot width (default 256, 768 = full resolution). Venus open + Firefox CPU are printed.
 VDEC=/dev/$(basename "$(dirname "$(grep -l qcom-venus-decoder /sys/class/video4linux/video*/name | head -1)")")  # node moves between boots
 export XDG_RUNTIME_DIR=/run/user/$(id -u)
 U=$1; T=$2; HW=$3; N=${4:-8}
@@ -24,14 +25,14 @@ if [ -n "$FFLIB" ]; then
 	# Firefox restarts itself once with a changed library path; under systemd-run that first exit stops the unit.
 	WAYLAND_DISPLAY=wayland-0 LD_LIBRARY_PATH=$FFLIB setsid nohup firefox-esr --no-remote --profile $P "$U" >/dev/null 2>&1 &
 else
-	systemd-run --user --unit=fxshot-$T --collect -p KillMode=process firefox-esr --no-remote --profile $P $FXARGS "$U" >/dev/null 2>&1
+	systemd-run --user --unit=fxshot-$T --collect -p KillMode=process env $FXENV firefox-esr --no-remote --profile $P $FXARGS "$U" >/dev/null 2>&1
 fi
 sleep ${WAIT:-15}
 venus=0; for p in $(pgrep -f firefox-esr); do venus=$((venus + $(ls -l /proc/$p/fd 2>/dev/null | grep -c $VDEC))); done
 echo "${SUDO_PW:-147147}" | sudo -S -p "" rm -f /tmp/fxshot-$T-*.png
 i=1; while [ $i -le $N ]; do
 	echo "${SUDO_PW:-147147}" | sudo -S -p "" ffmpeg -hide_banner -loglevel error -y -device /dev/dri/card0 -f kmsgrab -i - \
-		-vf hwdownload,format=bgr0,scale=256:-1 -frames:v 1 /tmp/fxshot-$T-$i.png
+		-vf hwdownload,format=bgr0,scale=${SCALE:-256}:-1 -frames:v 1 /tmp/fxshot-$T-$i.png
 	i=$((i + 1))
 done
 echo "${SUDO_PW:-147147}" | sudo -S -p "" sh -c "chmod 644 /tmp/fxshot-$T-*.png"

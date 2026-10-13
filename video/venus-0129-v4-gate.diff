@@ -1,0 +1,34 @@
+DRAFT (2026-10-13, session 36e367) — NOT applied: fix for kernel/0129's SEEK gate, pending the ISSUES 23 freeze
+trace. 0129 parks CAPTURE buffers queued while codec_state == SEEK && !streamon_out. In an OUTPUT-only seek (the
+V4L2 stateful-decoder seek; FFmpeg's v4l2_decode_flush: STREAMOFF OUTPUT, STREAMON OUTPUT, DECODER_CMD START)
+the capture side keeps running (streamon_cap = 1), so vdec_start_output() takes its streamon_cap branch, which only
+queues DPB buffers: buffers parked in that window are never submitted (venus' m2m device_run is empty). A capture
+QBUF from another thread blocks on inst->lock during the OUTPUT flush in vdec_stop_output() and then lands exactly
+in the window. Every flush can strand buffers until the firmware has none left: sluggish, then frozen
+(video/traces/ffx-freeze-venus-2026-10-13.txt). Only park when the capture side has not started in the firmware;
+that is the case vdec_start_output() hands over with venus_helper_process_initial_cap_bufs().
+
+--- a/drivers/media/platform/qcom/venus/vdec.c
++++ b/drivers/media/platform/qcom/venus/vdec.c
+@@ (in vdec_vb2_buf_queue, the 0129 gate)
+ 	/*
+-	 * During a seek, keep capture buffers in the m2m context until the
+-	 * output queue is restarted: vdec_start_output() hands all of them to
+-	 * the firmware after the first input buffers. Submitting them here as
+-	 * well would give the firmware the same buffer twice.
++	 * During a seek that also stopped the capture side, keep capture
++	 * buffers in the m2m context until the output queue is restarted:
++	 * vdec_start_output() hands all of them to the firmware after the
++	 * first input buffers. Submitting them here as well would give the
++	 * firmware the same buffer twice. In an output-only seek the capture
++	 * side keeps running and nothing would hand them over later, so they
++	 * go to the firmware as usual.
+ 	 */
+ 	if (V4L2_TYPE_IS_CAPTURE(vb->vb2_queue->type) &&
+-	    inst->codec_state == VENUS_DEC_STATE_SEEK && !inst->streamon_out) {
++	    inst->codec_state == VENUS_DEC_STATE_SEEK && !inst->streamon_out &&
++	    !inst->streamon_cap) {
+ 		v4l2_m2m_buf_queue(inst->m2m_ctx, vbuf);
+ 		mutex_unlock(&inst->lock);
+ 		return;
+ 	}

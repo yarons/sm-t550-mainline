@@ -16,9 +16,15 @@ The chronological log of today's work is archived verbatim at the end of CONTINU
 
 INSTALLED on the tablet (17:35; boot 17:24:47): kernel r40 (d5c224: r39 + CPR 0132), phoc 0.57.0-r100 (mine, BT.709),
 snapshot r121 (d5c224/e173ce), gt510-tweaks r47 (mine 18:00: r46 + phoc=0.57.0-r100 pin) — the list below is the 14:12 state: kernel r39 (#40, taint 0), gtk4.0 4.24.1-r100, showtime
-50.0-r100, snapshot 51.0-r115, libcamera 99990.7.2-r113 (d5c224, 15:10; r112 = its AWB fix), ffmpeg-libavcodec 8.1.2-r104 (d5c224's
-Firefox fixes), mesa 26.2.4-r100, gt510-tweaks 1-r43 (d5c224: pins gtk4.0=4.24.1-r100, showtime=50.0-r100, ffmpeg
+50.0-r100, snapshot 51.0-r115, libcamera 99990.7.2-r113 (d5c224, 15:10; r112 = its AWB fix), ffmpeg-libavcodec 8.1.2-r105 (d5c224, 21:4x:
+h264_v4l2m2m bit-exact at 360p-1080p, YouTube blocks fixed), mesa 26.2.4-r100, gt510-tweaks 1-r43 (d5c224: pins gtk4.0=4.24.1-r100, showtime=50.0-r100, ffmpeg
 via ffmpeg-libavcodec>=8.1.2-r103 + ffmpeg-libavutil<8.1.3). Snapshot is NOT pinned (Alpine 51.x would replace r115).
+
+Black triangle (ISSUES 23, tablet session 2026-10-13): fdtri found a real Mesa bug, a3xx draws only (instances % 256);
+local fix packages/mesa/0102 (NOT in APKBUILD; test Mesa ~/mesatest264i on the tablet). The triangle did not reproduce
+on stock Mesa that day, so 0102 is not proven as its fix. NEXT: reproduce it on stock (Yaron's clip + fullscreen as
+10-06), then A/B 0102; FD_MESA_DEBUG=nobin/noscis/sysmem still untested. ffmpeg r105 INSTALLED 2026-10-06 21:4x (0105
+packet-loss fix + 0106 crop: YouTube blocks gone) — not yet pushed.
 
 Verified details:
 - Kernel **r40** (#41, d5c224, colima kernel73 8 min) = r39 + 0132 (CPR open loop from the per-chip fuses, ISSUES 28):
@@ -120,7 +126,7 @@ re-index after seeding: copy as root, then in ONE container `pmbootstrap -y chro
 COORDINATION (shared tablet): d5c224 = Firefox #23, 5 MP stills #24, CPR #28, tweaks r42/r43; 4d591a = A2DP #25, GPS
 #29, off-mode charging #30; e173ce = #27 spec cross-check, #32 camera. Message before any reboot, kernel install,
 camera/Venus/GPU-heavy run or apk add (apk takes a lock: check `pgrep -x apk`); announce public pushes. Public repo
-last pushed 49f097a (17:5x): assemble-public.sh REPLACES ~/workspace/gt510-public — park .git outside and restore it.
+last pushed 148cf5b (18:05, d0acb3: tweaks r47 phoc pin): assemble-public.sh REPLACES ~/workspace/gt510-public — park .git outside and restore it.
 
 TRAPS learned today: a hostname probe inside a stdin-piping ssh wrapper must use `ssh -n`, or it eats the piped
 file (gssh 17:20: truncated copies until fixed) · ./gssh went to the POCO F1 (172.16.42.1 over USB) at 15:16 — fixed 15:22: gssh now uses USB only
@@ -230,7 +236,7 @@ drop parked (READONLY) capture buffers on capture STREAMOFF (ours). REVERTED: 01
   emails/coordinates/the tablet password), move `.git` out and back around it, commit (author Yaron Shahrabani
   <406826+yarons@users.noreply.github.com>, `Co-Authored-By` trailer), scan the diff, push. `review/` is never
   published (it holds the scrub map). Yaron's rules: no photos/raw camera dumps, name yes / email no, GPL-2.0.
-  HEAD 49f097a (2026-10-06 17:5x, d5c224: kernel 0132 CPR fuses + cprtest, snapshot r121 0105v3/0107, tweaks r46, ISSUES
+  HEAD 148cf5b (2026-10-06 18:05, d0acb3: tweaks r47 phoc pin, ISSUES 21 g done); before 49f097a (17:5x, d5c224: kernel 0132 CPR fuses + cprtest, snapshot r121 0105v3/0107, tweaks r46, ISSUES
   23/24/28); before 059574f (2026-10-06 15:20: phoc r100 BT.709 patches + colortest.sh, snapshot 0105/0106 + libcamera 0111 +
   tweaks r45 marked in progress; before 2d9052d: showtime/snapshot packages, ffmpeg 0103/0104; before 75a77b7 upstream/venus hand-off; Venus 0129-0131, gtk4.0/snapshot/libcamera/ffmpeg local patches, notes ISSUES 21-28; before: 06ed139). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).
 - Release images: `pmos-gt510.sh install-public` (no SSH keys, sshd off, UTC, password 147147) + `release`

@@ -1,7 +1,7 @@
 #!/bin/sh
 # vtrace.sh <outfile> <cmd…> — (root) ftrace of the Venus decoder around a command run as `user`: every venus_core/
-# venus_dec function call (function tracer) plus kprobes with arguments: STREAMON/OFF per queue (type 9 = OUTPUT/
-# bitstream, 10 = CAPTURE/frames), QBUF, buffers sent to the firmware, buffers back (buf_type 1 input, 2 output,
+# venus_dec function call (function tracer) plus kprobes with arguments: STREAMON/OFF per queue (type 10 = OUTPUT/
+# bitstream, 9 = CAPTURE/frames: V4L2_BUF_TYPE_VIDEO_*_MPLANE), QBUF, buffers sent to the firmware, buffers back (buf_type 1 input, 2 output,
 # tag, bytesused, HFI flags), flushes, firmware events (ev 4 = session error, err = HFI error code).
 T=/sys/kernel/tracing
 O=$1; shift

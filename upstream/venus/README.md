@@ -1,5 +1,12 @@
 # Venus upstream hand-off (gt510 / SM-T550) — Yaron reviews, signs off, sends
 
+> **HOLD A (2026-10-13):** the buf_queue gate in our fixup (`heidelberg-2-2-fixup.diff`, also quoted in
+> `reply-heidelberg-2-2.txt`) parks capture buffers in an OUTPUT-only seek too (`streamon_cap` = 1), where nothing
+> submits them later: suspected cause of the Firefox/YouTube freeze (ISSUES 23, trace
+> `video/traces/ffx-freeze-venus-2026-10-13.txt`). Corrected gate drafted in `video/venus-0129-v4-gate.diff`
+> (adds `!inst->streamon_cap`). Don't send A until it's verified and the fixup/reply are updated. If A was already
+> sent, a follow-up correction is needed. B (0130) and C (encoder) are unaffected.
+
 Kernel policy (Documentation/process/coding-assistants.rst, re-read 2026-10-06): AI-assisted patches are allowed
 with `Assisted-by: claude-opus-5-5`; the AI must NOT add `Signed-off-by` and never sends anything. You review, add
 your `Signed-off-by` (DCO) under the `Assisted-by:` line, and send. Recipients below are from

@@ -1,5 +1,6 @@
 # Alpine main/mesa 26.2.4-r0 + gt510 0100 (freedreno a3xx: GTK4 GL renderer without the
 # IR3_SHADER_DEBUG=nouboopt / FD_MESA_DEBUG=inorder workarounds). pkgrel 100+ = local.
+# r101: + 0102 (freedreno a3xx: split draws of more than 256 instances; CP_DRAW_INDX drew only N % 256).
 # SLIM for the SM-T550 (r101): gallium freedreno + llvmpipe (swrast fallback), GL/GLES/EGL/GBM only; no Vulkan,
 # VA or rusticl — exactly the mesa subpackages the tablet installs. pmbootstrap cross-builds with crossdirect,
 # which compiles Rust (rusticl, nouveau NAK) for x86_64 ("Relocations in generic ELF (EM: 62)" at the link), and
@@ -8,7 +9,7 @@
 maintainer="team/alpine-desktop <achill@achill.org>"
 pkgname=mesa
 pkgver=26.2.4
-pkgrel=100
+pkgrel=101
 pkgdesc="Mesa DRI OpenGL library"
 url="https://www.mesa3d.org"
 arch="all"
@@ -80,6 +81,7 @@ source="https://mesa.freedesktop.org/archive/mesa-${pkgver/_/-}.tar.xz
 	riscv64-tls.patch
 	llvm23.patch
 	0100-gt510-freedreno-a3xx-gtk4-gl.patch
+	0102-freedreno-a3xx-split-draws-over-256-instances.patch
 	"
 builddir="$srcdir/mesa-${pkgver/_/-}"
 options="!check" # TODO

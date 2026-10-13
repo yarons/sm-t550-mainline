@@ -15,7 +15,7 @@
 maintainer="Achill Gilgenast <achill@achill.org>"
 pkgname=ffmpeg
 pkgver=8.1.2
-pkgrel=104
+pkgrel=105
 pkgdesc="Complete and free Internet live audio and video broadcasting solution for Linux/Unix"
 url="https://ffmpeg.org/"
 arch="all"
@@ -96,6 +96,8 @@ source="https://ffmpeg.org/releases/ffmpeg-$pkgver.tar.xz
 	0102-v4l2m2m-delay-capture-requeue-and-coded-height.patch
 	0103-v4l2m2m-longer-tunable-requeue-delay.patch
 	0104-v4l2m2m-requeue-delay-guard.patch
+	0105-v4l2m2m-keep-pending-packet-until-capture-format.patch
+	0106-v4l2m2m-drm-prime-bottom-crop.patch
 	"
 options="!check" # tests/data/hls-lists.append.m3u8 fails
 
@@ -411,4 +413,6 @@ a684319943ed9b6fd49f12148ca9ec8ef9375e34d5cd65c5afdf862b5f4912c70a2f2d15263e08b5
 c1d42975329bbfa9b68b5a5f80babacfa0507afa623cb6b3acb7c36182e27702498df26762356b21883cf30d4a88d9de619be947cec45eadd74438af570f4dd7  0102-v4l2m2m-delay-capture-requeue-and-coded-height.patch
 328c6242e7cb342c2b941e6db17a1d9cbba4f34f8b1b5090d455d6079d26ed4aca529fba7dfb6ec2533cc3f7e93c9a6e557e7e863c9beb156235e3c8ec4d938c  0103-v4l2m2m-longer-tunable-requeue-delay.patch
 4c57e843cbc2ce951a081ff483b1af671a17dd2e33366df8de6c4720ef807f4d75996f552210d4064d740877e4efef4aaa68db7c4ce9cd7f2991064595592ad8  0104-v4l2m2m-requeue-delay-guard.patch
+d18a253de179c13b1e2901700887852bd6aa9f5a6c73c90dd9d7a3b981bfc0fab3420118d9670260ec837c086901c1ec2f500ba272a3786cedd1a3e932d0e96a  0105-v4l2m2m-keep-pending-packet-until-capture-format.patch
+bb57dabc83570878c5483717e3a80a4ce69757149852294695bc44c0c29853e4ee1cef62c37342037e4ca5ccf15cff6401abac61ef9e3757cd8320ea19f189eb  0106-v4l2m2m-drm-prime-bottom-crop.patch
 "
