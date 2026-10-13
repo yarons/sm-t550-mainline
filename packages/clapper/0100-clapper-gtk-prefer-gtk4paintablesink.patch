@@ -1,20 +1,44 @@
 From: gt510 <gt510@localhost>
-Subject: clapper-gtk: prefer gtk4paintablesink for video
+Subject: clapper-gtk: video through gtk4paintablesink and GtkGraphicsOffload
 
 ClapperGtkVideo always plays into glsinkbin + clappersink on GStreamer
-1.24+. That turns every decoded frame into a GL texture which GTK has to
-draw itself; with hardware-decoded dmabufs on an Adreno 306 (SM-T550,
-Venus H.264 decoder) 1080p then runs at about 10 fps, the same as GNOME
-Showtime did through glsinkbin.
+1.24+. On SM-T550 (Adreno 306, Venus H.264 decoder, phoc) that sink does
+not work at all ("Configured videosink glsinkbin0 is not working", no
+picture), and where it works it turns every frame into a GL texture that
+GTK has to draw itself.
 
 gtk4paintablesink (gst-plugins-rs) accepts DMA_DRM buffers and hands them
-to GTK as GdkDmabufTextures, which GTK can offload to the compositor, and
-ClapperGtkVideo already wraps a sink's "paintable" in a GtkPicture. Use it
-when it is installed; CLAPPER_GTK4PAINTABLESINK=0 restores the old path.
+to GTK as GdkDmabufTextures, and ClapperGtkVideo already wraps a sink's
+"paintable" in a GtkPicture. Use it when it is installed
+(CLAPPER_GTK4PAINTABLESINK=0 restores the old path), and put the picture
+in a GtkGraphicsOffload with a black background, as GNOME Showtime does:
+only then does GTK offload the frames to the compositor. A YouTube 1080p
+H.264 stream (clapper-enhancers yt-dlp) then shows at ~25 fps instead of
+10 fps with GTK drawing each frame.
 ---
 --- a/src/lib/clapper-gtk/clapper-gtk-video.c
 +++ b/src/lib/clapper-gtk/clapper-gtk-video.c
-@@ -1197,6 +1197,7 @@
+@@ -789,8 +789,17 @@
+ 
+     if (G_LIKELY (paintable != NULL)) {
+       if (GDK_IS_PAINTABLE (paintable)) {
+-        widget = g_object_ref_sink (gtk_picture_new ());
+-        gtk_picture_set_paintable (GTK_PICTURE (widget), GDK_PAINTABLE (paintable));
++        GtkWidget *picture = gtk_picture_new ();
++
++        gtk_picture_set_paintable (GTK_PICTURE (picture), GDK_PAINTABLE (paintable));
++#if GTK_CHECK_VERSION(4,16,0)
++        /* GTK hands dmabuf frames to the compositor (a subsurface) only
++         * inside a GtkGraphicsOffload; a bare GtkPicture is drawn by GTK */
++        widget = g_object_ref_sink (gtk_graphics_offload_new (picture));
++        gtk_graphics_offload_set_black_background (GTK_GRAPHICS_OFFLOAD (widget), TRUE);
++#else
++        widget = g_object_ref_sink (picture);
++#endif
+       }
+       g_object_unref (paintable);
+     }
+@@ -1197,6 +1206,7 @@
    GstElement *vsink;
    ClapperPlayer *player;
    ClapperQueue *queue;
@@ -22,7 +46,7 @@ when it is installed; CLAPPER_GTK4PAINTABLESINK=0 restores the old path.
  
    G_OBJECT_CLASS (parent_class)->constructed (object);
  
-@@ -1208,11 +1209,27 @@
+@@ -1208,11 +1218,27 @@
    g_signal_connect (player, "notify::video-sink",
        G_CALLBACK (_video_sink_changed_cb), self);
  

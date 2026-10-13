@@ -3,7 +3,7 @@
 # Maintainer: Willow Barraco <contact@willowbarraco.fr>
 pkgname=clapper
 pkgver=0.10.0
-pkgrel=100
+pkgrel=101
 pkgdesc="Modern media player designed for simplicity and ease of use"
 url="https://github.com/Rafostar/clapper"
 arch="all"

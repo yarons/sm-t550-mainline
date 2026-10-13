@@ -13,10 +13,12 @@ Earlier versions of this section are archived verbatim at the end of CONTINUATIO
 ("Archived 2026-10-06 13:25", "Archived 2026-10-13 13:40"). Findings: ISSUES 21 (decode/playback, a-h), 26 (encoder),
 31 (tweaks upgrade cost), 23 (Firefox, d5c224's).
 
-INSTALLED (read back 13:35; boot 12:43, kernel #42, taint 0): kernel r41, mesa 26.2.4-r101 (d5c224), phoc 0.57.0-r100,
+YOUTUBE: use Pipeline (native, GStreamer): clapper 0.10.0-r101 (packages/clapper: gtk4paintablesink + GtkGraphicsOffload)
+= full-rate 1080p at ~30 % of a core, no memory pressure (ISSUES 21 i); gt510-tweaks r51 pins it and ships Pipeline.
+INSTALLED (read back 13:35; boot 12:43, kernel #42, taint 0; + 14:5x clapper r101, pipeline, tweaks r51): kernel r41, mesa 26.2.4-r101 (d5c224), phoc 0.57.0-r100,
 gtk4.0 4.24.1-r100, showtime 50.0-r100, snapshot 51.0-r121 (d5c224/e173ce), libcamera 99990.7.2-r113, ffmpeg-libavcodec
-8.1.2-r105 (d5c224), phosh 99990.57.0-r100, gt510-tweaks 1-r50 + gt510-branding 1-r0. gt510-tweaks pins EXACTLY gtk4.0,
-showtime, phoc, snapshot; ranges mesa>=26.2.4-r100 + mesa-dri-gallium<26.2.5, ffmpeg-libavcodec>=8.1.2-r103 +
+8.1.2-r105 (d5c224), phosh 99990.57.0-r100, gt510-tweaks 1-r51 + gt510-branding 1-r0. gt510-tweaks pins EXACTLY gtk4.0,
+showtime, phoc, snapshot, clapper-libs; ranges mesa>=26.2.4-r100 + mesa-dri-gallium<26.2.5, ffmpeg-libavcodec>=8.1.2-r103 +
 ffmpeg-libavutil<8.1.3, libcamera>=r113. Move a pin on every local rebuild; when Alpine moves past one of our versions,
 rebuild the local package on it first (all matched Alpine edge on 2026-10-07; Alpine's later revisions were rebuilds).
 

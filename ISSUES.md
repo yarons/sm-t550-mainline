@@ -312,8 +312,21 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    "paintable" property in a GtkPicture (_get_widget_from_video_sink), so a one-function local clapper patch that
    prefers gtk4paintablesink (gst-plugins-rs, installed) gives Pipeline/Clapper the same GTK offload path as
    Showtime 0100. No env var or setting selects the sink (only CLAPPER_USE_PLAYBIN3). Celluloid/mpv = not GStreamer
-   (d5c224's fallback). NEXT (Yaron decides): apk add pipeline (stock, baseline fps/CPU/memory), then a local clapper
-   r100 with the sink patch + pin.
+   (d5c224's fallback). Yaron: install + patch.
+   RESULT (2026-10-13 14:2x, video/ytbench.sh, Yaron's clip pVaeEK1WC2M 1080p25, 40 s windows): installed from Alpine
+   pipeline 4.1.0, clapper-enhancers, libpeas2-python3 (the yt-dlp enhancer is Python; Alpine's pipeline does not pull
+   the loader) and yt-dlp-core (full yt-dlp → yt-dlp-ejs → deno needs simdutf 9.2.1 but the installed vte3-gtk4 needs
+   9.1.0: not without a partial upgrade; without a JS runtime yt-dlp warns "deprecated" but still lists avc1 up to
+   1080p: HLS 270, DASH 137). Stock clapper r1: extraction → hlsdemux2 → v4l2h264dec fine, then "Configured videosink
+   glsinkbin0 is not working": NO PICTURE. clapper r100 (gtk4paintablesink): plays, 10.3 fps, clapper 42 % (GTK draws
+   each frame: a bare GtkPicture is never offloaded). clapper r101 (+ GtkPicture inside GtkGraphicsOffload with a black
+   background, like Showtime): 24.0 / 25.0 fps = full rate, clapper 30-32 % of a core, memory PSI 0.0 %, MemAvailable
+   ~270-290 MB, swap 15 MB (Firefox same clip: PSI 13.7 %, MemAvail ~60 MB, stutter). Yaron: "insanely smooth".
+   packages/clapper 0.10.0-r101 (0100 patch) INSTALLED with the Alpine bits above. LOCKED IN (Yaron: pin + ship):
+   gt510-tweaks r51 pins clapper-libs=0.10.0-r101 and depends on pipeline, yt-dlp-core, libpeas2-python3 (installed
+   14:5x in 14.6 s; a simulated apk upgrade leaves clapper/pipeline alone). Left: the yt-dlp enhancer's settings schema
+   is missing in Alpine's clapper-enhancers (ERROR "Could not load settings", harmless); full yt-dlp (deno) once the
+   image gets a newer vte3-gtk4/simdutf; upstreaming the clapper patch (check Clapper's AI policy first).
 22. CLOSED (2026-10-06, nothing to implement) — **Touch-key LEDs** (hardware review #9). Recents/Back are maXTouch
    1664T T15 keys (mainline keycodes KEY_APPSELECT 0x244, KEY_BACK 0x9e). Stock never lit them: Samsung's gt510 driver
    (Galaxy-MSM8916 lineage-17.1 drivers/input/touchscreen/mxt_t/, DT compatible "atmel,mxt_t") has
@@ -511,6 +524,10 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    as /etc/deviceinfo's comment says) → KEEP lz4. CPU is ~80 % busy for the whole YouTube run in Firefox (a third of
    it kernel: faults + zram), so Firefox+YouTube is CPU-bound as well as memory-bound → native player (36e367: a
    GStreamer client, v4l2h264dec → gtk4paintablesink) is the way; tablet back on lz4.
+   RESOLVED FOR YOUTUBE (36e367, ISSUES 21 i): Pipeline 4.1.0 + Clapper r101 (gtk4paintablesink + GtkGraphicsOffload)
+   + yt-dlp-core: Yaron's clip at full 24-25 fps, Clapper 30-32 % of one core, memory PSI 0.0 %, MemAvailable ~280 MB,
+   swap 15 MB; Yaron: "insanely smooth". Firefox stays usable for normal pages; YouTube → Pipeline. Still open here:
+   the black triangle (not reproduced since 10-06; mesa r101's 0102 installed but not proven as its fix).
 24. DONE (2026-10-06 17:27, hardware review #7, session d5c224; snapshot r121 + tweaks r46 INSTALLED) — **Full 5 MP stills (rear SR544).** The sensor streams
    2592x1944 at 27.9 fps; /etc/libcamera/configuration.yaml caps the soft ISP output at 1296x972 because 5 MP once
    debayered at 0.7 fps (2026-09-25, before the GPU debayer / Mesa a3xx work). Remeasured on r38 with the cap lifted for

@@ -1,7 +1,7 @@
 # Local tweaks for the Samsung Galaxy Tab A 9.7 2015 (SM-T550, gt510wifi) on device-qcom-msm8916.
 pkgname=gt510-tweaks
 pkgver=1
-pkgrel=50
+pkgrel=51
 pkgdesc="SM-T550 (gt510wifi) integration: audio, charger, GPS, rotation, camera, trimmed services; Phosh"
 url="https://postmarketos.org"
 arch="noarch"
@@ -18,6 +18,10 @@ depends="
 	ffmpeg-libavutil<8.1.3
 	showtime=50.0-r100
 	phoc=0.57.0-r100
+	clapper-libs=0.10.0-r101
+	pipeline
+	yt-dlp-core
+	libpeas2-python3
 	gt510-branding
 	alsa-utils
 	iio-sensor-proxy
@@ -68,6 +72,13 @@ depends="
 # shows offloaded video with its own matrix (BT.709 HD video exact; Alpine's phoc converts everything as BT.601, so
 # greens come out ~30 levels too bright); exact pin so Alpine's next phoc cannot replace it. When Alpine moves past
 # 0.57.0-r1, rebuild packages/phoc on the new version first, then move this pin.
+# clapper-libs=0.10.0-r101 + pipeline + yt-dlp-core + libpeas2-python3: YouTube without Firefox (ISSUES 21 i). Pipeline
+# plays through libclapper-gtk; the local clapper (packages/clapper 0100) uses gtk4paintablesink inside a
+# GtkGraphicsOffload, so 1080p H.264 from Venus shows at full rate (25/25 fps, ~30 % of a core); Alpine's clapper shows
+# no picture here (its glsinkbin sink fails). Exact pin: move it on every local clapper rebuild; when Alpine moves past
+# 0.10.0-r1, rebuild packages/clapper on it first. libpeas2-python3 loads clapper-enhancers' yt-dlp enhancer (Python;
+# Alpine's pipeline does not pull it). yt-dlp-core, not yt-dlp: the full package pulls deno, which needs a newer simdutf
+# than vte3-gtk4 on this image; without a JS runtime yt-dlp still offers H.264 up to 1080p (with a deprecation warning).
 install="$pkgname.post-install $pkgname.post-upgrade"
 triggers="$pkgname.trigger=/usr/share/applications:/usr/lib"
 source="
