@@ -1,0 +1,54 @@
+From: gt510 <gt510@localhost>
+Subject: clapper-gtk: prefer gtk4paintablesink for video
+
+ClapperGtkVideo always plays into glsinkbin + clappersink on GStreamer
+1.24+. That turns every decoded frame into a GL texture which GTK has to
+draw itself; with hardware-decoded dmabufs on an Adreno 306 (SM-T550,
+Venus H.264 decoder) 1080p then runs at about 10 fps, the same as GNOME
+Showtime did through glsinkbin.
+
+gtk4paintablesink (gst-plugins-rs) accepts DMA_DRM buffers and hands them
+to GTK as GdkDmabufTextures, which GTK can offload to the compositor, and
+ClapperGtkVideo already wraps a sink's "paintable" in a GtkPicture. Use it
+when it is installed; CLAPPER_GTK4PAINTABLESINK=0 restores the old path.
+---
+--- a/src/lib/clapper-gtk/clapper-gtk-video.c
++++ b/src/lib/clapper-gtk/clapper-gtk-video.c
+@@ -1197,6 +1197,7 @@
+   GstElement *vsink;
+   ClapperPlayer *player;
+   ClapperQueue *queue;
++  gboolean paintable_sink = FALSE;
+ 
+   G_OBJECT_CLASS (parent_class)->constructed (object);
+ 
+@@ -1208,11 +1209,27 @@
+   g_signal_connect (player, "notify::video-sink",
+       G_CALLBACK (_video_sink_changed_cb), self);
+ 
+-  vsink = gst_element_factory_make ("clappersink", NULL);
++  /* gtk4paintablesink (gst-plugins-rs) takes DMA_DRM buffers and hands them
++   * to GTK as GdkDmabufTextures, which GTK can offload to the compositor;
++   * glsinkbin + clappersink below makes GL textures that GTK always has to
++   * draw itself (on an Adreno 306: 1080p at ~10 fps instead of 25-30).
++   * _video_sink_changed_cb() wraps its "paintable" in a GtkPicture.
++   * CLAPPER_GTK4PAINTABLESINK=0 restores the clappersink path. */
++  vsink = NULL;
++  if (g_strcmp0 (g_getenv ("CLAPPER_GTK4PAINTABLESINK"), "0") != 0)
++    vsink = gst_element_factory_make ("gtk4paintablesink", NULL);
+ 
++  if (vsink) {
++    GST_INFO_OBJECT (self, "Using gtk4paintablesink");
++    clapper_player_set_video_sink (player, vsink);
++    paintable_sink = TRUE;
++  } else {
++    vsink = gst_element_factory_make ("clappersink", NULL);
++  }
++
+   /* FIXME: This is a temporary workaround for lack
+    * of DMA_DRM negotiation support in sink itself */
+-  if (G_LIKELY (vsink != NULL)) {
++  if (G_LIKELY (vsink != NULL) && !paintable_sink) {
+     guint major = 0, minor = 0, micro = 0, nano = 0;
+ 
+     gst_version (&major, &minor, &micro, &nano);

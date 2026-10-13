@@ -68,7 +68,7 @@ gt510-branding in the repo too (gt510-tweaks depends on it).
 COORDINATION (shared tablet; sessions 2026-10-13): 7c530c = d5c224's line (Firefox #23, mesa, ffmpeg, stills, CPR),
 59f6f7 = e173ce's line (camera/#33, spec), 36e367 = this (video/Venus, gt510-tweaks). Message before any reboot,
 kernel install, apk add (`pgrep -x apk`), Venus/GPU/camera-heavy run; ONE reboot for everyone (ask for pending kernel
-changes first); announce public pushes. Public repo 89159af (2026-10-13): assemble-public.sh REPLACES
+changes first); announce public pushes. Public repo 4336b3b (2026-10-13): assemble-public.sh REPLACES
 ~/workspace/gt510-public — park .git outside and restore it.
 
 TRAPS: USB 172.16.42.1 can be the Poco F1: ./gssh checks the hostname (ssh -n probe, exit 99 elsewhere), ./gw is Wi-Fi
@@ -180,7 +180,7 @@ drop parked (READONLY) capture buffers on capture STREAMOFF (ours). REVERTED: 01
   emails/coordinates/the tablet password), move `.git` out and back around it, commit (author Yaron Shahrabani
   <406826+yarons@users.noreply.github.com>, `Co-Authored-By` trailer), scan the diff, push. `review/` is never
   published (it holds the scrub map). Yaron's rules: no photos/raw camera dumps, name yes / email no, GPL-2.0.
-  HEAD 89159af (2026-10-13, 36e367: tweaks r50 sysctl; b073811 r41 verification; 7d10402 0129 v4, tweaks r48/r49,
+  HEAD 4336b3b (2026-10-13, 36e367: compact video notes, colima-seeded-build.sh; 89159af tweaks r50 sysctl; b073811 r41 verification; 7d10402 0129 v4, tweaks r48/r49,
   gt510-branding, mesa 0102; before 148cf5b (2026-10-06 18:05, d0acb3: tweaks r47 phoc pin, ISSUES 21 g done); before 49f097a (17:5x, d5c224: kernel 0132 CPR fuses + cprtest, snapshot r121 0105v3/0107, tweaks r46, ISSUES
   23/24/28); before 059574f (2026-10-06 15:20: phoc r100 BT.709 patches + colortest.sh, snapshot 0105/0106 + libcamera 0111 +
   tweaks r45 marked in progress; before 2d9052d: showtime/snapshot packages, ffmpeg 0103/0104; before 75a77b7 upstream/venus hand-off; Venus 0129-0131, gtk4.0/snapshot/libcamera/ffmpeg local patches, notes ISSUES 21-28; before: 06ed139). Known: ad6268f's diff contains the tablet password (Yaron chose to leave it).

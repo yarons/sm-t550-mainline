@@ -302,6 +302,18 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    ~170 MB, vm.watermark_boost_factor 15000); d5c224 proposed vm.watermark_boost_factor=0. Yaron OK'd: gt510-tweaks
    r50 (/usr/lib/sysctl.d/60-gt510-memory.conf) INSTALLED 13:2x in 14.1 s; applied at once by the systemd trigger
    (15000 → 0, zoneinfo boost 0, min_free_kbytes 100000 kept, lz4 kept). YouTube re-run with a memory watch: d5c224.
+   (i) NATIVE YOUTUBE PLAYER (2026-10-13, Yaron: "find a native YouTube player that uses GStreamer"; Firefox still
+   stutters from zram swap-in after r50, d5c224). Alpine edge: pipeline 4.1.0 (community; GTK4/libadwaita, mobile,
+   YouTube + PeerTube) → libclapper/libclapper-gtk 0.10.0 (GStreamer playbin) + clapper-enhancers yt-dlp (Python;
+   format_sort codecs_order default "avc1,av01,hev1,vp09" → H.264 first = Venus; HLS or a generated DASH manifest;
+   settings: codecs-order, cookies-file, extractor-args). PROBLEM: clapper-gtk-video.c constructed() hard-codes
+   clappersink wrapped in glsinkbin on GStreamer >= 1.24 ("FIXME: lack of DMA_DRM negotiation support in sink
+   itself") = the GL path that held Showtime to ~8-10 fps at 1080p. ClapperGtkVideo already wraps any sink with a
+   "paintable" property in a GtkPicture (_get_widget_from_video_sink), so a one-function local clapper patch that
+   prefers gtk4paintablesink (gst-plugins-rs, installed) gives Pipeline/Clapper the same GTK offload path as
+   Showtime 0100. No env var or setting selects the sink (only CLAPPER_USE_PLAYBIN3). Celluloid/mpv = not GStreamer
+   (d5c224's fallback). NEXT (Yaron decides): apk add pipeline (stock, baseline fps/CPU/memory), then a local clapper
+   r100 with the sink patch + pin.
 22. CLOSED (2026-10-06, nothing to implement) — **Touch-key LEDs** (hardware review #9). Recents/Back are maXTouch
    1664T T15 keys (mainline keycodes KEY_APPSELECT 0x244, KEY_BACK 0x9e). Stock never lit them: Samsung's gt510 driver
    (Galaxy-MSM8916 lineage-17.1 drivers/input/touchscreen/mxt_t/, DT compatible "atmel,mxt_t") has
@@ -480,6 +492,25 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    36e367 packages vm.watermark_boost_factor = 0 in gt510-tweaks r50 (/usr/lib/sysctl.d/60-gt510-memory.conf; lz4 and
    min_free_kbytes unchanged). NEXT: after r50, check /proc/zoneinfo boost/min, re-run YouTube with a memory watch;
    Firefox's own footprint (content processes, uBlock, MSE buffering) is the bigger lever.
+   AFTER r50 (boost 0, verified in /proc/zoneinfo; video/memwatch.sh): Yaron's clip, his Firefox: no OOM, seeks work,
+   "smoother than before but not smooth", lots of loading on seeks; 1080p and 720p about the same (720p 25-26 fps,
+   5-9 gaps > 70 ms per 10 s). MemAvailable min 30-41 MB, swap up to ~1 GB, memory PSI some up to 14-18 %; at quiet
+   moments 29.9 fps / 0 gaps → the stutter is memory pressure (zram swap-in), not the decoder. zram lz4 ratio 1.9.
+   Firefox A/B (video/fxmem.sh, copy of the bench profile, same clip, 240 s, t ≥ 60 s): A defaults = Firefox RSS+swap
+   avg 1056 MB (shared libs counted per process), MemAvailable avg 61 / min 12, swap max 1167, PSI avg 15.6 / max 36,
+   fps 15-23; B fission.autostart=false + dom.ipc.processCount=1 + processPrelaunch off + max_total_viewers=0 = avg
+   932 MB (-124), MemAvailable avg 66 / min 18, swap max 1044, PSI avg 11.4 / max 26.5, fps 9-25: modest, still
+   stutters (Yaron watched both). Options: zram zstd (ratio ~3 vs 1.9 → ~150 MB more at 1 GB swapped; CPU per
+   swap-in, measure first), B prefs (cost: no site isolation), or a native YouTube player (yt-dlp + GStreamer/mpv
+   with Venus) instead of Firefox for video.
+   ZRAM lz4 vs zstd (Yaron: measure; video/zswitch.sh rebuilds zram0 at runtime in 2-6 s, both runs from an empty
+   swap, fxmem defaults 240 s, same clip): lz4 = PSI some avg 13.7 / max 34.5, MemAvailable avg 60 / min 21, swap max
+   1182 MB, CPU busy 82 % (sys 34 %), fps 7-19, gaps > 70 ms 8-43 per 10 s; zstd = PSI avg 23.5 / max 65.6,
+   MemAvailable avg 85 / min 25, swap max 1039 MB, CPU 81 % (sys 39 %), fps 5-22, gaps 10-54; zstd ratio ≈ 2.9 (compr
+   329 MB at ~945 MB swapped) vs lz4 1.9. zstd keeps ~25 MB more available but stalls MORE (slower swap-in on the A53s,
+   as /etc/deviceinfo's comment says) → KEEP lz4. CPU is ~80 % busy for the whole YouTube run in Firefox (a third of
+   it kernel: faults + zram), so Firefox+YouTube is CPU-bound as well as memory-bound → native player (36e367: a
+   GStreamer client, v4l2h264dec → gtk4paintablesink) is the way; tablet back on lz4.
 24. DONE (2026-10-06 17:27, hardware review #7, session d5c224; snapshot r121 + tweaks r46 INSTALLED) — **Full 5 MP stills (rear SR544).** The sensor streams
    2592x1944 at 27.9 fps; /etc/libcamera/configuration.yaml caps the soft ISP output at 1296x972 because 5 MP once
    debayered at 0.7 fps (2026-09-25, before the GPU debayer / Mesa a3xx work). Remeasured on r38 with the cap lifted for
