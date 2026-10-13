@@ -22,7 +22,7 @@ tools/apktime.sh (per-step timing of an apk run), /tmp/pollargs.py idea (read a 
 Traps: busybox ash: never rewrite a script another session is running (restore the same bytes); `sudo -S` with a
 heredoc on stdin eats the password (write the script to a file first); vtrace type 10 = OUTPUT, 9 = CAPTURE.
 Upstream A is ready again (corrected gate); Yaron sends. Colima t290 must be started (`colima start t290`) if stopped.
-Public repo 7d10402 (12:3x).
+Public repo b073811 (r41 verification notes; before 7d10402).
 OLDER STATE — INSTALLED on the tablet (17:35; boot 17:24:47): kernel r40 (d5c224: r39 + CPR 0132), phoc 0.57.0-r100 (mine, BT.709),
 snapshot r121 (d5c224/e173ce), gt510-tweaks r47 (mine 18:00: r46 + phoc=0.57.0-r100 pin) — the list below is the 14:12 state: kernel r39 (#40, taint 0), gtk4.0 4.24.1-r100, showtime
 50.0-r100, snapshot 51.0-r115, libcamera 99990.7.2-r113 (d5c224, 15:10; r112 = its AWB fix), ffmpeg-libavcodec 8.1.2-r105 (d5c224, 21:4x:

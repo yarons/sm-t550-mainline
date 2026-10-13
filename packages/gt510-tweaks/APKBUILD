@@ -1,7 +1,7 @@
 # Local tweaks for the Samsung Galaxy Tab A 9.7 2015 (SM-T550, gt510wifi) on device-qcom-msm8916.
 pkgname=gt510-tweaks
 pkgver=1
-pkgrel=49
+pkgrel=50
 pkgdesc="SM-T550 (gt510wifi) integration: audio, charger, GPS, rotation, camera, trimmed services; Phosh"
 url="https://postmarketos.org"
 arch="noarch"
@@ -91,6 +91,7 @@ source="
 	gt510-camera.conf
 	90-gt510-split-video.conf
 	gt510-thp.conf
+	60-gt510-memory.conf
 	gt510-deviceinfo
 	40_gt510-performance.gschema.override
 	gt510-udiskie-hidden.desktop
@@ -150,6 +151,9 @@ package() {
 	install -Dm644 "$srcdir"/90-gt510-split-video.conf -t "$pkgdir"/usr/share/wireplumber/wireplumber.conf.d/
 	# Memory: THP on request only, faster zram compressor
 	install -Dm644 "$srcdir"/gt510-thp.conf -t "$pkgdir"/usr/lib/tmpfiles.d/
+	# No watermark boost: it pushed the OOM point up to ~270 MB free on this 1.5 GB tablet (ISSUES 23); applied by
+	# the systemd apk trigger (systemd-sysctl) on install, no reboot
+	install -Dm644 "$srcdir"/60-gt510-memory.conf -t "$pkgdir"/usr/lib/sysctl.d/
 	install -Dm644 "$srcdir"/gt510-deviceinfo "$pkgdir"/etc/deviceinfo
 	# UI: no animations (GTK renders in software on this GPU)
 	install -Dm644 "$srcdir"/40_gt510-performance.gschema.override -t "$pkgdir"/usr/share/glib-2.0/schemas/

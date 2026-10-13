@@ -296,7 +296,12 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    srcversion 4A3EFC4F… vs r40 CEEE21FD…): m2mflush output mode 5/5 flushes 30/30 frames, every held buffer back
    (r40: stall after the 2nd flush); stop-both mode 5/5; GStreamer seektest 0 s → 5.02 s, 10 s → 13.34 s; no Venus
    firmware/session errors; taint 0. Upstream fixup + reply regenerated on Heidelberg's 2/2 (fixup applies; HOLD
-   lifted). Firefox YouTube re-test with Yaron: d5c224.
+   lifted). Firefox YouTube re-test (d5c224 with Yaron, r41 + mesa r101): NO STALL — vtrace vt-r2 1916 vqbuf / 1916
+   vsub / 1917 vdone, seeks at 247/283/298 s all recovered. Separate new problem: global OOM at 481 s killed the
+   YouTube tab with ~200 MB free (min watermark effectively 270 MB = pmOS min_free_kbytes 100000 + watermark boost
+   ~170 MB, vm.watermark_boost_factor 15000); d5c224 proposed vm.watermark_boost_factor=0. Yaron OK'd: gt510-tweaks
+   r50 (/usr/lib/sysctl.d/60-gt510-memory.conf) INSTALLED 13:2x in 14.1 s; applied at once by the systemd trigger
+   (15000 → 0, zoneinfo boost 0, min_free_kbytes 100000 kept, lz4 kept). YouTube re-run with a memory watch: d5c224.
 22. CLOSED (2026-10-06, nothing to implement) — **Touch-key LEDs** (hardware review #9). Recents/Back are maXTouch
    1664T T15 keys (mainline keycodes KEY_APPSELECT 0x244, KEY_BACK 0x9e). Stock never lit them: Samsung's gt510 driver
    (Galaxy-MSM8916 lineage-17.1 drivers/input/touchscreen/mxt_t/, DT compatible "atmel,mxt_t") has
@@ -465,6 +470,16 @@ Status: OPEN / ACTIVE / DONE (with evidence). Details live in CONTINUATION-PROMP
    as 10-06), then A/B 0102. Yaron OK'd 0102 for real: packages/mesa r101 (0100 + 0102) built in colima and
    INSTALLED 2026-10-13 ~12:50 (plain apk add; installed lib passes fdtri at 257/1000/4096), before 36e367's
    kernel r41 reboot, so phoc/phosh run r101 after it. A triangle A/B now needs ~/mesatest264 (r100-like) vs stock.
+   RE-TEST after the 12:43 reboot (kernel r41 = 36e367's 0129 v4, mesa r101, tweaks r49), Yaron's clip in his Firefox:
+   NO decoder stall (vtrace: 1916 vqbuf / 1916 vsub / 1917 vdone, seeks at 247/283/298 s recovered), but "white screen
+   during most of the playback": no Venus session 298-466 s, then a GLOBAL OOM at 481 s killed the YouTube content
+   process (phosh: "Device memory is nearly full"). At the OOM: free 199 MB, zspages 657 MB (zram holding ~1.5 GB of
+   swapped anon), shmem 106, file 45, anon 33 MB. It fired with 200 MB free because every watermark = base + boost:
+   min 270 MB = pmOS zramstart's min_free_kbytes 100000 + watermark_boost 170 MB (vm.watermark_boost_factor 15000,
+   boosted on fragmentation, e.g. video buffers). r101 renders fine (bench fsui run). Yaron: make it permanent →
+   36e367 packages vm.watermark_boost_factor = 0 in gt510-tweaks r50 (/usr/lib/sysctl.d/60-gt510-memory.conf; lz4 and
+   min_free_kbytes unchanged). NEXT: after r50, check /proc/zoneinfo boost/min, re-run YouTube with a memory watch;
+   Firefox's own footprint (content processes, uBlock, MSE buffering) is the bigger lever.
 24. DONE (2026-10-06 17:27, hardware review #7, session d5c224; snapshot r121 + tweaks r46 INSTALLED) — **Full 5 MP stills (rear SR544).** The sensor streams
    2592x1944 at 27.9 fps; /etc/libcamera/configuration.yaml caps the soft ISP output at 1296x972 because 5 MP once
    debayered at 0.7 fps (2026-09-25, before the GPU debayer / Mesa a3xx work). Remeasured on r38 with the cap lifted for
